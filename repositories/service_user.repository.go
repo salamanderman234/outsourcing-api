@@ -51,9 +51,9 @@ func (s *serviceUserRepository) Update(c context.Context, id uint, data any) (in
 	result := s.db.Scopes(usingContextScope(c), usingModelScope(&s.model), whereIdEqualScope(id)).Updates(data)
 	return result.RowsAffected, data, convertRepoError(result)
 }
-func (s *serviceUserRepository) Delete(c context.Context, id uint) (int64, any, error) {
+func (s *serviceUserRepository) Delete(c context.Context, id uint) (int64, int64, error) {
 	result := s.db.Scopes(usingContextScope(c), whereIdEqualScope(id)).Delete(&s.model)
-	return int64(id), result.RowsAffected, convertRepoError(result)
+	return result.RowsAffected, int64(id), convertRepoError(result)
 }
 func (s *serviceUserRepository) Get(c context.Context, id uint, q string, page uint, orderBy string, desc bool) ([]domains.ServiceUserModel, uint, error) {
 	var users []domains.ServiceUserModel

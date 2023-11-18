@@ -7,58 +7,58 @@ import (
 	"gorm.io/gorm"
 )
 
-type supervisorRepository struct {
+type adminRepository struct {
 	db    *gorm.DB
-	model domains.SupervisorModel
+	model domains.AdminModel
 }
 
-func NewSupervisorRepository(db *gorm.DB) domains.SupervisorRepository {
-	return &supervisorRepository{
+func NewAdminRepository(db *gorm.DB) domains.AdminRepository {
+	return &adminRepository{
 		db:    db,
-		model: domains.SupervisorModel{},
+		model: domains.AdminModel{},
 	}
 }
 
-func (s *supervisorRepository) GetUserWithCreds(c context.Context, username string, hashed string) (any, error) {
-	var user domains.SupervisorModel
+func (s *adminRepository) GetUserWithCreds(c context.Context, username string, hashed string) (any, error) {
+	var user domains.AdminModel
 	usernameField := "email"
 	return user, basicCredsSearch(c, s.db, usernameField, username, hashed, &user)
 }
-func (s *supervisorRepository) RegisterUser(c context.Context, data any) (int64, any, error) {
-	user, ok := data.(domains.SupervisorModel)
+func (s *adminRepository) RegisterUser(c context.Context, data any) (int64, any, error) {
+	user, ok := data.(domains.AdminModel)
 	if !ok {
 		return 0, nil, domains.RepositoryInterfaceConversionErr
 	}
 	result, err := s.Create(c, user)
 	return 1, result, err
 }
-func (s *supervisorRepository) Create(c context.Context, data any) (any, error) {
-	user, ok := data.(domains.SupervisorModel)
+func (s *adminRepository) Create(c context.Context, data any) (any, error) {
+	user, ok := data.(domains.AdminModel)
 	if !ok {
 		return nil, domains.RepositoryInterfaceConversionErr
 	}
 	err := basicCreateRepoFunc(c, s.db, &s.model, &user)
 	return user, err
 }
-func (s *supervisorRepository) FindByID(c context.Context, id uint) (any, error) {
-	var user domains.SupervisorModel
+func (s *adminRepository) FindByID(c context.Context, id uint) (any, error) {
+	var user domains.AdminModel
 	err := basicFindRepoFunc(c, s.db, &s.model, id, &user)
 	return user, err
 }
-func (s *supervisorRepository) Update(c context.Context, id uint, data any) (int64, any, error) {
-	dataModel, ok := data.(domains.SupervisorModel)
+func (s *adminRepository) Update(c context.Context, id uint, data any) (int64, any, error) {
+	dataModel, ok := data.(domains.AdminModel)
 	if !ok {
 		return 0, nil, domains.RepositoryInterfaceConversionErr
 	}
 	aff, err := basicUpdateRepoFunc(c, s.db, &s.model, id, &dataModel)
 	return aff, dataModel, err
 }
-func (s *supervisorRepository) Delete(c context.Context, id uint) (int64, int64, error) {
+func (s *adminRepository) Delete(c context.Context, id uint) (int64, int64, error) {
 	aff, err := basicDeleteRepoFunc(c, s.db, &s.model, id)
 	return int64(id), aff, err
 }
-func (s *supervisorRepository) Get(c context.Context, id uint, q string, page uint, orderBy string, desc bool) ([]domains.SupervisorModel, uint, error) {
-	var users []domains.SupervisorModel
+func (s *adminRepository) Get(c context.Context, id uint, q string, page uint, orderBy string, desc bool) ([]domains.AdminModel, uint, error) {
+	var users []domains.AdminModel
 	var count int64
 	query := s.db.Scopes(usingContextScope(c), usingModelScope(&s.model), orderScope(&s.model, orderBy, desc))
 	if id != 0 {
