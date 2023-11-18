@@ -19,17 +19,17 @@ func NewServiceUserRepository(db *gorm.DB) domains.ServiceUserRepository {
 	}
 }
 
-func (s *serviceUserRepository) GetUserWithCreds(c context.Context, username string, hashed string) (any, error) {
+func (s *serviceUserRepository) GetUserWithCreds(c context.Context, username string) (any, error) {
 	var user domains.ServiceUserModel
 	usernameField := "email"
-	result := s.db.Scopes(usingContextScope(c), userLoginScope(usernameField, username, hashed), usingModelScope(&s.model)).
+	result := s.db.Scopes(usingContextScope(c), userSearchScope(usernameField, username), usingModelScope(&s.model)).
 		First(&user)
 	return user, convertRepoError(result)
 }
 func (s *serviceUserRepository) RegisterUser(c context.Context, data any) (int64, any, error) {
 	user, ok := data.(domains.ServiceUserModel)
 	if !ok {
-		return 0, nil, domains.RepositoryInterfaceConversionErr
+		return 0, nil, domains.ErrRepositoryInterfaceConversion
 	}
 	result, err := s.Create(c, user)
 	return 1, result, err
@@ -37,7 +37,7 @@ func (s *serviceUserRepository) RegisterUser(c context.Context, data any) (int64
 func (s *serviceUserRepository) Create(c context.Context, data any) (any, error) {
 	user, ok := data.(domains.ServiceUserModel)
 	if !ok {
-		return nil, domains.RepositoryInterfaceConversionErr
+		return nil, domains.ErrRepositoryInterfaceConversion
 	}
 	result := s.db.Scopes(usingContextScope(c), usingModelScope(&s.model)).Create(&user)
 	return user, convertRepoError(result)

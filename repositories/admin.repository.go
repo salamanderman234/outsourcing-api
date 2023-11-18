@@ -19,15 +19,15 @@ func NewAdminRepository(db *gorm.DB) domains.AdminRepository {
 	}
 }
 
-func (s *adminRepository) GetUserWithCreds(c context.Context, username string, hashed string) (any, error) {
+func (s *adminRepository) GetUserWithCreds(c context.Context, username string) (any, error) {
 	var user domains.AdminModel
 	usernameField := "email"
-	return user, basicCredsSearch(c, s.db, usernameField, username, hashed, &user)
+	return user, basicCredsSearch(c, s.db, usernameField, username, &user)
 }
 func (s *adminRepository) RegisterUser(c context.Context, data any) (int64, any, error) {
 	user, ok := data.(domains.AdminModel)
 	if !ok {
-		return 0, nil, domains.RepositoryInterfaceConversionErr
+		return 0, nil, domains.ErrRepositoryInterfaceConversion
 	}
 	result, err := s.Create(c, user)
 	return 1, result, err
@@ -35,7 +35,7 @@ func (s *adminRepository) RegisterUser(c context.Context, data any) (int64, any,
 func (s *adminRepository) Create(c context.Context, data any) (any, error) {
 	user, ok := data.(domains.AdminModel)
 	if !ok {
-		return nil, domains.RepositoryInterfaceConversionErr
+		return nil, domains.ErrRepositoryInterfaceConversion
 	}
 	err := basicCreateRepoFunc(c, s.db, &s.model, &user)
 	return user, err
@@ -48,7 +48,7 @@ func (s *adminRepository) FindByID(c context.Context, id uint) (any, error) {
 func (s *adminRepository) Update(c context.Context, id uint, data any) (int64, any, error) {
 	dataModel, ok := data.(domains.AdminModel)
 	if !ok {
-		return 0, nil, domains.RepositoryInterfaceConversionErr
+		return 0, nil, domains.ErrRepositoryInterfaceConversion
 	}
 	aff, err := basicUpdateRepoFunc(c, s.db, &s.model, id, &dataModel)
 	return aff, dataModel, err

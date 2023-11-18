@@ -29,8 +29,8 @@ func basicDeleteRepoFunc(c context.Context, db *gorm.DB, model any, id uint) (in
 	return result.RowsAffected, convertRepoError(result)
 }
 
-func basicCredsSearch(c context.Context, db *gorm.DB, usernameField string, username string, hashed string, target any) error {
-	result := db.Scopes(usingContextScope(c), userLoginScope(usernameField, username, hashed), usingModelScope(target)).
+func basicCredsSearch(c context.Context, db *gorm.DB, usernameField string, username string, target any) error {
+	result := db.Scopes(usingContextScope(c), userSearchScope(usernameField, username), usingModelScope(target)).
 		First(target)
 	return convertRepoError(result)
 }
@@ -38,7 +38,7 @@ func basicCredsSearch(c context.Context, db *gorm.DB, usernameField string, user
 func convertRepoError(q *gorm.DB) error {
 	err := q.Error
 	if err != nil {
-		return domains.RepositoryErr
+		return domains.ErrRepository
 	}
 	return nil
 }

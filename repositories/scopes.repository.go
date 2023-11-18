@@ -42,9 +42,9 @@ func orderScope(model any, orderBy string, desc bool) func(db *gorm.DB) *gorm.DB
 	}
 }
 
-func userLoginScope(usernameField string, username string, hashed string) func(db *gorm.DB) *gorm.DB {
+func userSearchScope(usernameField string, username string) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		return db.Where(usernameField+" = ?", username).Where("password = ?", hashed)
+		return db.Where(usernameField+" = ?", username)
 	}
 }
 
