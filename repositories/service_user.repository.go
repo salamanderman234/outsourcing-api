@@ -19,21 +19,6 @@ func NewServiceUserRepository(db *gorm.DB) domains.ServiceUserRepository {
 	}
 }
 
-func (s *serviceUserRepository) GetUserWithCreds(c context.Context, username string) (any, error) {
-	var user domains.ServiceUserModel
-	usernameField := "email"
-	result := s.db.Scopes(usingContextScope(c), userSearchScope(usernameField, username), usingModelScope(&s.model)).
-		First(&user)
-	return user, convertRepoError(result)
-}
-func (s *serviceUserRepository) RegisterUser(c context.Context, data any) (int64, any, error) {
-	user, ok := data.(domains.ServiceUserModel)
-	if !ok {
-		return 0, nil, domains.ErrRepositoryInterfaceConversion
-	}
-	result, err := s.Create(c, user)
-	return 1, result, err
-}
 func (s *serviceUserRepository) Create(c context.Context, data any) (any, error) {
 	user, ok := data.(domains.ServiceUserModel)
 	if !ok {
@@ -55,7 +40,7 @@ func (s *serviceUserRepository) Delete(c context.Context, id uint) (int64, int64
 	result := s.db.Scopes(usingContextScope(c), whereIdEqualScope(id)).Delete(&s.model)
 	return result.RowsAffected, int64(id), convertRepoError(result)
 }
-func (s *serviceUserRepository) Get(c context.Context, id uint, q string, page uint, orderBy string, desc bool) ([]domains.ServiceUserModel, uint, error) {
+func (s *serviceUserRepository) Get(c context.Context, id uint, q string, page uint, orderBy string, desc bool) (any, uint, error) {
 	var users []domains.ServiceUserModel
 	var count int64
 	query := s.db.Scopes(usingContextScope(c), usingModelScope(&s.model), orderScope(&s.model, orderBy, desc))
@@ -64,8 +49,7 @@ func (s *serviceUserRepository) Get(c context.Context, id uint, q string, page u
 		return users, 1, convertRepoError(result)
 	}
 	searchQuery := query.Scopes(paginateScope(page)).
-		Where("email LIKE ?", "%"+q+"%").
-		Where("name LIKE ?", "%"+q+"%")
+		Where("fullname LIKE ?", "%"+q+"%")
 	_ = *searchQuery.Count(&count)
 	maxPage := getMaxPage(uint(count))
 	result := searchQuery.Find(&users)

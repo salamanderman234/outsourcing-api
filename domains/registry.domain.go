@@ -2,16 +2,14 @@ package domains
 
 var (
 	AuthServiceRegistry = struct {
-		ServiceUserAuthServ ServiceUserAuthService
-		SupervisorAuthServ  SupervisorAuthService
-		EmployeeSAuthServ   EmployeeAuthService
-		AdminAuthServ       AdminAuthService
+		AuthServ BasicAuthService
 	}{}
 
 	RepoRegistry = struct {
+		UserRepo        UserRepository
 		ServiceUserRepo ServiceUserRepository
 		SupervisorRepo  SupervisorRepository
-		EmployeeSRepo   EmployeeRepository
+		EmployeeRepo    EmployeeRepository
 		AdminRepo       AdminRepository
 	}{}
 )

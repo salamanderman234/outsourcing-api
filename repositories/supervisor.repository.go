@@ -19,19 +19,6 @@ func NewSupervisorRepository(db *gorm.DB) domains.SupervisorRepository {
 	}
 }
 
-func (s *supervisorRepository) GetUserWithCreds(c context.Context, username string) (any, error) {
-	var user domains.SupervisorModel
-	usernameField := "email"
-	return user, basicCredsSearch(c, s.db, usernameField, username, &user)
-}
-func (s *supervisorRepository) RegisterUser(c context.Context, data any) (int64, any, error) {
-	user, ok := data.(domains.SupervisorModel)
-	if !ok {
-		return 0, nil, domains.ErrRepositoryInterfaceConversion
-	}
-	result, err := s.Create(c, user)
-	return 1, result, err
-}
 func (s *supervisorRepository) Create(c context.Context, data any) (any, error) {
 	user, ok := data.(domains.SupervisorModel)
 	if !ok {
@@ -57,7 +44,7 @@ func (s *supervisorRepository) Delete(c context.Context, id uint) (int64, int64,
 	aff, err := basicDeleteRepoFunc(c, s.db, &s.model, id)
 	return int64(id), aff, err
 }
-func (s *supervisorRepository) Get(c context.Context, id uint, q string, page uint, orderBy string, desc bool) ([]domains.SupervisorModel, uint, error) {
+func (s *supervisorRepository) Get(c context.Context, id uint, q string, page uint, orderBy string, desc bool) (any, uint, error) {
 	var users []domains.SupervisorModel
 	var count int64
 	query := s.db.Scopes(usingContextScope(c), usingModelScope(&s.model), orderScope(&s.model, orderBy, desc))
@@ -66,8 +53,7 @@ func (s *supervisorRepository) Get(c context.Context, id uint, q string, page ui
 		return users, 1, convertRepoError(result)
 	}
 	searchQuery := query.Scopes(paginateScope(page)).
-		Where("email LIKE ?", "%"+q+"%").
-		Where("name LIKE ?", "%"+q+"%")
+		Where("fullname LIKE ?", "%"+q+"%")
 	_ = *searchQuery.Count(&count)
 	maxPage := getMaxPage(uint(count))
 	result := searchQuery.Find(&users)
