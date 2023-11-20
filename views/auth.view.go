@@ -45,7 +45,9 @@ func (authView) Register(c echo.Context) error {
 	return nil
 }
 func (authView) Verify(c echo.Context) error {
-	return nil
+	c.Request().Header.Get("Authorization")
+	_, err := helpers.VerifyToken("dsfsd")
+	return c.JSON(200, err)
 }
 func (authView) Refresh(c echo.Context) error {
 	return nil

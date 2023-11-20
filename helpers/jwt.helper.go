@@ -10,16 +10,12 @@ import (
 	"github.com/salamanderman234/outsourcing-api/domains"
 )
 
-var (
-	secret = configs.GetApplicationSecret()
-)
-
 func GenerateExpireTime(add float32) *jwt.NumericDate {
 	return jwt.NewNumericDate(time.Now().Add(time.Duration(add) * time.Hour))
 }
 
 func GenerateToken(claims domains.JWTClaims) (string, error) {
-	secret := []byte(secret)
+	secret := []byte(configs.GetApplicationSecret())
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signed, err := token.SignedString(secret)
 	if err != nil {
@@ -45,7 +41,7 @@ func CreateJWTClaims(id uint, username *string, role *string, profilePic *string
 func VerifyToken(token string) (domains.JWTClaims, error) {
 	claims := domains.JWTClaims{}
 	tkn, err := jwt.ParseWithClaims(token, &claims, func(token *jwt.Token) (any, error) {
-		return []byte(secret), nil
+		return []byte(configs.GetApplicationSecret()), nil
 	})
 	if errors.Is(err, jwt.ErrTokenExpired) {
 		return claims, domains.ErrExpiredToken

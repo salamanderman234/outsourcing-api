@@ -1,5 +1,7 @@
 package configs
 
+import "github.com/spf13/viper"
+
 const (
 	PAGINATION_PER_PAGE         = 10
 	PAGINATION_ORDER_BY_DEFAULT = "updated_at"
@@ -10,5 +12,13 @@ const (
 )
 
 func GetApplicationSecret() string {
-	return ""
+	return viper.GetString("APP_SECRET")
+}
+
+func SetConfig(url string) {
+	viper.SetConfigFile(url)
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(err)
+	}
 }

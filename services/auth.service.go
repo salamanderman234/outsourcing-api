@@ -13,7 +13,7 @@ import (
 type serviceUserAuthService struct {
 }
 
-func NewServiceUserAuthService() domains.ServiceUserAuthService {
+func NewUserAuthService() domains.ServiceUserAuthService {
 	return &serviceUserAuthService{}
 }
 
