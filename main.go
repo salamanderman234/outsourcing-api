@@ -5,6 +5,7 @@ import (
 	"github.com/salamanderman234/outsourcing-api/configs"
 	"github.com/salamanderman234/outsourcing-api/domains"
 	"github.com/salamanderman234/outsourcing-api/repositories"
+	"github.com/salamanderman234/outsourcing-api/routes"
 	"github.com/salamanderman234/outsourcing-api/services"
 	"github.com/salamanderman234/outsourcing-api/views"
 )
@@ -24,10 +25,9 @@ func main() {
 	domains.RepoRegistry.UserRepo = repositories.NewUserRepository(connection)
 	// services
 	domains.AuthServiceRegistry.AuthServ = services.NewUserAuthService()
-
-	authView := views.NewAuthView()
-	server.POST("/login", authView.Login)
-	server.GET("/verify", authView.Verify)
-	server.GET("/refresh", authView.Refresh)
+	// views
+	domains.ViewRegistry.AuthView = views.NewAuthView()
+	// register routes
+	routes.RegisterAllRoutes(server)
 	server.Logger.Fatal(server.Start(":1323"))
 }
