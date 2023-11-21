@@ -26,7 +26,8 @@ func main() {
 	domains.AuthServiceRegistry.AuthServ = services.NewUserAuthService()
 
 	authView := views.NewAuthView()
-	server.GET("/login", authView.Login)
+	server.POST("/login", authView.Login)
 	server.GET("/verify", authView.Verify)
+	server.GET("/refresh", authView.Refresh)
 	server.Logger.Fatal(server.Start(":1323"))
 }

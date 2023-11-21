@@ -19,10 +19,10 @@ type UserModel struct {
 	Password    *string           `json:"password" gorm:"not null;type:varchar(255)"`
 	Role        string            `json:"role" gorm:"not null;default('service_user')"`
 	JoinedDate  time.Time         `json:"joined_date"`
-	ServiceUser *ServiceUserModel `json:"service_user_profile,omitempty"`
-	Supervisor  *SupervisorModel  `json:"supervisor_profile,omitempty"`
-	Admin       *AdminModel       `json:"admin_profile,omitempty"`
-	Employee    *EmployeeModel    `json:"employee_profile,omitempty"`
+	ServiceUser *ServiceUserModel `json:"service_user_profile,omitempty" gorm:"foreignKey:UserID"`
+	Supervisor  *SupervisorModel  `json:"supervisor_profile,omitempty" gorm:"foreignKey:UserID"`
+	Admin       *AdminModel       `json:"admin_profile,omitempty" gorm:"foreignKey:UserID"`
+	Employee    *EmployeeModel    `json:"employee_profile,omitempty" gorm:"foreignKey:UserID"`
 }
 
 func (UserModel) TableName() string {
@@ -31,12 +31,12 @@ func (UserModel) TableName() string {
 
 type EmployeeModel struct {
 	gorm.Model
-	UserID   *uint     `json:"user_id" gorm:"not null"`
-	User     UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Address  *string   `json:"address" gorm:"not null;type:varchar(255)"`
-	Fullname *string   `json:"fullname" gorm:"not null;type:varchar(255)"`
-	CardID   *string   `json:"id_card_number" gorm:"not null;type:varchar(255)"`
-	Phone    *string   `json:"phone" gorm:"not null;type:varchar(13)"`
+	UserID   *uint      `json:"user_id" gorm:"not null"`
+	User     *UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Address  *string    `json:"address" gorm:"not null;type:varchar(255)"`
+	Fullname *string    `json:"fullname" gorm:"not null;type:varchar(255)"`
+	CardID   *string    `json:"id_card_number" gorm:"not null;type:varchar(255)"`
+	Phone    *string    `json:"phone" gorm:"not null;type:varchar(13)"`
 }
 
 func (EmployeeModel) TableName() string {
@@ -45,12 +45,12 @@ func (EmployeeModel) TableName() string {
 
 type ServiceUserModel struct {
 	gorm.Model
-	UserID   *uint     `json:"user_id" gorm:"not null"`
-	User     UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Address  *string   `json:"address" gorm:"not null;type:varchar(255)"`
-	Fullname *string   `json:"Fullname" gorm:"not null;type:varchar(255)"`
-	CardID   *string   `json:"id_card_number" gorm:"not null;type:varchar(255)"`
-	Phone    *string   `json:"phone" gorm:"not null;type:varchar(13)"`
+	UserID   *uint      `json:"user_id" gorm:"not null"`
+	User     *UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Address  *string    `json:"address" gorm:"not null;type:varchar(255)"`
+	Fullname *string    `json:"Fullname" gorm:"not null;type:varchar(255)"`
+	CardID   *string    `json:"id_card_number" gorm:"not null;type:varchar(255)"`
+	Phone    *string    `json:"phone" gorm:"not null;type:varchar(13)"`
 }
 
 func (ServiceUserModel) TableName() string {
@@ -59,12 +59,12 @@ func (ServiceUserModel) TableName() string {
 
 type SupervisorModel struct {
 	gorm.Model
-	UserID   *uint     `json:"user_id" gorm:"not null"`
-	User     UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Address  *string   `json:"address" gorm:"not null;type:varchar(255)"`
-	Fullname *string   `json:"Fullname" gorm:"not null;type:varchar(255)"`
-	CardID   *string   `json:"id_card_number" gorm:"not null;type:varchar(255)"`
-	Phone    *string   `json:"phone" gorm:"not null;type:varchar(13)"`
+	UserID   *uint      `json:"user_id" gorm:"not null"`
+	User     *UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Address  *string    `json:"address" gorm:"not null;type:varchar(255)"`
+	Fullname *string    `json:"Fullname" gorm:"not null;type:varchar(255)"`
+	CardID   *string    `json:"id_card_number" gorm:"not null;type:varchar(255)"`
+	Phone    *string    `json:"phone" gorm:"not null;type:varchar(13)"`
 }
 
 func (SupervisorModel) TableName() string {
@@ -73,12 +73,12 @@ func (SupervisorModel) TableName() string {
 
 type AdminModel struct {
 	gorm.Model
-	UserID   *uint     `json:"user_id" gorm:"not null"`
-	User     UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Address  *string   `json:"address" gorm:"not null;type:varchar(255)"`
-	Fullname *string   `json:"Fullname" gorm:"not null;type:varchar(255)"`
-	CardID   *string   `json:"id_card_number" gorm:"not null;type:varchar(255)"`
-	Phone    *string   `json:"phone" gorm:"not null;type:varchar(13)"`
+	UserID   *uint      `json:"user_id" gorm:"not null"`
+	User     *UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Address  *string    `json:"address" gorm:"not null;type:varchar(255)"`
+	Fullname *string    `json:"Fullname" gorm:"not null;type:varchar(255)"`
+	CardID   *string    `json:"id_card_number" gorm:"not null;type:varchar(255)"`
+	Phone    *string    `json:"phone" gorm:"not null;type:varchar(13)"`
 }
 
 func (AdminModel) TableName() string {

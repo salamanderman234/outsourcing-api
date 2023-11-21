@@ -53,7 +53,7 @@ func (s *adminRepository) Get(c context.Context, id uint, q string, page uint, o
 		return users, 1, convertRepoError(result)
 	}
 	searchQuery := query.Scopes(paginateScope(page)).
-		Where("name LIKE ?", "%"+q+"%")
+		Where("fullname LIKE ?", "%"+q+"%")
 	_ = *searchQuery.Count(&count)
 	maxPage := getMaxPage(uint(count))
 	result := searchQuery.Find(&users)

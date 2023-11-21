@@ -22,10 +22,7 @@ func (s serviceUserAuthService) Login(c context.Context, loginForm domains.Basic
 	if ok, err := helpers.Validate(loginForm); !ok {
 		return tokenPair, err
 	}
-	password, err := bcrypt.GenerateFromPassword([]byte(loginForm.Password), 1)
-	if err != nil {
-		return tokenPair, domains.ErrHashingPassword
-	}
+	password := loginForm.Password
 	user, err := domains.RepoRegistry.UserRepo.GetUserWithCreds(c, loginForm.Email)
 	if err != nil {
 		return tokenPair, err
@@ -34,7 +31,8 @@ func (s serviceUserAuthService) Login(c context.Context, loginForm domains.Basic
 	if !ok {
 		return tokenPair, domains.ErrConversionType
 	}
-	err = bcrypt.CompareHashAndPassword(password, []byte(*userModel.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(*userModel.Password), []byte(password))
+
 	if err != nil {
 		return tokenPair, domains.ErrInvalidCreds
 	}
@@ -83,6 +81,9 @@ func (serviceUserAuthService) Check(c context.Context, token string) (domains.JW
 		return domains.JWTPayload{}, err
 	}
 	payload := claims.JWTPayload
+	if payload.Username == nil {
+		return domains.JWTPayload{}, domains.ErrInvalidToken
+	}
 	return payload, nil
 }
 func (s serviceUserAuthService) Refresh(c context.Context, refreshToken string) (domains.TokenPair, error) {

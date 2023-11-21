@@ -7,8 +7,9 @@ const (
 	PAGINATION_ORDER_BY_DEFAULT = "updated_at"
 	PAGINATION_ORDER            = "DESC"
 	// token
-	ACCESS_TOKEN_EXPIRE_TIME  = 0.3
-	REFRESH_TOKEN_EXPIRE_TIME = 72
+	ACCESS_TOKEN_EXPIRE_TIME  = 5
+	REFRESH_TOKEN_EXPIRE_TIME = 4320
+	REFRESH_TOKEN_COOKIE_NAME = "refresh"
 )
 
 func GetApplicationSecret() string {

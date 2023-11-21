@@ -5,7 +5,7 @@ import "github.com/golang-jwt/jwt/v5"
 // response entity
 type BasicResponse struct {
 	Message string `json:"message"`
-	Body    any    `json:"Body"`
+	Body    any    `json:"payload"`
 }
 
 type DataBodyResponse struct {

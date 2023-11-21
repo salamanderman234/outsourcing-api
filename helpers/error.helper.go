@@ -61,6 +61,22 @@ func HandleError(err error) (int, string, *domains.ErrorBodyResponse) {
 		errString := "token is invalid"
 		resp.Error = &errString
 		return http.StatusUnauthorized, msg, &resp
+	} else if err == domains.ErrRecordNotFound {
+		errString := "not found"
+		resp.Error = &errString
+		return http.StatusNotFound, msg, &resp
+	} else if err == domains.ErrDuplicateEntries {
+		errString := "duplicate data entries"
+		resp.Error = &errString
+		return http.StatusUnprocessableEntity, msg, &resp
+	} else if err == domains.ErrInvalidAccess {
+		errString := "don't have access to these resources"
+		resp.Error = &errString
+		return http.StatusForbidden, msg, &resp
+	} else if err == domains.ErrForeignKeyViolated {
+		errString := "token is invalid"
+		resp.Error = &errString
+		return http.StatusUnprocessableEntity, msg, &resp
 	} else if err == domains.ErrExpiredToken {
 		errString := "token is expired"
 		resp.Error = &errString
@@ -70,9 +86,9 @@ func HandleError(err error) (int, string, *domains.ErrorBodyResponse) {
 		resp.Error = &errString
 		return http.StatusUnauthorized, msg, &resp
 	} else if err != nil {
-		errString := "there something wrong"
+		errString := "there's something wrong"
 		resp.Error = &errString
-		return http.StatusInternalServerError, msg, &resp
+		return http.StatusInternalServerError, "internal server error", &resp
 	}
 	return 200, "ok", nil
 }

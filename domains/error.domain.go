@@ -19,5 +19,11 @@ var (
 	// bind
 	ErrGenerateBindingErrs = errors.New("generate binding error")
 	// http
-	ErrBadRequest = errors.New("bad request")
+	ErrBadRequest = errors.New("bad request error")
+	// gorm
+	ErrRecordNotFound     = errors.New("resource not found error")
+	ErrDuplicateEntries   = errors.New("duplicate entries error")
+	ErrForeignKeyViolated = errors.New("invalid foreign key error")
+	// access
+	ErrInvalidAccess = errors.New("invalid access error")
 )

@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"math"
 
 	"github.com/salamanderman234/outsourcing-api/configs"
@@ -37,6 +38,15 @@ func basicCredsSearch(c context.Context, db *gorm.DB, usernameField string, user
 
 func convertRepoError(q *gorm.DB) error {
 	err := q.Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return domains.ErrRecordNotFound
+	}
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		return domains.ErrDuplicateEntries
+	}
+	if errors.Is(err, gorm.ErrForeignKeyViolated) {
+		return domains.ErrForeignKeyViolated
+	}
 	if err != nil {
 		return domains.ErrRepository
 	}
