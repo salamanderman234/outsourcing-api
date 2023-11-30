@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -47,6 +48,7 @@ func GenerateValidationError(errs error) (domains.ErrorBodyResponse, error) {
 
 func HandleError(err error) (int, string, *domains.ErrorBodyResponse) {
 	resp := domains.ErrorBodyResponse{}
+	fmt.Println(err)
 	_, ok := err.(govalidator.Errors)
 	if ok {
 		resp, _ = GenerateValidationError(err)
@@ -73,6 +75,10 @@ func HandleError(err error) (int, string, *domains.ErrorBodyResponse) {
 		errString := "don't have access to these resources"
 		resp.Error = &errString
 		return http.StatusForbidden, msg, &resp
+	} else if err == domains.ErrInvalidRole {
+		errString := "invalid role"
+		resp.Error = &errString
+		return http.StatusBadRequest, msg, &resp
 	} else if err == domains.ErrForeignKeyViolated {
 		errString := "token is invalid"
 		resp.Error = &errString

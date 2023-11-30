@@ -12,6 +12,11 @@ func ModelRegistry() []any {
 }
 
 // ----- AUTH MODEL -----
+type UserWithProfileModel struct {
+	User    UserModel
+	Profile any
+}
+
 type UserModel struct {
 	gorm.Model
 	Profile     string            `json:"profile" gorm:"type:varchar(255)"`
@@ -77,7 +82,6 @@ type AdminModel struct {
 	User     *UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Address  *string    `json:"address" gorm:"not null;type:varchar(255)"`
 	Fullname *string    `json:"Fullname" gorm:"not null;type:varchar(255)"`
-	CardID   *string    `json:"id_card_number" gorm:"not null;type:varchar(255)"`
 	Phone    *string    `json:"phone" gorm:"not null;type:varchar(13)"`
 }
 

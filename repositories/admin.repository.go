@@ -19,12 +19,16 @@ func NewAdminRepository(db *gorm.DB) domains.AdminRepository {
 	}
 }
 
-func (s *adminRepository) Create(c context.Context, data any) (any, error) {
+func (s *adminRepository) Create(c context.Context, data any, repo ...*gorm.DB) (any, error) {
+	db := s.db
+	if len(repo) == 1 {
+		db = repo[0]
+	}
 	user, ok := data.(domains.AdminModel)
 	if !ok {
 		return nil, domains.ErrRepositoryInterfaceConversion
 	}
-	err := basicCreateRepoFunc(c, s.db, &s.model, &user)
+	err := basicCreateRepoFunc(c, db, &s.model, &user)
 	return user, err
 }
 func (s *adminRepository) FindByID(c context.Context, id uint) (any, error) {

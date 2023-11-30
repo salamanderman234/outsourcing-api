@@ -1,13 +1,17 @@
 package domains
 
-import "context"
+import (
+	"context"
+
+	"gorm.io/gorm"
+)
 
 // ----- AUTH REPOSITORY -----
 type BasicAuthRepository interface {
 	// return user if creds is valid
 	GetUserWithCreds(c context.Context, username string) (any, error)
 	RegisterUser(c context.Context, autData any, profileData any) (int64, any, error)
-	CreateProfile(c context.Context, role string, data any) (any, error)
+	CreateProfile(c context.Context, role string, data any, userID uint, repo ...*gorm.DB) (any, error)
 	BasicCrudRepository
 }
 type UserRepository interface {
@@ -18,7 +22,7 @@ type UserRepository interface {
 
 // ----- CRUD REPOSITORY -----
 type BasicCrudRepository interface {
-	Create(c context.Context, data any) (any, error)
+	Create(c context.Context, data any, repo ...*gorm.DB) (any, error)
 	FindByID(c context.Context, id uint) (any, error)
 	Get(c context.Context, id uint, q string, page uint, orderBy string, desc bool) (any, uint, error)
 	Update(c context.Context, id uint, data any) (int64, any, error)

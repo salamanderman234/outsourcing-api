@@ -19,12 +19,16 @@ func NewEmployeeRepository(db *gorm.DB) domains.EmployeeRepository {
 	}
 }
 
-func (s *employeeRepository) Create(c context.Context, data any) (any, error) {
+func (s *employeeRepository) Create(c context.Context, data any, repo ...*gorm.DB) (any, error) {
+	db := s.db
+	if len(repo) == 1 {
+		db = repo[0]
+	}
 	user, ok := data.(domains.EmployeeModel)
 	if !ok {
 		return nil, domains.ErrRepositoryInterfaceConversion
 	}
-	err := basicCreateRepoFunc(c, s.db, &s.model, &user)
+	err := basicCreateRepoFunc(c, db, &s.model, &user)
 	return user, err
 }
 func (s *employeeRepository) FindByID(c context.Context, id uint) (any, error) {

@@ -25,35 +25,82 @@ func (s *userRepository) GetUserWithCreds(c context.Context, username string) (a
 	return user, basicCredsSearch(c, s.db, usernameField, username, &user)
 }
 func (s *userRepository) RegisterUser(c context.Context, authData any, profileData any) (int64, any, error) {
-	user, ok := authData.(domains.UserModel)
-	if !ok {
-		return 0, nil, domains.ErrRepositoryInterfaceConversion
-	}
-	result, err := s.Create(c, user)
-	_, errProfile := s.CreateProfile(c, user.Role, profileData)
-	if errProfile != nil {
-		return 0, nil, err
-	}
-	return 1, result, err
+	aff := 0
+	data := domains.UserWithProfileModel{}
+	err := s.db.Transaction(func(tx *gorm.DB) error {
+		user, ok := authData.(domains.UserModel)
+		if !ok {
+			return domains.ErrRepositoryInterfaceConversion
+		}
+		created, err := s.Create(c, user, tx)
+		if err != nil {
+			return err
+		}
+		profile, errProfile := s.CreateProfile(c, user.Role, profileData, created.(domains.UserModel).ID, tx)
+		if errProfile != nil {
+			return err
+		}
+		data.User = created.(domains.UserModel)
+		data.Profile = profile
+		aff = 2
+		return nil
+	})
+	return int64(aff), data, err
 }
-func (s *userRepository) CreateProfile(c context.Context, role string, data any) (any, error) {
+func (s *userRepository) CreateProfile(c context.Context, role string, data any, userID uint, repo ...*gorm.DB) (any, error) {
 	if role == string(domains.AdminRole) {
-		return domains.RepoRegistry.AdminRepo.Create(c, data)
+		convertedData, ok := data.(domains.AdminModel)
+		if !ok {
+			return nil, domains.ErrConversionType
+		}
+		convertedData.UserID = &userID
+		if len(repo) == 1 {
+			return domains.RepoRegistry.AdminRepo.Create(c, convertedData, repo[0])
+		}
+		return domains.RepoRegistry.AdminRepo.Create(c, convertedData)
 	}
 	if role == string(domains.EmployeeRole) {
+		convertedData, ok := data.(domains.EmployeeModel)
+		if !ok {
+			return nil, domains.ErrConversionType
+		}
+		convertedData.UserID = &userID
+		if len(repo) == 1 {
+			return domains.RepoRegistry.EmployeeRepo.Create(c, data, repo[0])
+		}
 		return domains.RepoRegistry.EmployeeRepo.Create(c, data)
 	}
 	if role == string(domains.SupervisorRole) {
+		convertedData, ok := data.(domains.SupervisorModel)
+		if !ok {
+			return nil, domains.ErrConversionType
+		}
+		convertedData.UserID = &userID
+		if len(repo) == 1 {
+			return domains.RepoRegistry.SupervisorRepo.Create(c, data, repo[0])
+		}
 		return domains.RepoRegistry.SupervisorRepo.Create(c, data)
+	}
+	convertedData, ok := data.(domains.ServiceUserModel)
+	if !ok {
+		return nil, domains.ErrConversionType
+	}
+	convertedData.UserID = &userID
+	if len(repo) == 1 {
+		return domains.RepoRegistry.ServiceUserRepo.Create(c, data, repo[0])
 	}
 	return domains.RepoRegistry.ServiceUserRepo.Create(c, data)
 }
-func (s *userRepository) Create(c context.Context, data any) (any, error) {
+func (s *userRepository) Create(c context.Context, data any, repo ...*gorm.DB) (any, error) {
+	db := s.db
+	if len(repo) == 1 {
+		db = repo[0]
+	}
 	user, ok := data.(domains.UserModel)
 	if !ok {
 		return nil, domains.ErrRepositoryInterfaceConversion
 	}
-	err := basicCreateRepoFunc(c, s.db, &s.model, &user)
+	err := basicCreateRepoFunc(c, db, &s.model, &user)
 	return user, err
 }
 func (s *userRepository) FindByID(c context.Context, id uint) (any, error) {

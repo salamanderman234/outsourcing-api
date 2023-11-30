@@ -19,12 +19,16 @@ func NewServiceUserRepository(db *gorm.DB) domains.ServiceUserRepository {
 	}
 }
 
-func (s *serviceUserRepository) Create(c context.Context, data any) (any, error) {
+func (s *serviceUserRepository) Create(c context.Context, data any, repo ...*gorm.DB) (any, error) {
+	db := s.db
+	if len(repo) == 1 {
+		db = repo[0]
+	}
 	user, ok := data.(domains.ServiceUserModel)
 	if !ok {
 		return nil, domains.ErrRepositoryInterfaceConversion
 	}
-	result := s.db.Scopes(usingContextScope(c), usingModelScope(&s.model)).Create(&user)
+	result := db.Scopes(usingContextScope(c), usingModelScope(&s.model)).Create(&user)
 	return user, convertRepoError(result)
 }
 func (s *serviceUserRepository) FindByID(c context.Context, id uint) (any, error) {

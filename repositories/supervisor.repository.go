@@ -19,12 +19,16 @@ func NewSupervisorRepository(db *gorm.DB) domains.SupervisorRepository {
 	}
 }
 
-func (s *supervisorRepository) Create(c context.Context, data any) (any, error) {
+func (s *supervisorRepository) Create(c context.Context, data any, repo ...*gorm.DB) (any, error) {
+	db := s.db
+	if len(repo) == 1 {
+		db = repo[0]
+	}
 	user, ok := data.(domains.SupervisorModel)
 	if !ok {
 		return nil, domains.ErrRepositoryInterfaceConversion
 	}
-	err := basicCreateRepoFunc(c, s.db, &s.model, &user)
+	err := basicCreateRepoFunc(c, db, &s.model, &user)
 	return user, err
 }
 func (s *supervisorRepository) FindByID(c context.Context, id uint) (any, error) {

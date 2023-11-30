@@ -1,11 +1,9 @@
 package domains
 
 var (
-	AuthServiceRegistry = struct {
+	ServiceRegistry = struct {
 		AuthServ BasicAuthService
 	}{}
-
-	ServiceRegistry = struct{}{}
 
 	RepoRegistry = struct {
 		UserRepo        UserRepository

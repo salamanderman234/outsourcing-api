@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"strconv"
 
 	"github.com/salamanderman234/outsourcing-api/configs"
@@ -42,7 +43,7 @@ func (s serviceUserAuthService) Login(c context.Context, loginForm domains.Basic
 	}
 	return tokenPair, nil
 }
-func (s serviceUserAuthService) Register(c context.Context, authData domains.BasicRegisterForm, profileData any, remember bool) (domains.TokenPair, error) {
+func (s serviceUserAuthService) Register(c context.Context, authData domains.BasicRegisterForm, profileData any, role domains.RoleEnum, remember bool) (domains.TokenPair, error) {
 	tokenPair := domains.TokenPair{}
 	if ok, err := helpers.Validate(authData); !ok {
 		return tokenPair, err
@@ -50,26 +51,60 @@ func (s serviceUserAuthService) Register(c context.Context, authData domains.Bas
 	if ok, err := helpers.Validate(profileData); !ok {
 		return tokenPair, err
 	}
-	var user domains.ServiceUserModel
+	var user domains.UserModel
+	var profile any
 	err := helpers.Convert(authData, &user)
 	if err != nil {
 		return tokenPair, err
 	}
+	if role == domains.AdminRole {
+		var adminData domains.AdminModel
+		err := helpers.Convert(profileData, &adminData)
+		if err != nil {
+			return tokenPair, err
+		}
+		profile = adminData
+	} else if role == domains.EmployeeRole {
+		var employeeData domains.EmployeeModel
+		err := helpers.Convert(profileData, &employeeData)
+		if err != nil {
+			return tokenPair, err
+		}
+		profile = employeeData
+	} else if role == domains.SupervisorRole {
+		var supervisorData domains.SupervisorModel
+		err := helpers.Convert(profileData, &supervisorData)
+		if err != nil {
+			return tokenPair, err
+		}
+		profile = supervisorData
+	} else if role == domains.ServiceUserRole {
+		var serviceUser domains.ServiceUserModel
+		err := helpers.Convert(profileData, &serviceUser)
+		if err != nil {
+			return tokenPair, err
+		}
+		profile = serviceUser
+	} else {
+		return tokenPair, domains.ErrInvalidRole
+	}
 	hashed, err := bcrypt.GenerateFromPassword([]byte(authData.Password), 1)
-	authData.Password = string(hashed)
+	hashedString := string(hashed)
+	user.Password = &hashedString
+	user.Role = string(role)
 	if err != nil {
 		return tokenPair, domains.ErrHashingPassword
 	}
-	_, result, err := domains.RepoRegistry.UserRepo.RegisterUser(c, authData, profileData)
+	_, result, err := domains.RepoRegistry.UserRepo.RegisterUser(c, user, profile)
 	if err != nil {
 		return tokenPair, err
 	}
-	resultModel, ok := result.(domains.UserModel)
+	resultModel, ok := result.(domains.UserWithProfileModel)
 	if !ok {
 		return tokenPair, domains.ErrConversionType
 	}
-
-	tokenPair, err = generatePairToken(resultModel.ID, *resultModel.Email, resultModel.Role, resultModel.Profile, remember)
+	userResult := resultModel.User
+	tokenPair, err = generatePairToken(userResult.ID, *userResult.Email, userResult.Role, userResult.Profile, remember)
 	if err != nil {
 		return tokenPair, err
 	}
@@ -98,6 +133,9 @@ func (s serviceUserAuthService) Refresh(c context.Context, refreshToken string) 
 	}
 	user, err := domains.RepoRegistry.UserRepo.FindByID(c, uint(id))
 	if err != nil {
+		if errors.Is(err, domains.ErrRecordNotFound) {
+			return tokenPair, domains.ErrInvalidToken
+		}
 		return tokenPair, err
 	}
 	userModel, ok := user.(domains.UserModel)

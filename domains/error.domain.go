@@ -26,4 +26,6 @@ var (
 	ErrForeignKeyViolated = errors.New("invalid foreign key error")
 	// access
 	ErrInvalidAccess = errors.New("invalid access error")
+	// role
+	ErrInvalidRole = errors.New("invalid request role")
 )

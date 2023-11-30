@@ -23,8 +23,12 @@ func main() {
 	}
 	// repositories
 	domains.RepoRegistry.UserRepo = repositories.NewUserRepository(connection)
+	domains.RepoRegistry.AdminRepo = repositories.NewAdminRepository(connection)
+	domains.RepoRegistry.EmployeeRepo = repositories.NewEmployeeRepository(connection)
+	domains.RepoRegistry.ServiceUserRepo = repositories.NewServiceUserRepository(connection)
+	domains.RepoRegistry.SupervisorRepo = repositories.NewSupervisorRepository(connection)
 	// services
-	domains.AuthServiceRegistry.AuthServ = services.NewUserAuthService()
+	domains.ServiceRegistry.AuthServ = services.NewUserAuthService()
 	// views
 	domains.ViewRegistry.AuthView = views.NewAuthView()
 	// register routes
