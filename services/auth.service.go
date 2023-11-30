@@ -14,7 +14,7 @@ import (
 type serviceUserAuthService struct {
 }
 
-func NewUserAuthService() domains.ServiceUserAuthService {
+func NewUserAuthService() domains.BasicAuthService {
 	return &serviceUserAuthService{}
 }
 

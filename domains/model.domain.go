@@ -90,3 +90,51 @@ func (AdminModel) TableName() string {
 }
 
 // ----- END OF AUTH MODEL -----
+
+// ----- MASTER DATA -----
+type CategoryModel struct {
+	gorm.Model
+	CategoryName *string `json:"category_name" gorm:"not null;type:varchar(255)"`
+	Icon         string  `json:"icon" gorm:"type:varchar(255)"`
+	Description  string  `json:"description" gorm:"type:varchar(255)"`
+}
+
+func (CategoryModel) TableName() string {
+	return "service_categories"
+}
+
+type DistrictModel struct {
+	gorm.Model
+	DisctrictName *string            `json:"district_name" gorm:"not null;type:varchar(255)"`
+	Description   string             `json:"description" gorm:"type:varchar(255)"`
+	SubDistricts  []SubDistrictModel `json:"sub_districts" gorm:"foreignKey:DistrictID"`
+}
+
+func (DistrictModel) TableName() string {
+	return "districts"
+}
+
+type SubDistrictModel struct {
+	SubDisctrictName *string        `json:"subdistrict_name" gorm:"not null;type:varchar(255)"`
+	Description      string         `json:"description" gorm:"type:varchar(255)"`
+	DistrictID       *uint          `json:"district_id" gorm:"not null"`
+	District         *DistrictModel `json:"district" gorm:"foreignKey:DistrictID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	SubDistricts     []VillageModel `json:"villages" gorm:"foreignKey:SubDistrictID"`
+}
+
+func (SubDistrictModel) TableName() string {
+	return "sub_districts"
+}
+
+type VillageModel struct {
+	VillageName   *string           `json:"village_name" gorm:"not null;type:varchar(255)"`
+	Description   string            `json:"description" gorm:"type:varchar(255)"`
+	SubDistrictID *uint             `json:"subdistrict_id" gorm:"not null"`
+	SubDistrict   *SubDistrictModel `json:"subdistrict" gorm:"foreignKey:SubDistrictID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+}
+
+func (VillageModel) TableName() string {
+	return "villages"
+}
+
+// ----- END OF MASTER DATA -----

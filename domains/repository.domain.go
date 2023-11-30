@@ -41,4 +41,17 @@ type EmployeeRepository interface {
 	BasicCrudRepository
 }
 
+type ServiceCategoryRepository interface {
+	BasicCrudRepository
+}
+type DistrictRepository interface {
+	BasicCrudRepository
+}
+type SubDistrictRepository interface {
+	BasicCrudRepository
+}
+type VillageRepository interface {
+	BasicCrudRepository
+}
+
 // ----- END OF CRUD REPOSITORY -----

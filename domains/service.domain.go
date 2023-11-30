@@ -11,17 +11,27 @@ type BasicAuthService interface {
 	Refresh(c context.Context, refreshToken string) (TokenPair, error)
 }
 
-type ServiceUserAuthService interface {
-	BasicAuthService
-}
-type SupervisorAuthService interface {
-	BasicAuthService
-}
-type EmployeeAuthService interface {
-	BasicAuthService
-}
-type AdminAuthService interface {
-	BasicAuthService
+// ----- END OF AUTH SERVICE -----
+// --> Basic
+type BasicCrudService interface {
+	Create(c context.Context, data any) (any, error)
+	Read(c context.Context, id uint, q string, page uint, orderBy string, isDesc bool) (any, Pagination, error)
+	Update(c context.Context, id uint, data any) (int, any, error)
+	Delete(c context.Context, id uint) (int, int, error)
 }
 
-//----- END OF AUTH SERVICE -----
+// ----- MASTER DATA SERVICE -----
+type ServiceCategoryService interface {
+	BasicCrudService
+}
+type DistrictService interface {
+	BasicCrudService
+}
+type SubDistrictService interface {
+	BasicCrudService
+}
+type VillageService interface {
+	BasicCrudService
+}
+
+//----- END OF MASTER DATA SERVICE -----

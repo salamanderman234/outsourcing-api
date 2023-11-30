@@ -2,6 +2,11 @@ package domains
 
 import "github.com/golang-jwt/jwt/v5"
 
+// basic
+type BasicEntity struct {
+	ID uint `json:"id"`
+}
+
 // response entity
 type BasicResponse struct {
 	Message string `json:"message"`
@@ -48,3 +53,33 @@ type TokenPair struct {
 	Refresh string `json:"refresh_token"`
 	Access  string `json:"access_token"`
 }
+
+// ----- MASTER DATA -----
+type CategoryEntity struct {
+	BasicEntity
+	CategoryName *string `json:"category_name"`
+	Icon         string  `json:"icon"`
+	Description  string  `json:"description"`
+}
+type DistrictEntity struct {
+	BasicEntity
+	DisctrictName string              `json:"district_name"`
+	Description   string              `json:"description"`
+	SubDistricts  []SubDistrictEntity `json:"sub_districts"`
+}
+type SubDistrictEntity struct {
+	BasicEntity
+	SubDisctrictName string         `json:"subdistrict_name"`
+	Description      string         `json:"description"`
+	District         DistrictEntity `json:"district"`
+	SubDistricts     []VillageModel `json:"villages"`
+}
+type VillageEntity struct {
+	BasicEntity
+	VillageName   *string           `json:"village_name"`
+	Description   string            `json:"description"`
+	SubDistrictID *uint             `json:"subdistrict_id"`
+	SubDistrict   *SubDistrictModel `json:"subdistrict"`
+}
+
+// ----- END OF MASTER DATA -----
