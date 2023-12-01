@@ -42,3 +42,42 @@ type SupervisorRegisterForm struct {
 }
 
 // ----- END OF AUTH FORM -----
+// ----- MASTER DATA FORM -----
+type CategoryCreateForm struct {
+	CategoryName *string `json:"category_name" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
+	Description  string  `json:"description" valid:"stringlength(0|255)~maximum 255 character"`
+	Icon         string  `json:"icon" valid:"stringlength(0|255)~maximum 255 character"`
+}
+type CategoryUpdateForm struct {
+	CategoryName *string `json:"category_name" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
+	Description  *string `json:"description" valid:"stringlength(0|255)~maximum 255 character"`
+	Icon         *string `json:"icon" valid:"stringlength(0|255)~maximum 255 character"`
+}
+type DistrictCreateForm struct {
+	DistrictName *string `json:"district_name" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
+	Description  string  `json:"description" valid:"stringlength(0|255)~maximum 255 character"`
+}
+type DistrictUpdateForm struct {
+	DistrictName *string `json:"district_name" valid:"stringlength(0|255)~maximum 255 character"`
+	Description  *string `json:"description" valid:"stringlength(0|255)~maximum 255 character"`
+}
+type SubDistrictCreateForm struct {
+	SubDistrictName *string `json:"sub_district_name" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
+	Description     string  `json:"description" valid:"stringlength(0|255)~maximum 255 character"`
+	DistrictID      *uint   `json:"district_id" valid:"required~this field is required"`
+}
+type SubDistrictUpdateForm struct {
+	SubDistrictName *string `json:"sub_district_name" valid:"stringlength(0|255)~maximum 255 character"`
+	Description     *string `json:"description" valid:"stringlength(0|255)~maximum 255 character"`
+}
+type VillageCreateForm struct {
+	VillageName   *string `json:"village_name" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
+	Description   string  `json:"description" valid:"stringlength(0|255)~maximum 255 character"`
+	SubDistrictID *uint   `json:"sub_district_id" valid:"required~this field is required"`
+}
+type VillageUpdateForm struct {
+	VillageName *string `json:"village_name" valid:"stringlength(0|255)~maximum 255 character"`
+	Description *string `json:"description" valid:"stringlength(0|255)~maximum 255 character"`
+}
+
+// ----- END OF MASTER DATA FORM -----
