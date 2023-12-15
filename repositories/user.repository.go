@@ -66,9 +66,9 @@ func (s *userRepository) CreateProfile(c context.Context, role string, data any,
 		}
 		convertedData.UserID = &userID
 		if len(repo) == 1 {
-			return domains.RepoRegistry.EmployeeRepo.Create(c, data, repo[0])
+			return domains.RepoRegistry.EmployeeRepo.Create(c, convertedData, repo[0])
 		}
-		return domains.RepoRegistry.EmployeeRepo.Create(c, data)
+		return domains.RepoRegistry.EmployeeRepo.Create(c, convertedData)
 	}
 	if role == string(domains.SupervisorRole) {
 		convertedData, ok := data.(domains.SupervisorModel)
@@ -77,9 +77,9 @@ func (s *userRepository) CreateProfile(c context.Context, role string, data any,
 		}
 		convertedData.UserID = &userID
 		if len(repo) == 1 {
-			return domains.RepoRegistry.SupervisorRepo.Create(c, data, repo[0])
+			return domains.RepoRegistry.SupervisorRepo.Create(c, convertedData, repo[0])
 		}
-		return domains.RepoRegistry.SupervisorRepo.Create(c, data)
+		return domains.RepoRegistry.SupervisorRepo.Create(c, convertedData)
 	}
 	convertedData, ok := data.(domains.ServiceUserModel)
 	if !ok {
@@ -87,11 +87,11 @@ func (s *userRepository) CreateProfile(c context.Context, role string, data any,
 	}
 	convertedData.UserID = &userID
 	if len(repo) == 1 {
-		return domains.RepoRegistry.ServiceUserRepo.Create(c, data, repo[0])
+		return domains.RepoRegistry.ServiceUserRepo.Create(c, convertedData, repo[0])
 	}
-	return domains.RepoRegistry.ServiceUserRepo.Create(c, data)
+	return domains.RepoRegistry.ServiceUserRepo.Create(c, convertedData)
 }
-func (s *userRepository) Create(c context.Context, data any, repo ...*gorm.DB) (any, error) {
+func (s *userRepository) Create(c context.Context, data domains.Model, repo ...*gorm.DB) (any, error) {
 	db := s.db
 	if len(repo) == 1 {
 		db = repo[0]
@@ -103,12 +103,20 @@ func (s *userRepository) Create(c context.Context, data any, repo ...*gorm.DB) (
 	err := basicCreateRepoFunc(c, db, &s.model, &user)
 	return user, err
 }
-func (s *userRepository) FindByID(c context.Context, id uint) (any, error) {
+func (s *userRepository) FindByID(c context.Context, id uint) (domains.Model, error) {
 	var user domains.UserModel
-	err := basicFindRepoFunc(c, s.db, &s.model, id, &user)
-	return user, err
+	result := s.db.Model(&user).WithContext(c).Where("id = ?", id).
+		Preload("Admin").
+		Preload("ServiceUser").
+		Preload("Employee").
+		Preload("Supervisor").
+		First(&user)
+	if result.Error != nil {
+		return user, convertRepoError(result)
+	}
+	return user, nil
 }
-func (s *userRepository) Update(c context.Context, id uint, data any) (int64, any, error) {
+func (s *userRepository) Update(c context.Context, id uint, data domains.Model) (int64, any, error) {
 	dataModel, ok := data.(domains.UserModel)
 	if !ok {
 		return 0, nil, domains.ErrRepositoryInterfaceConversion
@@ -125,11 +133,13 @@ func (s *userRepository) Get(c context.Context, id uint, q string, page uint, or
 	var count int64
 	query := s.db.Scopes(usingContextScope(c), usingModelScope(&s.model), orderScope(&s.model, orderBy, desc))
 	if id != 0 {
-		result := query.Scopes(whereIdEqualScope(id)).Find(&users)
-		return users, 1, convertRepoError(result)
+		result, err := s.FindByID(c, id)
+		users = append(users, result.(domains.UserModel))
+		return users, 1, err
 	}
 	searchQuery := query.Scopes(paginateScope(page)).
-		Where("email LIKE ?", "%"+q+"%")
+		Where("email LIKE ?", "%"+q+"%").
+		Where("role = ?", q)
 	_ = *searchQuery.Count(&count)
 	maxPage := getMaxPage(uint(count))
 	result := searchQuery.Find(&users)

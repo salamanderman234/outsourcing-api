@@ -23,8 +23,8 @@ func basicRegisterFunc(c echo.Context, profileData any, role domains.RoleEnum) e
 		Message: "ok",
 	}
 	var credData domains.BasicRegisterForm
-	if err := (&echo.DefaultBinder{}).BindBody(c, &profileData); err != nil {
-		msg := err.Error()
+	if err := c.Bind(&profileData); err != nil {
+		msg := "invalid request"
 		payload := domains.ErrorBodyResponse{
 			Error: &msg,
 		}

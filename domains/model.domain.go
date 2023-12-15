@@ -6,9 +6,9 @@ import (
 	"gorm.io/gorm"
 )
 
-// Registry
-func ModelRegistry() []any {
-	return nil
+// --> BASIC
+type Model interface {
+	GetPolicy() Policy
 }
 
 // ----- AUTH MODEL -----
@@ -30,6 +30,10 @@ type UserModel struct {
 	Employee    *EmployeeModel    `json:"employee_profile,omitempty" gorm:"foreignKey:UserID"`
 }
 
+func (UserModel) GetPolicy() Policy {
+	return nil
+}
+
 func (UserModel) TableName() string {
 	return "users"
 }
@@ -44,6 +48,9 @@ type EmployeeModel struct {
 	Phone    *string    `json:"phone" gorm:"not null;type:varchar(13)"`
 }
 
+func (EmployeeModel) GetPolicy() Policy {
+	return &CategoryPolicy{}
+}
 func (EmployeeModel) TableName() string {
 	return "employees"
 }
@@ -58,6 +65,9 @@ type ServiceUserModel struct {
 	Phone    *string    `json:"phone" gorm:"not null;type:varchar(13)"`
 }
 
+func (ServiceUserModel) GetPolicy() Policy {
+	return &CategoryPolicy{}
+}
 func (ServiceUserModel) TableName() string {
 	return "service_users"
 }
@@ -72,6 +82,9 @@ type SupervisorModel struct {
 	Phone    *string    `json:"phone" gorm:"not null;type:varchar(13)"`
 }
 
+func (SupervisorModel) GetPolicy() Policy {
+	return &CategoryPolicy{}
+}
 func (SupervisorModel) TableName() string {
 	return "supervisors"
 }
@@ -83,6 +96,10 @@ type AdminModel struct {
 	Address  *string    `json:"address" gorm:"not null;type:varchar(255)"`
 	Fullname *string    `json:"Fullname" gorm:"not null;type:varchar(255)"`
 	Phone    *string    `json:"phone" gorm:"not null;type:varchar(13)"`
+}
+
+func (AdminModel) GetPolicy() Policy {
+	return &CategoryPolicy{}
 }
 
 func (AdminModel) TableName() string {
@@ -99,8 +116,12 @@ type CategoryModel struct {
 	Description  string  `json:"description" gorm:"type:varchar(255)"`
 }
 
+func (CategoryModel) GetPolicy() Policy {
+	return &CategoryPolicy{}
+}
+
 func (CategoryModel) TableName() string {
-	return "service_categories"
+	return "categories"
 }
 
 type DistrictModel struct {
@@ -108,6 +129,10 @@ type DistrictModel struct {
 	DisctrictName *string            `json:"district_name" gorm:"not null;type:varchar(255)"`
 	Description   string             `json:"description" gorm:"type:varchar(255)"`
 	SubDistricts  []SubDistrictModel `json:"sub_districts" gorm:"foreignKey:DistrictID"`
+}
+
+func (DistrictModel) GetPolicy() Policy {
+	return &DistrictPolicy{}
 }
 
 func (DistrictModel) TableName() string {
@@ -122,6 +147,10 @@ type SubDistrictModel struct {
 	SubDistricts     []VillageModel `json:"villages" gorm:"foreignKey:SubDistrictID"`
 }
 
+func (SubDistrictModel) GetPolicy() Policy {
+	return &SubDistrictPolicy{}
+}
+
 func (SubDistrictModel) TableName() string {
 	return "sub_districts"
 }
@@ -131,6 +160,10 @@ type VillageModel struct {
 	Description   string            `json:"description" gorm:"type:varchar(255)"`
 	SubDistrictID *uint             `json:"subdistrict_id" gorm:"not null"`
 	SubDistrict   *SubDistrictModel `json:"subdistrict" gorm:"foreignKey:SubDistrictID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+}
+
+func (VillageModel) GetPolicy() Policy {
+	return &VillagePolicy{}
 }
 
 func (VillageModel) TableName() string {

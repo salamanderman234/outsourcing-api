@@ -14,7 +14,7 @@ func paginateScope(page uint) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		offset := configs.PAGINATION_PER_PAGE * (page - 1)
 		take := configs.PAGINATION_PER_PAGE
-		return db.Offset(int(offset)).Take(take)
+		return db.Offset(int(offset)).Limit(take)
 	}
 }
 

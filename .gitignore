@@ -8,6 +8,9 @@
 *.dll
 *.so
 *.dylib
+fly.toml
+.dockerignore
+storage/*
 
 # Test binary, built with `go test -c`
 *.test

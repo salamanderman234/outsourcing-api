@@ -22,12 +22,14 @@ type UserRepository interface {
 
 // ----- CRUD REPOSITORY -----
 type BasicCrudRepository interface {
-	Create(c context.Context, data any, repo ...*gorm.DB) (any, error)
-	FindByID(c context.Context, id uint) (any, error)
+	Create(c context.Context, data Model, repo ...*gorm.DB) (any, error)
+	FindByID(c context.Context, id uint) (Model, error)
 	Get(c context.Context, id uint, q string, page uint, orderBy string, desc bool) (any, uint, error)
-	Update(c context.Context, id uint, data any) (int64, any, error)
+	Update(c context.Context, id uint, data Model) (int64, any, error)
 	Delete(c context.Context, id uint) (int64, int64, error)
 }
+
+// --> Profile
 type ServiceUserRepository interface {
 	BasicCrudRepository
 }
@@ -41,6 +43,7 @@ type EmployeeRepository interface {
 	BasicCrudRepository
 }
 
+// --> Master data
 type ServiceCategoryRepository interface {
 	BasicCrudRepository
 }

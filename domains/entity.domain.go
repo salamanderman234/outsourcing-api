@@ -1,6 +1,10 @@
 package domains
 
-import "github.com/golang-jwt/jwt/v5"
+import (
+	"mime/multipart"
+
+	"github.com/golang-jwt/jwt/v5"
+)
 
 // basic
 type BasicEntity struct {
@@ -17,6 +21,9 @@ type DataBodyResponse struct {
 	Data       any         `json:"data,omitempty"`
 	Datas      any         `json:"datas,omitempty"`
 	Pagination *Pagination `json:"pagination,omitempty"`
+	Updated    any         `json:"updated,omitempty"`
+	ID         *uint       `json:"id,omitempty"`
+	Affected   *int        `json:"affected_row,omitempty"`
 }
 
 type ErrorBodyResponse struct {
@@ -30,13 +37,24 @@ type ErrorDetailResponse struct {
 	Detail *string `json:"detail"`
 }
 
+// file
+type EntityFileMap struct {
+	Field string
+	File  *multipart.FileHeader
+}
+
 // pagination entity
 type Pagination struct {
-	Next     uint             `json:"next"`
-	Current  uint             `json:"current"`
-	Previous uint             `json:"previous"`
-	MaxPage  uint             `json:"max_page"`
-	Queries  []map[string]any `json:"queries"`
+	Next     uint           `json:"next"`
+	Current  uint           `json:"current"`
+	Previous uint           `json:"previous"`
+	MaxPage  uint           `json:"max_page"`
+	Queries  map[string]any `json:"queries"`
+}
+
+type PaginationQuery struct {
+	Query string `json:"query,omitempty"`
+	Value any    `json:"value,omitempty"`
 }
 
 // authentication entity

@@ -19,7 +19,7 @@ func NewSupervisorRepository(db *gorm.DB) domains.SupervisorRepository {
 	}
 }
 
-func (s *supervisorRepository) Create(c context.Context, data any, repo ...*gorm.DB) (any, error) {
+func (s *supervisorRepository) Create(c context.Context, data domains.Model, repo ...*gorm.DB) (any, error) {
 	db := s.db
 	if len(repo) == 1 {
 		db = repo[0]
@@ -31,12 +31,12 @@ func (s *supervisorRepository) Create(c context.Context, data any, repo ...*gorm
 	err := basicCreateRepoFunc(c, db, &s.model, &user)
 	return user, err
 }
-func (s *supervisorRepository) FindByID(c context.Context, id uint) (any, error) {
+func (s *supervisorRepository) FindByID(c context.Context, id uint) (domains.Model, error) {
 	var user domains.SupervisorModel
-	err := basicFindRepoFunc(c, s.db, &s.model, id, &user)
+	err := basicFindRepoFunc(c, s.db, &s.model, id, &user, "User")
 	return user, err
 }
-func (s *supervisorRepository) Update(c context.Context, id uint, data any) (int64, any, error) {
+func (s *supervisorRepository) Update(c context.Context, id uint, data domains.Model) (int64, any, error) {
 	dataModel, ok := data.(domains.SupervisorModel)
 	if !ok {
 		return 0, nil, domains.ErrRepositoryInterfaceConversion
@@ -57,7 +57,8 @@ func (s *supervisorRepository) Get(c context.Context, id uint, q string, page ui
 		return users, 1, convertRepoError(result)
 	}
 	searchQuery := query.Scopes(paginateScope(page)).
-		Where("fullname LIKE ?", "%"+q+"%")
+		Where("fullname LIKE ?", "%"+q+"%").
+		Preload("User")
 	_ = *searchQuery.Count(&count)
 	maxPage := getMaxPage(uint(count))
 	result := searchQuery.Find(&users)

@@ -32,3 +32,38 @@ func generatePairToken(id uint, username string, role string, profilePic string,
 	result.Refresh = refreshToken
 	return result, nil
 }
+
+type createCallRepoFunc func() (any, error)
+
+func basicCreateService(data any, model any, entity any, fun createCallRepoFunc) (any, error) {
+	if ok, err := helpers.Validate(data); !ok {
+		return nil, err
+	}
+	if err := helpers.Convert(data, model); err != nil {
+		return nil, err
+	}
+	result, err := fun()
+	if err != nil {
+		return nil, err
+	}
+	if err := helpers.Convert(result, entity); err != nil {
+		return nil, err
+	}
+	return entity, nil
+}
+
+type updateCallRepoFunc func(id uint) (int, any, error)
+
+func basicUpdateService(id uint, data any, model any, entity any, fun updateCallRepoFunc) (int, any, error) {
+	if ok, err := helpers.Validate(data); !ok {
+		return 0, nil, err
+	}
+	if err := helpers.Convert(data, model); err != nil {
+		return 0, nil, err
+	}
+	aff, _, err := fun(id)
+	if err != nil {
+		return 0, nil, err
+	}
+	return int(aff), data, nil
+}

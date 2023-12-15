@@ -28,4 +28,10 @@ var (
 	ErrInvalidAccess = errors.New("invalid access error")
 	// role
 	ErrInvalidRole = errors.New("invalid request role")
+	// file
+	ErrGetMultipartFormData = errors.New("get multipart formdata error")
+	ErrFileOpen             = errors.New("file open error")
+	ErrFileCreate           = errors.New("file create error")
+	ErrFileCopy             = errors.New("file copy error")
+	ErrDeleteFile           = errors.New("file delete error")
 )

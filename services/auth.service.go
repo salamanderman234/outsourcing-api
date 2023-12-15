@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strconv"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/salamanderman234/outsourcing-api/configs"
 	"github.com/salamanderman234/outsourcing-api/domains"
 	"github.com/salamanderman234/outsourcing-api/helpers"
@@ -45,11 +46,15 @@ func (s serviceUserAuthService) Login(c context.Context, loginForm domains.Basic
 }
 func (s serviceUserAuthService) Register(c context.Context, authData domains.BasicRegisterForm, profileData any, role domains.RoleEnum, remember bool) (domains.TokenPair, error) {
 	tokenPair := domains.TokenPair{}
+	var errs govalidator.Errors
 	if ok, err := helpers.Validate(authData); !ok {
-		return tokenPair, err
+		errs = append(errs, err.(govalidator.Errors)...)
 	}
 	if ok, err := helpers.Validate(profileData); !ok {
-		return tokenPair, err
+		errs = append(errs, err.(govalidator.Errors)...)
+	}
+	if len(errs) != 0 {
+		return tokenPair, errs
 	}
 	var user domains.UserModel
 	var profile any

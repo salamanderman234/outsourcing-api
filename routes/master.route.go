@@ -1,14 +1,18 @@
 package routes
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+	"github.com/salamanderman234/outsourcing-api/domains"
+)
 
 func registerMasterRoutes(group *echo.Group) {
 	// service category
-	serviceCategoryGroup := group.Group("service-categories")
-	serviceCategoryGroup.GET("/", func(c echo.Context) error { return nil })
-	serviceCategoryGroup.POST("/", func(c echo.Context) error { return nil })
-	serviceCategoryGroup.PATCH("/", func(c echo.Context) error { return nil })
-	serviceCategoryGroup.DELETE("/", func(c echo.Context) error { return nil })
+	serviceCategoryGroup := group.Group("categories")
+	serviceCategoryGroup.GET("/", domains.ViewRegistry.CategoryView.Read)
+	serviceCategoryGroup.POST("/", domains.ViewRegistry.CategoryView.Create)
+	serviceCategoryGroup.PATCH("/", domains.ViewRegistry.CategoryView.Update)
+	serviceCategoryGroup.DELETE("/", domains.ViewRegistry.CategoryView.Delete)
+	serviceCategoryGroup.GET("/icon/:id", domains.ViewRegistry.CategoryView.GetIcon)
 	// district
 	districtGroup := group.Group("districts")
 	districtGroup.GET("/", func(c echo.Context) error { return nil })

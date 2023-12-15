@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -48,12 +49,12 @@ func GenerateValidationError(errs error) (domains.ErrorBodyResponse, error) {
 
 func HandleError(err error) (int, string, *domains.ErrorBodyResponse) {
 	resp := domains.ErrorBodyResponse{}
-	fmt.Println(err)
 	_, ok := err.(govalidator.Errors)
 	if ok {
 		resp, _ = GenerateValidationError(err)
 		return http.StatusBadRequest, domains.ErrValidation.Error(), &resp
 	}
+	fmt.Println(err)
 	msg := err.Error()
 	if err == domains.ErrBadRequest {
 		errString := "invalid user request"
@@ -75,22 +76,26 @@ func HandleError(err error) (int, string, *domains.ErrorBodyResponse) {
 		errString := "don't have access to these resources"
 		resp.Error = &errString
 		return http.StatusForbidden, msg, &resp
-	} else if err == domains.ErrInvalidRole {
+	} else if errors.Is(err, domains.ErrInvalidRole) {
 		errString := "invalid role"
 		resp.Error = &errString
 		return http.StatusBadRequest, msg, &resp
-	} else if err == domains.ErrForeignKeyViolated {
+	} else if errors.Is(err, domains.ErrForeignKeyViolated) {
 		errString := "token is invalid"
 		resp.Error = &errString
 		return http.StatusUnprocessableEntity, msg, &resp
-	} else if err == domains.ErrExpiredToken {
+	} else if errors.Is(err, domains.ErrExpiredToken) {
 		errString := "token is expired"
 		resp.Error = &errString
 		return http.StatusUnauthorized, msg, &resp
-	} else if err == domains.ErrInvalidCreds {
+	} else if errors.Is(err, domains.ErrInvalidCreds) {
 		errString := "wrong email or password"
 		resp.Error = &errString
 		return http.StatusUnauthorized, msg, &resp
+	} else if errors.Is(err, domains.ErrGetMultipartFormData) {
+		errString := "request content type must be multipart/form-data"
+		resp.Error = &errString
+		return http.StatusBadRequest, msg, &resp
 	} else if err != nil {
 		errString := "there's something wrong"
 		resp.Error = &errString

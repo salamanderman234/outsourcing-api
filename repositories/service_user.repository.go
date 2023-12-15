@@ -19,7 +19,7 @@ func NewServiceUserRepository(db *gorm.DB) domains.ServiceUserRepository {
 	}
 }
 
-func (s *serviceUserRepository) Create(c context.Context, data any, repo ...*gorm.DB) (any, error) {
+func (s *serviceUserRepository) Create(c context.Context, data domains.Model, repo ...*gorm.DB) (any, error) {
 	db := s.db
 	if len(repo) == 1 {
 		db = repo[0]
@@ -31,12 +31,14 @@ func (s *serviceUserRepository) Create(c context.Context, data any, repo ...*gor
 	result := db.Scopes(usingContextScope(c), usingModelScope(&s.model)).Create(&user)
 	return user, convertRepoError(result)
 }
-func (s *serviceUserRepository) FindByID(c context.Context, id uint) (any, error) {
+func (s *serviceUserRepository) FindByID(c context.Context, id uint) (domains.Model, error) {
 	var user domains.ServiceUserModel
-	result := s.db.Scopes(usingContextScope(c), usingModelScope(&s.model), whereIdEqualScope(id)).First(&user)
+	result := s.db.Preload("User").
+		Scopes(usingContextScope(c), usingModelScope(&s.model), whereIdEqualScope(id)).
+		First(&user)
 	return user, convertRepoError(result)
 }
-func (s *serviceUserRepository) Update(c context.Context, id uint, data any) (int64, any, error) {
+func (s *serviceUserRepository) Update(c context.Context, id uint, data domains.Model) (int64, any, error) {
 	result := s.db.Scopes(usingContextScope(c), usingModelScope(&s.model), whereIdEqualScope(id)).Updates(data)
 	return result.RowsAffected, data, convertRepoError(result)
 }
@@ -53,7 +55,8 @@ func (s *serviceUserRepository) Get(c context.Context, id uint, q string, page u
 		return users, 1, convertRepoError(result)
 	}
 	searchQuery := query.Scopes(paginateScope(page)).
-		Where("fullname LIKE ?", "%"+q+"%")
+		Where("fullname LIKE ?", "%"+q+"%").
+		Preload("User")
 	_ = *searchQuery.Count(&count)
 	maxPage := getMaxPage(uint(count))
 	result := searchQuery.Find(&users)

@@ -1,6 +1,19 @@
 package domains
 
-import "context"
+import (
+	"context"
+	"mime/multipart"
+)
+
+// ----- FILE SERVICE -----
+type FileService interface {
+	Store(file *multipart.FileHeader, dest string) (string, error)
+	BatchStore(files []*multipart.FileHeader, dest string) ([]string, error)
+	Destroy(target string) error
+	// Read(target string) (*multipart.FileHeader, error)
+}
+
+// ----- END OF FILE SERVICE -----
 
 // ----- AUTH SERVICE -----
 type BasicAuthService interface {
@@ -14,9 +27,9 @@ type BasicAuthService interface {
 // ----- END OF AUTH SERVICE -----
 // --> Basic
 type BasicCrudService interface {
-	Create(c context.Context, data any) (any, error)
-	Read(c context.Context, id uint, q string, page uint, orderBy string, isDesc bool) (any, Pagination, error)
-	Update(c context.Context, id uint, data any) (int, any, error)
+	Create(c context.Context, data any, ffiles ...EntityFileMap) (any, error)
+	Read(c context.Context, id uint, q string, page uint, orderBy string, isDesc bool) (any, *Pagination, error)
+	Update(c context.Context, id uint, data any, files ...EntityFileMap) (int, any, error)
 	Delete(c context.Context, id uint) (int, int, error)
 }
 

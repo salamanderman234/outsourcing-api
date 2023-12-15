@@ -25,6 +25,7 @@ type BasicCrudView interface {
 // ----- MASTER DATA -----
 type ServiceCategoryView interface {
 	BasicCrudView
+	GetIcon(c echo.Context) error
 }
 type DistrictView interface {
 	BasicCrudView

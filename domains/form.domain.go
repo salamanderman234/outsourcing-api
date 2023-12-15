@@ -44,14 +44,14 @@ type SupervisorRegisterForm struct {
 // ----- END OF AUTH FORM -----
 // ----- MASTER DATA FORM -----
 type CategoryCreateForm struct {
-	CategoryName *string `json:"category_name" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
-	Description  string  `json:"description" valid:"stringlength(0|255)~maximum 255 character"`
-	Icon         string  `json:"icon" valid:"stringlength(0|255)~maximum 255 character"`
+	CategoryName *string `form:"category_name" json:"category_name" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
+	Description  string  `form:"description" json:"description" valid:"stringlength(0|255)~maximum 255 character"`
+	Icon         string  `json:"icon"`
 }
 type CategoryUpdateForm struct {
-	CategoryName *string `json:"category_name" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
-	Description  *string `json:"description" valid:"stringlength(0|255)~maximum 255 character"`
-	Icon         *string `json:"icon" valid:"stringlength(0|255)~maximum 255 character"`
+	CategoryName *string `form:"category_name" json:"category_name" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
+	Description  *string `form:"description" json:"description" valid:"stringlength(0|255)~maximum 255 character"`
+	Icon         *string `json:"icon"`
 }
 type DistrictCreateForm struct {
 	DistrictName *string `json:"district_name" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
