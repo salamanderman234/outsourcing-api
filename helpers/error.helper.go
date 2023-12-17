@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -32,17 +31,32 @@ func GenerateValidationError(errs error) (domains.ErrorBodyResponse, error) {
 	resp := domains.ErrorBodyResponse{}
 	for _, err := range errs.(govalidator.Errors) {
 		cErr, ok := err.(govalidator.Error)
-		if !ok {
-			return resp, domains.ErrConversionType
+		if ok {
+			field := strings.ToLower(cErr.Name)
+			rule := cErr.Validator
+			msg := cErr.Error()
+			resp.Errors = append(resp.Errors, domains.ErrorDetailResponse{
+				Field:  &field,
+				Rule:   &rule,
+				Detail: &msg,
+			})
+		} else {
+			nestedErrs, ok := err.(govalidator.Errors)
+			if ok {
+				for _, nestedErr := range nestedErrs {
+					nestedErrConvert := nestedErr.(govalidator.Error)
+					field := strings.ToLower(nestedErrConvert.Name)
+					rule := nestedErrConvert.Validator
+					msg := nestedErrConvert.Error()
+					resp.Errors = append(resp.Errors, domains.ErrorDetailResponse{
+						Field:  &field,
+						Rule:   &rule,
+						Detail: &msg,
+					})
+				}
+			}
+
 		}
-		field := strings.ToLower(cErr.Name)
-		rule := cErr.Validator
-		msg := cErr.Error()
-		resp.Errors = append(resp.Errors, domains.ErrorDetailResponse{
-			Field:  &field,
-			Rule:   &rule,
-			Detail: &msg,
-		})
 	}
 	return resp, nil
 }
@@ -54,7 +68,6 @@ func HandleError(err error) (int, string, *domains.ErrorBodyResponse) {
 		resp, _ = GenerateValidationError(err)
 		return http.StatusBadRequest, domains.ErrValidation.Error(), &resp
 	}
-	fmt.Println(err)
 	msg := err.Error()
 	if err == domains.ErrBadRequest {
 		errString := "invalid user request"
@@ -71,7 +84,31 @@ func HandleError(err error) (int, string, *domains.ErrorBodyResponse) {
 	} else if err == domains.ErrDuplicateEntries {
 		errString := "duplicate data entries"
 		resp.Error = &errString
-		return http.StatusUnprocessableEntity, msg, &resp
+		return http.StatusConflict, msg, &resp
+	} else if errors.Is(err, domains.ErrCardIdDuplicate) {
+		rule := "unique"
+		field := "identity_card_number"
+		detail := "this identity card number already exists"
+		resp.Errors = []domains.ErrorDetailResponse{
+			{
+				Field:  &field,
+				Rule:   &rule,
+				Detail: &detail,
+			},
+		}
+		return http.StatusConflict, msg, &resp
+	} else if errors.Is(err, domains.ErrEmailDuplicate) {
+		rule := "unique"
+		field := "email"
+		detail := "this email is already exists"
+		resp.Errors = []domains.ErrorDetailResponse{
+			{
+				Field:  &field,
+				Rule:   &rule,
+				Detail: &detail,
+			},
+		}
+		return http.StatusConflict, msg, &resp
 	} else if err == domains.ErrInvalidAccess {
 		errString := "don't have access to these resources"
 		resp.Error = &errString

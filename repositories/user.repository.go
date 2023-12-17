@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"errors"
 
 	"github.com/salamanderman234/outsourcing-api/domains"
 	"gorm.io/gorm"
@@ -21,8 +22,8 @@ func NewUserRepository(db *gorm.DB) domains.UserRepository {
 
 func (s *userRepository) GetUserWithCreds(c context.Context, username string) (any, error) {
 	var user domains.UserModel
-	usernameField := "email"
-	return user, basicCredsSearch(c, s.db, usernameField, username, &user)
+	result := s.db.WithContext(c).Model(&domains.UserModel{}).First(&user, "email = ?", username)
+	return user, convertRepoError(result)
 }
 func (s *userRepository) RegisterUser(c context.Context, authData any, profileData any) (int64, any, error) {
 	aff := 0
@@ -30,15 +31,22 @@ func (s *userRepository) RegisterUser(c context.Context, authData any, profileDa
 	err := s.db.Transaction(func(tx *gorm.DB) error {
 		user, ok := authData.(domains.UserModel)
 		if !ok {
+			tx.Rollback()
 			return domains.ErrRepositoryInterfaceConversion
 		}
 		created, err := s.Create(c, user, tx)
+		if errors.Is(err, domains.ErrDuplicateEntries) {
+			tx.Rollback()
+			return domains.ErrEmailDuplicate
+		}
 		if err != nil {
+			tx.Rollback()
 			return err
 		}
 		profile, errProfile := s.CreateProfile(c, user.Role, profileData, created.(domains.UserModel).ID, tx)
 		if errProfile != nil {
-			return err
+			tx.Rollback()
+			return errProfile
 		}
 		data.User = created.(domains.UserModel)
 		data.Profile = profile

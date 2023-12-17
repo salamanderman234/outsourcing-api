@@ -40,12 +40,12 @@ func (UserModel) TableName() string {
 
 type EmployeeModel struct {
 	gorm.Model
-	UserID   *uint      `json:"user_id" gorm:"not null"`
-	User     *UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Address  *string    `json:"address" gorm:"not null;type:varchar(255)"`
-	Fullname *string    `json:"fullname" gorm:"not null;type:varchar(255)"`
-	CardID   *string    `json:"id_card_number" gorm:"not null;type:varchar(255)"`
-	Phone    *string    `json:"phone" gorm:"not null;type:varchar(13)"`
+	UserID             *uint      `json:"user_id" gorm:"not null"`
+	User               *UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Address            *string    `json:"address" gorm:"not null;type:varchar(255)"`
+	Fullname           *string    `json:"fullname" gorm:"not null;type:varchar(255)"`
+	IdentityCardNumber *string    `json:"identity_card_number" gorm:"not null;type:varchar(255);unique"`
+	Phone              *string    `json:"phone" gorm:"not null;type:varchar(13)"`
 }
 
 func (EmployeeModel) GetPolicy() Policy {
@@ -57,12 +57,12 @@ func (EmployeeModel) TableName() string {
 
 type ServiceUserModel struct {
 	gorm.Model
-	UserID   *uint      `json:"user_id" gorm:"not null"`
-	User     *UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Address  *string    `json:"address" gorm:"not null;type:varchar(255)"`
-	Fullname *string    `json:"Fullname" gorm:"not null;type:varchar(255)"`
-	CardID   *string    `json:"id_card_number" gorm:"not null;type:varchar(255)"`
-	Phone    *string    `json:"phone" gorm:"not null;type:varchar(13)"`
+	UserID             *uint      `json:"user_id" gorm:"not null"`
+	User               *UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Address            *string    `json:"address" gorm:"not null;type:varchar(255)"`
+	Fullname           *string    `json:"Fullname" gorm:"not null;type:varchar(255)"`
+	IdentityCardNumber *string    `json:"identity_card_number" gorm:"not null;type:varchar(255)"`
+	Phone              *string    `json:"phone" gorm:"not null;type:varchar(13)"`
 }
 
 func (ServiceUserModel) GetPolicy() Policy {
@@ -74,12 +74,12 @@ func (ServiceUserModel) TableName() string {
 
 type SupervisorModel struct {
 	gorm.Model
-	UserID   *uint      `json:"user_id" gorm:"not null"`
-	User     *UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Address  *string    `json:"address" gorm:"not null;type:varchar(255)"`
-	Fullname *string    `json:"Fullname" gorm:"not null;type:varchar(255)"`
-	CardID   *string    `json:"id_card_number" gorm:"not null;type:varchar(255)"`
-	Phone    *string    `json:"phone" gorm:"not null;type:varchar(13)"`
+	UserID             *uint      `json:"user_id" gorm:"not null"`
+	User               *UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Address            *string    `json:"address" gorm:"not null;type:varchar(255)"`
+	Fullname           *string    `json:"Fullname" gorm:"not null;type:varchar(255)"`
+	IdentityCardNumber *string    `json:"identity_card_number" gorm:"not null;type:varchar(255);unique"`
+	Phone              *string    `json:"phone" gorm:"not null;type:varchar(13)"`
 }
 
 func (SupervisorModel) GetPolicy() Policy {

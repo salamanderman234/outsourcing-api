@@ -40,15 +40,6 @@ func basicDeleteRepoFunc(c context.Context, db *gorm.DB, model any, id uint) (in
 	return result.RowsAffected, convertRepoError(result)
 }
 
-func basicCredsSearch(c context.Context, db *gorm.DB, usernameField string, username string, target any, preloads ...string) error {
-	result := db.Scopes(usingContextScope(c), userSearchScope(usernameField, username), usingModelScope(target))
-	for _, preload := range preloads {
-		result.Preload(preload)
-	}
-	result.First(target)
-	return convertRepoError(result)
-}
-
 func convertRepoError(q *gorm.DB) error {
 	err := q.Error
 	if errors.Is(err, gorm.ErrDuplicatedKey) {

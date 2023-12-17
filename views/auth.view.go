@@ -23,8 +23,9 @@ func basicRegisterFunc(c echo.Context, profileData any, role domains.RoleEnum) e
 		Message: "ok",
 	}
 	var credData domains.BasicRegisterForm
-	if err := c.Bind(&profileData); err != nil {
-		msg := "invalid request"
+	if err := c.Bind(profileData); err != nil {
+		errors.Is(err, echo.ErrConflict)
+		msg := err.Error()
 		payload := domains.ErrorBodyResponse{
 			Error: &msg,
 		}
@@ -107,7 +108,7 @@ func (authView) RegisterUserService(c echo.Context) error {
 }
 func (authView) RegisterEmployee(c echo.Context) error {
 	var profileData domains.EmployeeRegisterForm
-	return basicRegisterFunc(c, &profileData, domains.AdminRole)
+	return basicRegisterFunc(c, &profileData, domains.EmployeeRole)
 }
 func (authView) RegisterSupervisor(c echo.Context) error {
 	var profileData domains.SupervisorRegisterForm

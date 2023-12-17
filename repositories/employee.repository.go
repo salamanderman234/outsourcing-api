@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"errors"
 
 	"github.com/salamanderman234/outsourcing-api/domains"
 	"gorm.io/gorm"
@@ -29,6 +30,9 @@ func (s *employeeRepository) Create(c context.Context, data domains.Model, repo 
 		return nil, domains.ErrRepositoryInterfaceConversion
 	}
 	err := basicCreateRepoFunc(c, db, &s.model, &user)
+	if errors.Is(err, domains.ErrDuplicateEntries) {
+		return user, domains.ErrCardIdDuplicate
+	}
 	return user, err
 }
 func (s *employeeRepository) FindByID(c context.Context, id uint) (domains.Model, error) {

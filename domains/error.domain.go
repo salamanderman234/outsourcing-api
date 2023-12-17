@@ -24,6 +24,8 @@ var (
 	ErrRecordNotFound     = errors.New("resource not found error")
 	ErrDuplicateEntries   = errors.New("duplicate entries error")
 	ErrForeignKeyViolated = errors.New("invalid foreign key error")
+	ErrCardIdDuplicate    = errors.New("duplicate entries for identity card number field")
+	ErrEmailDuplicate     = errors.New("duplicate entries for email field")
 	// access
 	ErrInvalidAccess = errors.New("invalid access error")
 	// role

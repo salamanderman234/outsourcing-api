@@ -42,12 +42,6 @@ func orderScope(model any, orderBy string, desc bool) func(db *gorm.DB) *gorm.DB
 	}
 }
 
-func userSearchScope(usernameField string, username string) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		return db.Where(usernameField+" = ?", username)
-	}
-}
-
 func whereIdEqualScope(id any) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Where("id = ?", id)
