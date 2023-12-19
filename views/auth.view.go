@@ -40,7 +40,7 @@ func basicRegisterFunc(c echo.Context, profileData any, role domains.RoleEnum) e
 		resp.Body = *errBody
 		return c.JSON(status, resp)
 	}
-	pairToken, err := domains.ServiceRegistry.AuthServ.Register(
+	pairToken, createdUserProfile, err := domains.ServiceRegistry.AuthServ.Register(
 		ctx, credData, profileData, role, credData.Remember,
 	)
 	if err != nil {
@@ -56,7 +56,7 @@ func basicRegisterFunc(c echo.Context, profileData any, role domains.RoleEnum) e
 	}
 	c.SetCookie(&cookie)
 	resp.Body = domains.DataBodyResponse{
-		Data: pairToken,
+		Data: map[string]any{"tokens": pairToken, "created_user_profile": createdUserProfile},
 	}
 	return c.JSON(http.StatusOK, resp)
 }
@@ -76,7 +76,7 @@ func (authView) Login(c echo.Context) error {
 		resp.Body = payload
 		return c.JSON(http.StatusBadRequest, resp)
 	}
-	tokenPair, err := domains.ServiceRegistry.AuthServ.Login(ctx, form, form.Remember)
+	tokenPair, userWithProfile, err := domains.ServiceRegistry.AuthServ.Login(ctx, form, form.Remember)
 	if err != nil {
 		if errors.Is(err, domains.ErrRecordNotFound) {
 			err = domains.ErrInvalidCreds
@@ -93,7 +93,10 @@ func (authView) Login(c echo.Context) error {
 	}
 	c.SetCookie(&cookie)
 	resp.Body = domains.DataBodyResponse{
-		Data: tokenPair,
+		Data: map[string]any{
+			"tokens":       tokenPair,
+			"user_profile": userWithProfile,
+		},
 	}
 	return c.JSON(http.StatusOK, resp)
 }

@@ -18,8 +18,8 @@ type FileService interface {
 // ----- AUTH SERVICE -----
 type BasicAuthService interface {
 	// return access and refresh token or error if there's any
-	Login(c context.Context, loginForm BasicLoginForm, remember bool) (TokenPair, error)
-	Register(c context.Context, authData BasicRegisterForm, profileData any, role RoleEnum, remember bool) (TokenPair, error)
+	Login(c context.Context, loginForm BasicLoginForm, remember bool) (TokenPair, any, error)
+	Register(c context.Context, authData BasicRegisterForm, profileData any, role RoleEnum, remember bool) (TokenPair, UserWithProfileEntity, error)
 	Check(c context.Context, token string) (JWTPayload, error)
 	Refresh(c context.Context, refreshToken string) (TokenPair, error)
 }

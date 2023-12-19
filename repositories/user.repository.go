@@ -22,7 +22,12 @@ func NewUserRepository(db *gorm.DB) domains.UserRepository {
 
 func (s *userRepository) GetUserWithCreds(c context.Context, username string) (any, error) {
 	var user domains.UserModel
-	result := s.db.WithContext(c).Model(&domains.UserModel{}).First(&user, "email = ?", username)
+	result := s.db.WithContext(c).Model(&domains.UserModel{}).
+		Preload("ServiceUser").
+		Preload("Admin").
+		Preload("Employee").
+		Preload("Supervisor").
+		First(&user, "email = ?", username)
 	return user, convertRepoError(result)
 }
 func (s *userRepository) RegisterUser(c context.Context, authData any, profileData any) (int64, any, error) {

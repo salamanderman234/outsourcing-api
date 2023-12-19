@@ -18,94 +18,105 @@ func NewUserAuthService() domains.BasicAuthService {
 	return &serviceUserAuthService{}
 }
 
-func (s serviceUserAuthService) Login(c context.Context, loginForm domains.BasicLoginForm, remember bool) (domains.TokenPair, error) {
+func (s serviceUserAuthService) Login(c context.Context, loginForm domains.BasicLoginForm, remember bool) (domains.TokenPair, any, error) {
 	tokenPair := domains.TokenPair{}
+	var userWithProfile domains.UserEntity
 	if ok, err := helpers.Validate(loginForm); !ok {
-		return tokenPair, err
+		return tokenPair, userWithProfile, err
 	}
 	password := loginForm.Password
 	user, err := domains.RepoRegistry.UserRepo.GetUserWithCreds(c, loginForm.Email)
 	if err != nil {
-		return tokenPair, err
+		return tokenPair, userWithProfile, err
 	}
 	userModel, ok := user.(domains.UserModel)
 	if !ok {
-		return tokenPair, domains.ErrConversionType
+		return tokenPair, userWithProfile, domains.ErrConversionType
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(*userModel.Password), []byte(password))
 	if err != nil {
-		return tokenPair, domains.ErrInvalidCreds
+		return tokenPair, userWithProfile, domains.ErrInvalidCreds
 	}
 	tokenPair, err = generatePairToken(userModel.ID, *userModel.Email, userModel.Role, userModel.Profile, remember)
 	if err != nil {
-		return tokenPair, err
+		return tokenPair, userWithProfile, err
 	}
-	return tokenPair, nil
+	err = helpers.Convert(user, &userWithProfile)
+	if err != nil {
+		return tokenPair, userWithProfile, err
+	}
+	return tokenPair, userWithProfile, nil
 }
-func (s serviceUserAuthService) Register(c context.Context, authData domains.BasicRegisterForm, profileData any, role domains.RoleEnum, remember bool) (domains.TokenPair, error) {
+func (s serviceUserAuthService) Register(c context.Context, authData domains.BasicRegisterForm, profileData any, role domains.RoleEnum, remember bool) (domains.TokenPair, domains.UserWithProfileEntity, error) {
 	tokenPair := domains.TokenPair{}
-
+	var userWithProfile domains.UserWithProfileEntity
 	if ok, err := helpers.Validate(profileData); !ok {
-		return tokenPair, err
+		return tokenPair, userWithProfile, err
 	}
 	var user domains.UserModel
 	var profile any
 	err := helpers.Convert(authData, &user)
 	if err != nil {
-		return tokenPair, err
+		return tokenPair, userWithProfile, err
 	}
 	if role == domains.AdminRole {
 		var adminData domains.AdminModel
 		err := helpers.Convert(profileData, &adminData)
 		if err != nil {
-			return tokenPair, err
+			return tokenPair, userWithProfile, err
 		}
 		profile = adminData
 	} else if role == domains.EmployeeRole {
 		var employeeData domains.EmployeeModel
 		err := helpers.Convert(profileData, &employeeData)
 		if err != nil {
-			return tokenPair, err
+			return tokenPair, userWithProfile, err
 		}
 		profile = employeeData
 	} else if role == domains.SupervisorRole {
 		var supervisorData domains.SupervisorModel
 		err := helpers.Convert(profileData, &supervisorData)
 		if err != nil {
-			return tokenPair, err
+			return tokenPair, userWithProfile, err
 		}
 		profile = supervisorData
 	} else if role == domains.ServiceUserRole {
 		var serviceUser domains.ServiceUserModel
 		err := helpers.Convert(profileData, &serviceUser)
 		if err != nil {
-			return tokenPair, err
+			return tokenPair, userWithProfile, err
 		}
 		profile = serviceUser
 	} else {
-		return tokenPair, domains.ErrInvalidRole
+		return tokenPair, userWithProfile, domains.ErrInvalidRole
 	}
 	hashed, err := bcrypt.GenerateFromPassword([]byte(authData.Password), 1)
 	hashedString := string(hashed)
 	user.Password = &hashedString
 	user.Role = string(role)
 	if err != nil {
-		return tokenPair, domains.ErrHashingPassword
+		return tokenPair, userWithProfile, domains.ErrHashingPassword
 	}
 	_, result, err := domains.RepoRegistry.UserRepo.RegisterUser(c, user, profile)
 	if err != nil {
-		return tokenPair, err
+		return tokenPair, userWithProfile, err
 	}
 	resultModel, ok := result.(domains.UserWithProfileModel)
 	if !ok {
-		return tokenPair, domains.ErrConversionType
+		return tokenPair, userWithProfile, domains.ErrConversionType
 	}
 	userResult := resultModel.User
+	profileResult := resultModel.Profile
 	tokenPair, err = generatePairToken(userResult.ID, *userResult.Email, userResult.Role, userResult.Profile, remember)
 	if err != nil {
-		return tokenPair, err
+		return tokenPair, userWithProfile, err
 	}
-	return tokenPair, nil
+	err = helpers.Convert(userResult, &userWithProfile.User)
+	if err != nil {
+		return tokenPair, userWithProfile, err
+	}
+	userWithProfile.Profile = profileResult
+	return tokenPair, userWithProfile, nil
 }
 func (serviceUserAuthService) Check(c context.Context, token string) (domains.JWTPayload, error) {
 	claims, err := helpers.VerifyToken(token)

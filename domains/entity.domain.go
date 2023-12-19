@@ -72,6 +72,53 @@ type TokenPair struct {
 	Access  string `json:"access_token"`
 }
 
+// ----- AUTH ------
+type UserEntity struct {
+	BasicEntity
+	Email       string             `json:"email"`
+	Role        string             `json:"role"`
+	ServiceUser *ServiceUserEntity `json:"service_user_profile,omitempty"`
+	Supervisor  *SupervisorEntity  `json:"supervisor_profile,omitempty"`
+	Admin       *AdminEntity       `json:"admin_profile,omitempty"`
+	Employee    *EmployeeEntity    `json:"employee_profile,omitempty"`
+}
+type ServiceUserEntity struct {
+	BasicEntity
+	User               *UserEntity `json:"user,omitempty"`
+	Address            string      `json:"address"`
+	Fullname           string      `json:"Fullname"`
+	IdentityCardNumber string      `json:"identity_card_number"`
+	Phone              string      `json:"phone"`
+}
+type SupervisorEntity struct {
+	BasicEntity
+	User               *UserEntity `json:"user,omitempty"`
+	Address            string      `json:"address"`
+	Fullname           string      `json:"Fullname"`
+	IdentityCardNumber string      `json:"identity_card_number"`
+	Phone              string      `json:"phone"`
+}
+type AdminEntity struct {
+	BasicEntity
+	User     *UserEntity `json:"user,omitempty"`
+	Address  string      `json:"address"`
+	Fullname string      `json:"Fullname"`
+	Phone    string      `json:"phone"`
+}
+type EmployeeEntity struct {
+	BasicEntity
+	User               *UserEntity `json:"user,omitempty"`
+	Address            string      `json:"address"`
+	Fullname           string      `json:"fullname"`
+	IdentityCardNumber string      `json:"identity_card_number"`
+	Phone              string      `json:"phone"`
+}
+type UserWithProfileEntity struct {
+	User    UserEntity `json:"created_user"`
+	Profile any        `json:"created_profile"`
+}
+
+// ----- END OF AUTH ----
 // ----- MASTER DATA -----
 type CategoryEntity struct {
 	BasicEntity
