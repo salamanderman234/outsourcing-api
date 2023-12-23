@@ -33,9 +33,9 @@ func generatePairToken(id uint, username string, role string, profilePic string,
 	return result, nil
 }
 
-type createCallRepoFunc func() (any, error)
+type createCallRepoFunc func() (domains.Model, error)
 
-func basicCreateService(data any, model any, entity any, fun createCallRepoFunc) (any, error) {
+func basicCreateService(data any, model domains.Model, entity domains.Entity, fun createCallRepoFunc) (domains.Entity, error) {
 	if ok, err := helpers.Validate(data); !ok {
 		return nil, err
 	}
@@ -52,17 +52,20 @@ func basicCreateService(data any, model any, entity any, fun createCallRepoFunc)
 	return entity, nil
 }
 
-type updateCallRepoFunc func(id uint) (int, any, error)
+type updateCallRepoFunc func(id uint) (int, domains.Model, error)
 
-func basicUpdateService(id uint, data any, model any, entity any, fun updateCallRepoFunc) (int, any, error) {
+func basicUpdateService(id uint, data any, model domains.Model, entity domains.Entity, fun updateCallRepoFunc) (int, any, error) {
 	if ok, err := helpers.Validate(data); !ok {
 		return 0, nil, err
 	}
 	if err := helpers.Convert(data, model); err != nil {
 		return 0, nil, err
 	}
-	aff, _, err := fun(id)
+	aff, result, err := fun(id)
 	if err != nil {
+		return 0, nil, err
+	}
+	if err := helpers.Convert(result, entity); err != nil {
 		return 0, nil, err
 	}
 	return int(aff), data, nil

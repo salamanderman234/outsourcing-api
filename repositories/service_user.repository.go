@@ -19,46 +19,57 @@ func NewServiceUserRepository(db *gorm.DB) domains.ServiceUserRepository {
 	}
 }
 
-func (s *serviceUserRepository) Create(c context.Context, data domains.Model, repo ...*gorm.DB) (any, error) {
+func (s *serviceUserRepository) Create(c context.Context, data domains.ServiceUserModel, repo ...*gorm.DB) (domains.ServiceUserModel, error) {
 	db := s.db
 	if len(repo) == 1 {
 		db = repo[0]
 	}
-	user, ok := data.(domains.ServiceUserModel)
-	if !ok {
-		return nil, domains.ErrRepositoryInterfaceConversion
+	err := basicCreateRepoFunc(c, db, &s.model, &data)
+	return data, err
+}
+func (s *serviceUserRepository) Find(c context.Context, id uint) (domains.ServiceUserModel, error) {
+	var result domains.ServiceUserModel
+	err := basicFindRepoFunc(c, s.db, &s.model, id, &result)
+	return result, err
+}
+func (s *serviceUserRepository) Update(c context.Context, id uint, data domains.ServiceUserModel, repo ...*gorm.DB) (int64, domains.ServiceUserModel, error) {
+	db := s.db
+	if len(repo) == 1 {
+		db = repo[0]
 	}
-	result := db.Scopes(usingContextScope(c), usingModelScope(&s.model)).Create(&user)
-	return user, convertRepoError(result)
+	aff, err := basicUpdateRepoFunc(c, db, &s.model, id, &data)
+	return aff, data, err
 }
-func (s *serviceUserRepository) FindByID(c context.Context, id uint) (domains.Model, error) {
-	var user domains.ServiceUserModel
-	result := s.db.Preload("User").
-		Scopes(usingContextScope(c), usingModelScope(&s.model), whereIdEqualScope(id)).
-		First(&user)
-	return user, convertRepoError(result)
-}
-func (s *serviceUserRepository) Update(c context.Context, id uint, data domains.Model) (int64, any, error) {
-	result := s.db.Scopes(usingContextScope(c), usingModelScope(&s.model), whereIdEqualScope(id)).Updates(data)
-	return result.RowsAffected, data, convertRepoError(result)
-}
-func (s *serviceUserRepository) Delete(c context.Context, id uint) (int64, int64, error) {
-	result := s.db.Scopes(usingContextScope(c), whereIdEqualScope(id)).Delete(&s.model)
-	return result.RowsAffected, int64(id), convertRepoError(result)
-}
-func (s *serviceUserRepository) Get(c context.Context, id uint, q string, page uint, orderBy string, desc bool) (any, uint, error) {
-	var users []domains.ServiceUserModel
-	var count int64
-	query := s.db.Scopes(usingContextScope(c), usingModelScope(&s.model), orderScope(&s.model, orderBy, desc))
-	if id != 0 {
-		result := query.Scopes(whereIdEqualScope(id)).Find(&users)
-		return users, 1, convertRepoError(result)
+func (s *serviceUserRepository) Delete(c context.Context, id uint, repo ...*gorm.DB) (int64, int64, error) {
+	db := s.db
+	if len(repo) == 1 {
+		db = repo[0]
 	}
-	searchQuery := query.Scopes(paginateScope(page)).
-		Where("fullname LIKE ?", "%"+q+"%").
-		Preload("User")
-	_ = *searchQuery.Count(&count)
-	maxPage := getMaxPage(uint(count))
-	result := searchQuery.Find(&users)
-	return users, maxPage, convertRepoError(result)
+	aff, err := basicDeleteRepoFunc(c, db, &s.model, id)
+	return int64(id), aff, err
+}
+func (s *serviceUserRepository) Read(c context.Context, q string, page uint, orderBy string, desc bool, withPagination bool) ([]domains.ServiceUserModel, uint, error) {
+	var results []domains.ServiceUserModel
+	callFunc := func(db *gorm.DB) *gorm.DB {
+		return db.Where("fullname LIKE ?", "%"+q+"%").
+			Preload("User")
+	}
+	maxPage, err := basicReadFunc(
+		c,
+		&results,
+		s.db,
+		callFunc,
+		page,
+		orderBy,
+		desc,
+		withPagination,
+		&s.model,
+	)
+	if err != nil {
+		return results, 0, err
+	}
+	if len(results) == 0 {
+		return nil, 0, domains.ErrRecordNotFound
+	}
+	return results, maxPage, nil
 }

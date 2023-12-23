@@ -9,6 +9,24 @@ type Policy interface {
 	Delete(id uint, payload JWTClaims) bool
 }
 
+type BasicAdminOnlyPolicy struct{}
+
+func (BasicAdminOnlyPolicy) Create(payload JWTClaims) bool {
+	return *payload.Role == string(AdminRole)
+}
+func (BasicAdminOnlyPolicy) Find(id uint, payload JWTClaims) bool {
+	return true
+}
+func (BasicAdminOnlyPolicy) ReadAll(payload JWTClaims) bool {
+	return true
+}
+func (BasicAdminOnlyPolicy) Update(id uint, payload JWTClaims) bool {
+	return *payload.Role == string(AdminRole)
+}
+func (BasicAdminOnlyPolicy) Delete(id uint, payload JWTClaims) bool {
+	return *payload.Role == string(AdminRole)
+}
+
 // ----- AUTH POLICY -----
 type ServiceUserAuthPolicy struct{}
 
@@ -91,3 +109,12 @@ func (VillagePolicy) Delete(id uint, payload JWTClaims) bool {
 }
 
 // ----- END OF MASTER POLICY -----
+// ----- APP SERVICE POLICY -----
+type ServiceItemPolicy struct {
+	BasicAdminOnlyPolicy
+}
+type ServicePolicy struct {
+	BasicAdminOnlyPolicy
+}
+
+// ----- END OF APP SERVICE POLICY -----

@@ -8,61 +8,68 @@ import (
 )
 
 type categoryRepository struct {
-	db *gorm.DB
+	db    *gorm.DB
+	model domains.CategoryModel
 }
 
-func NewCategoryRepository(db *gorm.DB) domains.ServiceCategoryRepository {
+func NewCategoryRepository(db *gorm.DB) domains.CategoryRepository {
 	return &categoryRepository{
-		db: db,
+		db:    db,
+		model: domains.CategoryModel{},
 	}
 }
 
-func (cr *categoryRepository) Create(c context.Context, data domains.Model, repo ...*gorm.DB) (any, error) {
+func (cr *categoryRepository) Create(c context.Context, data domains.CategoryModel, repo ...*gorm.DB) (domains.CategoryModel, error) {
 	db := cr.db
 	if len(repo) == 1 {
 		db = repo[0]
 	}
-	dataModel, ok := data.(domains.CategoryModel)
-	if !ok {
-		return nil, domains.ErrRepositoryInterfaceConversion
-	}
-	err := basicCreateRepoFunc(c, db, &dataModel, &dataModel)
-	return dataModel, err
+	err := basicCreateRepoFunc(c, db, cr.model, &data)
+	return data, err
 }
-func (cr *categoryRepository) FindByID(c context.Context, id uint) (domains.Model, error) {
+func (cr *categoryRepository) Find(c context.Context, id uint) (domains.CategoryModel, error) {
 	var result domains.CategoryModel
-	err := basicFindRepoFunc(c, cr.db, &result, id, &result)
+	err := basicFindRepoFunc(c, cr.db, &cr.model, id, &result)
 	return result, err
 }
-func (cr *categoryRepository) Get(c context.Context, id uint, q string, page uint, orderBy string, desc bool) (any, uint, error) {
+func (cr *categoryRepository) Read(c context.Context, q string, page uint, orderBy string, desc bool, withPagination bool) ([]domains.CategoryModel, uint, error) {
 	var results []domains.CategoryModel
-	var model domains.CategoryModel
-	var count int64
-	query := cr.db.Scopes(usingContextScope(c), usingModelScope(&model), orderScope(&model, orderBy, desc))
-	if id != 0 {
-		result, err := cr.FindByID(c, id)
-		return result, 0, err
+	callFunc := func(db *gorm.DB) *gorm.DB {
+		return db.Where("category_name LIKE ?", "%"+q+"%").
+			Or("description LIKE ?", "%"+q+"%")
 	}
-	searchQuery := *query.Where("category_name LIKE ?", "%"+q+"%").
-		Or("description LIKE ?", "%"+q+"%")
-	result := searchQuery.Scopes(paginateScope(page)).Find(&results)
+	maxPage, err := basicReadFunc(
+		c,
+		&results,
+		cr.db,
+		callFunc,
+		page,
+		orderBy,
+		desc,
+		withPagination,
+		&cr.model,
+	)
+	if err != nil {
+		return results, 0, err
+	}
 	if len(results) == 0 {
 		return nil, 0, domains.ErrRecordNotFound
 	}
-	_ = *query.Where("category_name LIKE ?", "%"+q+"%").
-		Or("description LIKE ?", "%"+q+"%").Count(&count)
-	maxPage := getMaxPage(uint(count))
-	return results, maxPage, convertRepoError(result)
+	return results, maxPage, nil
 }
-func (cr *categoryRepository) Update(c context.Context, id uint, data domains.Model) (int64, any, error) {
-	dataModel, ok := data.(domains.CategoryModel)
-	if !ok {
-		return 0, nil, domains.ErrRepositoryInterfaceConversion
+func (cr *categoryRepository) Update(c context.Context, id uint, data domains.CategoryModel, repo ...*gorm.DB) (int64, domains.CategoryModel, error) {
+	db := cr.db
+	if len(repo) == 1 {
+		db = repo[0]
 	}
-	aff, err := basicUpdateRepoFunc(c, cr.db, &dataModel, id, &dataModel)
-	return aff, dataModel, err
+	aff, err := basicUpdateRepoFunc(c, db, &cr.model, id, &data)
+	return aff, data, err
 }
-func (cr *categoryRepository) Delete(c context.Context, id uint) (int64, int64, error) {
-	aff, err := basicDeleteRepoFunc(c, cr.db, &domains.CategoryModel{}, id)
+func (cr *categoryRepository) Delete(c context.Context, id uint, repo ...*gorm.DB) (int64, int64, error) {
+	db := cr.db
+	if len(repo) == 1 {
+		db = repo[0]
+	}
+	aff, err := basicDeleteRepoFunc(c, db, &cr.model, id)
 	return int64(id), aff, err
 }

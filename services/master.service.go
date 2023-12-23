@@ -10,7 +10,7 @@ import (
 // --> Category Service
 type categoryService struct{}
 
-func NewCategoryService() domains.ServiceCategoryService {
+func NewCategoryService() domains.CategoryService {
 	return &categoryService{}
 }
 func (categoryService) storeIcon(entity *domains.CategoryModel, files ...domains.EntityFileMap) (bool, error) {
@@ -31,39 +31,39 @@ func (categoryService) storeIcon(entity *domains.CategoryModel, files ...domains
 	entity.Icon = ""
 	return false, nil
 }
-func (cs categoryService) Create(c context.Context, data any, files ...domains.EntityFileMap) (any, error) {
+func (cs categoryService) Create(c context.Context, data domains.CategoryCreateForm, files ...domains.EntityFileMap) (domains.CategoryEntity, error) {
 	var dataModel domains.CategoryModel
 	var categoryEntity domains.CategoryEntity
-	fun := func() (any, error) {
+	fun := func() (domains.Model, error) {
 		_, err := cs.storeIcon(&dataModel, files...)
 		if err != nil {
 			return nil, err
 		}
 		return domains.RepoRegistry.CategoryRepo.Create(c, dataModel)
 	}
-	return basicCreateService(data, &dataModel, &categoryEntity, fun)
+	_, err := basicCreateService(data, &dataModel, &categoryEntity, fun)
+	return categoryEntity, err
 }
-func (categoryService) Read(c context.Context, id uint, q string, page uint, orderBy string, isDesc bool) (any, *domains.Pagination, error) {
+func (categoryService) Read(c context.Context, id uint, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *domains.Pagination, error) {
 	var pagination domains.Pagination
-	datas, maxPage, err := domains.RepoRegistry.CategoryRepo.Get(c, id, q, page, orderBy, isDesc)
+	if id != 0 {
+		var resultEntity domains.CategoryEntity
+		result, err := domains.RepoRegistry.CategoryRepo.Find(c, id)
+		if err != nil {
+			return nil, nil, err
+		}
+		err = helpers.Convert(result, &resultEntity)
+		if err != nil {
+			return nil, nil, err
+		}
+		return resultEntity, nil, nil
+	}
+	datas, maxPage, err := domains.RepoRegistry.CategoryRepo.Read(c, q, page, orderBy, isDesc, withPagination)
 	if err != nil {
 		return nil, nil, err
 	}
-	datasModel, ok := datas.([]domains.CategoryModel)
-	if !ok {
-		dataModel, ok := datas.(domains.CategoryModel)
-		if !ok {
-			return nil, nil, domains.ErrConversionType
-		}
-		var dataEntity domains.CategoryEntity
-		err := helpers.Convert(dataModel, &dataEntity)
-		if err != nil {
-			return nil, nil, domains.ErrConversionType
-		}
-		return dataEntity, nil, nil
-	}
 	var datasEntity []domains.CategoryEntity
-	for _, data := range datasModel {
+	for _, data := range datas {
 		var dataEntity domains.CategoryEntity
 		err := helpers.Convert(data, &dataEntity)
 		if err != nil {
@@ -71,19 +71,22 @@ func (categoryService) Read(c context.Context, id uint, q string, page uint, ord
 		}
 		datasEntity = append(datasEntity, dataEntity)
 	}
-	queries := helpers.MakeDefaultGetPaginationQueries(q, id, page, orderBy, isDesc)
-	pagination = helpers.MakePagination(maxPage, uint(page), queries)
-	return datasEntity, &pagination, nil
+	if withPagination {
+		queries := helpers.MakeDefaultGetPaginationQueries(q, id, page, orderBy, isDesc, withPagination)
+		pagination = helpers.MakePagination(maxPage, uint(page), queries)
+		return datasEntity, &pagination, nil
+	}
+	return datasEntity, nil, nil
 }
-func (cs categoryService) Update(c context.Context, id uint, data any, files ...domains.EntityFileMap) (int, any, error) {
+func (cs categoryService) Update(c context.Context, id uint, data domains.CategoryUpdateForm, files ...domains.EntityFileMap) (int, domains.CategoryEntity, error) {
 	var dataModel domains.CategoryModel
 	var categoryEntity domains.CategoryEntity
-	fun := func(id uint) (int, any, error) {
-		categoryModel, err := domains.RepoRegistry.CategoryRepo.FindByID(c, id)
+	fun := func(id uint) (int, domains.Model, error) {
+		categoryModel, err := domains.RepoRegistry.CategoryRepo.Find(c, id)
 		if err != nil {
 			return 0, nil, err
 		}
-		icon := categoryModel.(domains.CategoryModel).Icon
+		icon := categoryModel.Icon
 		ok, err := cs.storeIcon(&dataModel, files...)
 		if err != nil {
 			return 0, nil, err
@@ -94,31 +97,10 @@ func (cs categoryService) Update(c context.Context, id uint, data any, files ...
 		aff, updated, err := domains.RepoRegistry.CategoryRepo.Update(c, id, dataModel)
 		return int(aff), updated, err
 	}
-
-	return basicUpdateService(id, data, &dataModel, &categoryEntity, fun)
+	aff, _, err := basicUpdateService(id, data, &dataModel, &categoryEntity, fun)
+	return aff, categoryEntity, err
 }
 func (categoryService) Delete(c context.Context, id uint) (int, int, error) {
 	idResult, aff, err := domains.RepoRegistry.CategoryRepo.Delete(c, id)
 	return int(idResult), int(aff), err
 }
-
-// // --> District Service
-// type districtService struct{}
-
-// func NewDistrictService() domains.DistrictService {
-// 	return &districtService{}
-// }
-
-// // --> Subdistrict Service
-// type subDistrictService struct{}
-
-// func NewSubDistrictService() domains.SubDistrictService {
-// 	return &subDistrictService{}
-// }
-
-// // --> Village Service
-// type villageService struct{}
-
-// func NewVillageService() domains.VillageService {
-// 	return &villageService{}
-// }

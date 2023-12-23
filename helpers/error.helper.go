@@ -27,6 +27,20 @@ func GenerateBindingError(errs []error) (domains.ErrorBodyResponse, error) {
 	return resp, nil
 }
 
+func GenerateDatabaseKeyError(err error) *domains.ErrorBodyResponse {
+	databaseKey, ok := err.(domains.DatabaseKeyError)
+	if !ok {
+		return nil
+	}
+	rule := "foreign key"
+	resp := domains.ErrorBodyResponse{
+		Errors: []domains.ErrorDetailResponse{
+			{Field: &databaseKey.Field, Rule: &rule, Detail: &databaseKey.Msg},
+		},
+	}
+	return &resp
+}
+
 func GenerateValidationError(errs error) (domains.ErrorBodyResponse, error) {
 	resp := domains.ErrorBodyResponse{}
 	for _, err := range errs.(govalidator.Errors) {
@@ -68,6 +82,11 @@ func HandleError(err error) (int, string, *domains.ErrorBodyResponse) {
 		resp, _ = GenerateValidationError(err)
 		return http.StatusBadRequest, domains.ErrValidation.Error(), &resp
 	}
+	_, ok = err.(domains.DatabaseKeyError)
+	if ok {
+		resp := GenerateDatabaseKeyError(err)
+		return http.StatusUnprocessableEntity, domains.ErrForeignKeyViolated.Error(), resp
+	}
 	msg := err.Error()
 	if err == domains.ErrBadRequest {
 		errString := "invalid user request"
@@ -84,18 +103,6 @@ func HandleError(err error) (int, string, *domains.ErrorBodyResponse) {
 	} else if err == domains.ErrDuplicateEntries {
 		errString := "duplicate data entries"
 		resp.Error = &errString
-		return http.StatusConflict, msg, &resp
-	} else if errors.Is(err, domains.ErrCardIdDuplicate) {
-		rule := "unique"
-		field := "identity_card_number"
-		detail := "this identity card number already exists"
-		resp.Errors = []domains.ErrorDetailResponse{
-			{
-				Field:  &field,
-				Rule:   &rule,
-				Detail: &detail,
-			},
-		}
 		return http.StatusConflict, msg, &resp
 	} else if errors.Is(err, domains.ErrEmailDuplicate) {
 		rule := "unique"
@@ -118,7 +125,7 @@ func HandleError(err error) (int, string, *domains.ErrorBodyResponse) {
 		resp.Error = &errString
 		return http.StatusBadRequest, msg, &resp
 	} else if errors.Is(err, domains.ErrForeignKeyViolated) {
-		errString := "token is invalid"
+		errString := "foreign key error"
 		resp.Error = &errString
 		return http.StatusUnprocessableEntity, msg, &resp
 	} else if errors.Is(err, domains.ErrExpiredToken) {

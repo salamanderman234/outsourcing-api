@@ -2,9 +2,11 @@ package domains
 
 var (
 	ServiceRegistry = struct {
-		AuthServ     BasicAuthService
-		CategoryServ ServiceCategoryService
-		FileServ     FileService
+		AuthServ        BasicAuthService
+		CategoryServ    CategoryService
+		FileServ        FileService
+		ServiceItemServ ServiceItemService
+		ServiceServ     PartialServiceService
 	}{}
 
 	RepoRegistry = struct {
@@ -13,11 +15,15 @@ var (
 		SupervisorRepo  SupervisorRepository
 		EmployeeRepo    EmployeeRepository
 		AdminRepo       AdminRepository
-		CategoryRepo    ServiceCategoryRepository
+		CategoryRepo    CategoryRepository
+		ServiceItemRepo ServiceItemRepository
+		ServiceRepo     PartialServiceRepository
 	}{}
 
 	ViewRegistry = struct {
-		AuthView     BasicAuthView
-		CategoryView ServiceCategoryView
+		AuthView        BasicAuthView
+		CategoryView    CategoryView
+		ServiceItemView ServiceItemView
+		ServiceView     PartialServiceView
 	}{}
 )

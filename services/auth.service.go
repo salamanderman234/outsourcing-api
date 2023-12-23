@@ -18,7 +18,7 @@ func NewUserAuthService() domains.BasicAuthService {
 	return &serviceUserAuthService{}
 }
 
-func (s serviceUserAuthService) Login(c context.Context, loginForm domains.BasicLoginForm, remember bool) (domains.TokenPair, any, error) {
+func (s serviceUserAuthService) Login(c context.Context, loginForm domains.BasicLoginForm, remember bool) (domains.TokenPair, domains.UserEntity, error) {
 	tokenPair := domains.TokenPair{}
 	var userWithProfile domains.UserEntity
 	if ok, err := helpers.Validate(loginForm); !ok {
@@ -29,15 +29,11 @@ func (s serviceUserAuthService) Login(c context.Context, loginForm domains.Basic
 	if err != nil {
 		return tokenPair, userWithProfile, err
 	}
-	userModel, ok := user.(domains.UserModel)
-	if !ok {
-		return tokenPair, userWithProfile, domains.ErrConversionType
-	}
-	err = bcrypt.CompareHashAndPassword([]byte(*userModel.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(password))
 	if err != nil {
 		return tokenPair, userWithProfile, domains.ErrInvalidCreds
 	}
-	tokenPair, err = generatePairToken(userModel.ID, *userModel.Email, userModel.Role, userModel.Profile, remember)
+	tokenPair, err = generatePairToken(user.ID, *user.Email, user.Role, user.Profile, remember)
 	if err != nil {
 		return tokenPair, userWithProfile, err
 	}
@@ -54,7 +50,7 @@ func (s serviceUserAuthService) Register(c context.Context, authData domains.Bas
 		return tokenPair, userWithProfile, err
 	}
 	var user domains.UserModel
-	var profile any
+	var profile domains.Model
 	err := helpers.Convert(authData, &user)
 	if err != nil {
 		return tokenPair, userWithProfile, err
@@ -101,12 +97,8 @@ func (s serviceUserAuthService) Register(c context.Context, authData domains.Bas
 	if err != nil {
 		return tokenPair, userWithProfile, err
 	}
-	resultModel, ok := result.(domains.UserWithProfileModel)
-	if !ok {
-		return tokenPair, userWithProfile, domains.ErrConversionType
-	}
-	userResult := resultModel.User
-	profileResult := resultModel.Profile
+	userResult := result.User
+	profileResult := result.Profile
 	tokenPair, err = generatePairToken(userResult.ID, *userResult.Email, userResult.Role, userResult.Profile, remember)
 	if err != nil {
 		return tokenPair, userWithProfile, err
@@ -139,20 +131,16 @@ func (s serviceUserAuthService) Refresh(c context.Context, refreshToken string) 
 	if id == 0 {
 		return tokenPair, domains.ErrInvalidToken
 	}
-	user, err := domains.RepoRegistry.UserRepo.FindByID(c, uint(id))
+	user, err := domains.RepoRegistry.UserRepo.Find(c, uint(id))
 	if err != nil {
 		if errors.Is(err, domains.ErrRecordNotFound) {
 			return tokenPair, domains.ErrInvalidToken
 		}
 		return tokenPair, err
 	}
-	userModel, ok := user.(domains.UserModel)
-	if !ok {
-		return tokenPair, domains.ErrInvalidToken
-	}
 	expire := helpers.GenerateExpireTime(configs.ACCESS_TOKEN_EXPIRE_TIME)
 	accessClaims := helpers.
-		CreateJWTClaims(uint(userModel.ID), userModel.Email, &userModel.Role, &userModel.Profile, expire)
+		CreateJWTClaims(uint(user.ID), user.Email, &user.Role, &user.Profile, expire)
 	access, err := helpers.GenerateToken(accessClaims)
 	if err != nil {
 		return domains.TokenPair{}, err

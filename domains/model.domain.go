@@ -113,7 +113,7 @@ type CategoryModel struct {
 	gorm.Model
 	CategoryName *string `json:"category_name" gorm:"not null;type:varchar(255)"`
 	Icon         string  `json:"icon" gorm:"type:varchar(255)"`
-	Description  string  `json:"description" gorm:"type:varchar(255)"`
+	Description  string  `json:"description" gorm:"type:text"`
 }
 
 func (CategoryModel) GetPolicy() Policy {
@@ -171,3 +171,86 @@ func (VillageModel) TableName() string {
 }
 
 // ----- END OF MASTER DATA -----
+// ----- SERVICE -----
+type ServiceItemModel struct {
+	gorm.Model
+	ItemName         *string       `json:"item_name" gorm:"type:varchar(255);not null;"`
+	Description      string        `json:"description" gorm:"type:varchar(255)"`
+	MinValue         *uint         `json:"min_value" gorm:"type:not null;default:0;"`
+	MaxValue         *uint         `json:"max_value" gorm:"type:not null;default:1;"`
+	PricePerItem     *uint64       `json:"price_per_item" gorm:"not null;default:0"`
+	IsOptionalChoice *bool         `json:"is_optional_choice" gorm:"not null;default:0"`
+	Unit             *string       `json:"unit" gorm:"default:unit;type:varchar(255)"`
+	ServiceID        *uint         `json:"service_id" gorm:"not null"`
+	Service          *ServiceModel `json:"service" gorm:"foreignKey:ServiceID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+}
+
+func (ServiceItemModel) GetPolicy() Policy {
+	return &ServiceItemPolicy{}
+}
+func (ServiceItemModel) TableName() string {
+	return "partial_service_items"
+}
+
+type ServiceModel struct {
+	gorm.Model
+	ServiceName  *string                `json:"service_name" gorm:"not null;type:varchar(255)"`
+	Description  string                 `json:"description" gorm:"type:varchar(255)"`
+	Image        string                 `json:"image" gorm:"type:varchar(255)"`
+	Icon         string                 `json:"icon" gorm:"type:varchar(255)"`
+	BasePrice    *uint64                `json:"base_price" gorm:"not null;default:0"`
+	CategoryID   *uint                  `json:"category_id" gorm:"not null"`
+	Category     *CategoryModel         `json:"category" gorm:"foreignKey:CategoryID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ServiceItems []ServiceItemModel     `json:"service_items" gorm:"foreignKey:ServiceID"`
+	Packages     []*ServicePackageModel `json:"packages" gorm:"many2many:service_package_services"`
+}
+
+func (ServiceModel) GetPolicy() Policy {
+	return &ServicePolicy{}
+}
+
+func (ServiceModel) TableName() string {
+	return "partial_services"
+}
+
+type ServicePackageModel struct {
+	gorm.Model
+	PackageName *string                      `json:"package_name" gorm:"not null;type:varchar(255)"`
+	Description string                       `json:"description" gorm:"type:varchar(255)"`
+	Image       string                       `json:"image" gorm:"type:varchar(255)"`
+	Icon        string                       `json:"icon" gorm:"type:varchar(255)"`
+	BasePrice   *uint64                      `json:"base_price" gorm:"not null;default:0"`
+	Services    []ServicePackageServiceModel `json:"services" gorm:"foreignKey:ServicePackageID"`
+}
+
+func (ServicePackageModel) TableName() string {
+	return "service_packages"
+}
+
+type ServicePackageServiceModel struct {
+	gorm.Model
+	ServicePackageID *uint                            `json:"service_package_id" gorm:"not null"`
+	ServicePackage   *ServicePackageModel             `json:"service_package" gorm:"foreignKey:ServicePackageID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ServiceID        *uint                            `json:"service_id" gorm:"not null"`
+	Service          *ServiceModel                    `json:"service" gorm:"foreignKey:ServiceID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Items            []ServicePackageServiceItemModel `json:"items" gorm:"foreignKey:ServicePackageServiceID"`
+}
+
+func (ServicePackageServiceModel) TableName() string {
+	return "service_package_services"
+}
+
+type ServicePackageServiceItemModel struct {
+	gorm.Model
+	ServicePackageServiceID *uint                       `json:"service_package_service_id" gorm:"not null"`
+	ServicePackageService   *ServicePackageServiceModel `json:"service_package_service"`
+	ServiceItemID           *uint                       `json:"service_item_id" gorm:"not null"`
+	ServiceItem             *ServiceItemModel           `json:"service_item" gorm:"foreignKey:ServiceItemID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Value                   uint                        `json:"value" gorm:"default:0"`
+}
+
+func (ServicePackageServiceItemModel) TableName() string {
+	return "service_package_service_items"
+}
+
+// ----- END OF SERVICE -----

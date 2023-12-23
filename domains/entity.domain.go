@@ -7,8 +7,15 @@ import (
 )
 
 // basic
+type Entity interface {
+	IsEntity() bool
+}
 type BasicEntity struct {
 	ID uint `json:"id"`
+}
+
+func (BasicEntity) IsEntity() bool {
+	return true
 }
 
 // response entity
@@ -86,7 +93,7 @@ type ServiceUserEntity struct {
 	BasicEntity
 	User               *UserEntity `json:"user,omitempty"`
 	Address            string      `json:"address"`
-	Fullname           string      `json:"Fullname"`
+	Fullname           string      `json:"fullname"`
 	IdentityCardNumber string      `json:"identity_card_number"`
 	Phone              string      `json:"phone"`
 }
@@ -94,7 +101,7 @@ type SupervisorEntity struct {
 	BasicEntity
 	User               *UserEntity `json:"user,omitempty"`
 	Address            string      `json:"address"`
-	Fullname           string      `json:"Fullname"`
+	Fullname           string      `json:"fullname"`
 	IdentityCardNumber string      `json:"identity_card_number"`
 	Phone              string      `json:"phone"`
 }
@@ -102,7 +109,7 @@ type AdminEntity struct {
 	BasicEntity
 	User     *UserEntity `json:"user,omitempty"`
 	Address  string      `json:"address"`
-	Fullname string      `json:"Fullname"`
+	Fullname string      `json:"fullname"`
 	Phone    string      `json:"phone"`
 }
 type EmployeeEntity struct {
@@ -148,3 +155,46 @@ type VillageEntity struct {
 }
 
 // ----- END OF MASTER DATA -----
+// ----- SERVICE -----
+type ServiceItemEntity struct {
+	BasicEntity
+	ItemName         string        `json:"item_name"`
+	Description      string        `json:"description"`
+	MinValue         uint          `json:"min_value"`
+	MaxValue         uint          `json:"max_value"`
+	ServiceID        uint          `json:"service_id"`
+	Service          ServiceEntity `json:"service"`
+	PricePerItem     uint64        `json:"price_per_item"`
+	IsOptionalChoice bool          `json:"is_optional_choice"`
+	Unit             string        `json:"unit"`
+}
+type ServiceEntity struct {
+	BasicEntity
+	ServiceName  string              `json:"service_name"`
+	Description  string              `json:"description"`
+	Image        string              `json:"image"`
+	Icon         string              `json:"icon"`
+	BasePrice    uint64              `json:"base_price"`
+	CategoryID   uint                `json:"category_id"`
+	Category     *CategoryEntity     `json:"category,omitempty"`
+	ServiceItems []ServiceItemEntity `json:"service_items,omitempty"`
+}
+type ServicePackageEntity struct {
+	BasicEntity
+	PackageName string                        `json:"package_name"`
+	Description string                        `json:"description"`
+	Image       string                        `json:"image"`
+	Icon        string                        `json:"icon"`
+	BasePrice   uint64                        `json:"base_price"`
+	Services    []ServicePackageServiceEntity `json:"services"`
+}
+type ServicePackageServiceEntity struct {
+	BasicEntity
+	ServicePackageID uint                             `json:"service_package_id"`
+	ServicePackage   *ServicePackageEntity            `json:"service_package,omitempty"`
+	ServiceID        uint                             `json:"service_id"`
+	Service          ServiceEntity                    `json:"service"`
+	Items            []ServicePackageServiceItemModel `json:"items"`
+}
+
+// ----- END OF SERVICE -----

@@ -2,6 +2,16 @@ package domains
 
 import "errors"
 
+type GeneralError struct {
+	Msg    string
+	Field  *string
+	Status int
+}
+
+func (a GeneralError) Error() string {
+	return a.Msg
+}
+
 var (
 	ErrRepository                    = errors.New("gorm error")
 	ErrRepositoryInterfaceConversion = errors.New("repository interface error")
@@ -37,3 +47,22 @@ var (
 	ErrFileCopy             = errors.New("file copy error")
 	ErrDeleteFile           = errors.New("file delete error")
 )
+
+type DatabaseKeyError struct {
+	Msg    string
+	Field  string
+	Status int
+}
+
+func (e DatabaseKeyError) Error() string {
+	return e.Msg
+}
+
+type DatabaseKeyErrors struct {
+	Errors []DatabaseKeyError
+	Msg    string
+}
+
+func (e DatabaseKeyErrors) Error() string {
+	return e.Msg
+}

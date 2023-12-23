@@ -15,7 +15,7 @@ func MakePagination(maxPage uint, currentPage uint, queries map[string]any) doma
 	}
 }
 
-func MakeDefaultGetPaginationQueries(q string, id uint, page uint, orderBy string, desc bool) map[string]any {
+func MakeDefaultGetPaginationQueries(q string, id uint, page uint, orderBy string, desc bool, withPagination bool) map[string]any {
 	paginationQueries := map[string]any{}
 	if q != "" {
 		paginationQueries["q"] = q
@@ -31,6 +31,9 @@ func MakeDefaultGetPaginationQueries(q string, id uint, page uint, orderBy strin
 	}
 	if !desc {
 		paginationQueries["desc"] = 0
+	}
+	if !withPagination {
+		paginationQueries["with-pagination"] = 0
 	}
 	return paginationQueries
 }

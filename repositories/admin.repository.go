@@ -19,48 +19,58 @@ func NewAdminRepository(db *gorm.DB) domains.AdminRepository {
 	}
 }
 
-func (s *adminRepository) Create(c context.Context, data domains.Model, repo ...*gorm.DB) (any, error) {
+func (s *adminRepository) Create(c context.Context, data domains.AdminModel, repo ...*gorm.DB) (domains.AdminModel, error) {
 	db := s.db
 	if len(repo) == 1 {
 		db = repo[0]
 	}
-	user, ok := data.(domains.AdminModel)
-	if !ok {
-		return nil, domains.ErrRepositoryInterfaceConversion
+	err := basicCreateRepoFunc(c, db, &s.model, &data)
+	return data, err
+}
+func (s *adminRepository) Find(c context.Context, id uint) (domains.AdminModel, error) {
+	var result domains.AdminModel
+	err := basicFindRepoFunc(c, s.db, &s.model, id, &result, "User")
+	return result, err
+}
+func (s *adminRepository) Update(c context.Context, id uint, data domains.AdminModel, repo ...*gorm.DB) (int64, domains.AdminModel, error) {
+	db := s.db
+	if len(repo) == 1 {
+		db = repo[0]
 	}
-	err := basicCreateRepoFunc(c, db, &s.model, &user)
-	return user, err
+	aff, err := basicUpdateRepoFunc(c, db, &s.model, id, &data)
+	return aff, data, err
 }
-func (s *adminRepository) FindByID(c context.Context, id uint) (domains.Model, error) {
-	var user domains.AdminModel
-	err := basicFindRepoFunc(c, s.db, &s.model, id, &user, "User")
-	return user, err
-}
-func (s *adminRepository) Update(c context.Context, id uint, data domains.Model) (int64, any, error) {
-	dataModel, ok := data.(domains.AdminModel)
-	if !ok {
-		return 0, nil, domains.ErrRepositoryInterfaceConversion
+func (s *adminRepository) Delete(c context.Context, id uint, repo ...*gorm.DB) (int64, int64, error) {
+	db := s.db
+	if len(repo) == 1 {
+		db = repo[0]
 	}
-	aff, err := basicUpdateRepoFunc(c, s.db, &s.model, id, &dataModel)
-	return aff, dataModel, err
-}
-func (s *adminRepository) Delete(c context.Context, id uint) (int64, int64, error) {
-	aff, err := basicDeleteRepoFunc(c, s.db, &s.model, id)
+	aff, err := basicDeleteRepoFunc(c, db, &s.model, id)
 	return int64(id), aff, err
 }
-func (s *adminRepository) Get(c context.Context, id uint, q string, page uint, orderBy string, desc bool) (any, uint, error) {
-	var users []domains.AdminModel
-	var count int64
-	query := s.db.Scopes(usingContextScope(c), usingModelScope(&s.model), orderScope(&s.model, orderBy, desc))
-	if id != 0 {
-		result := query.Scopes(whereIdEqualScope(id)).Find(&users)
-		return users, 1, convertRepoError(result)
+func (s *adminRepository) Read(c context.Context, q string, page uint, orderBy string, desc bool, withPagination bool) ([]domains.AdminModel, uint, error) {
+	var admins []domains.AdminModel
+	callFunc := func(db *gorm.DB) *gorm.DB {
+		return db.
+			Where("fullname LIKE ?", "%"+q+"%").
+			Preload("User")
 	}
-	searchQuery := query.Scopes(paginateScope(page)).
-		Where("fullname LIKE ?", "%"+q+"%").
-		Preload("User")
-	_ = *searchQuery.Count(&count)
-	maxPage := getMaxPage(uint(count))
-	result := searchQuery.Find(&users)
-	return users, maxPage, convertRepoError(result)
+	maxPage, err := basicReadFunc(
+		c,
+		&admins,
+		s.db,
+		callFunc,
+		page,
+		orderBy,
+		desc,
+		withPagination,
+		&s.model,
+	)
+	if err != nil {
+		return admins, 0, err
+	}
+	if len(admins) == 0 {
+		return nil, 0, domains.ErrRecordNotFound
+	}
+	return admins, maxPage, nil
 }

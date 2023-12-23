@@ -10,21 +10,21 @@ import (
 	"gorm.io/gorm"
 )
 
-func basicCreateRepoFunc(c context.Context, db *gorm.DB, model any, data any) error {
+func basicCreateRepoFunc(c context.Context, db *gorm.DB, model domains.Model, data domains.Model) error {
 	result := db.Scopes(usingContextScope(c), usingModelScope(model)).Create(data)
 	return convertRepoError(result)
 }
 
-func basicFindRepoFunc(c context.Context, db *gorm.DB, model any, id uint, result any, preloads ...string) error {
+func basicFindRepoFunc(c context.Context, db *gorm.DB, model domains.Model, id uint, result domains.Model, preloads ...string) error {
 	queryResult := db.Scopes(usingContextScope(c), usingModelScope(model), whereIdEqualScope(id))
 	for _, preload := range preloads {
 		queryResult.Preload(preload)
 	}
-	queryResult.First(result)
-	return convertRepoError(queryResult)
+	r := queryResult.First(result)
+	return convertRepoError(r)
 }
 
-func basicUpdateRepoFunc(c context.Context, db *gorm.DB, model any, id uint, data any) (int64, error) {
+func basicUpdateRepoFunc(c context.Context, db *gorm.DB, model domains.Model, id uint, data domains.Model) (int64, error) {
 	result := db.Scopes(usingContextScope(c), usingModelScope(model), whereIdEqualScope(id)).Updates(data)
 	if result.RowsAffected == 0 {
 		return 0, domains.ErrRecordNotFound
@@ -32,7 +32,7 @@ func basicUpdateRepoFunc(c context.Context, db *gorm.DB, model any, id uint, dat
 	return result.RowsAffected, convertRepoError(result)
 }
 
-func basicDeleteRepoFunc(c context.Context, db *gorm.DB, model any, id uint) (int64, error) {
+func basicDeleteRepoFunc(c context.Context, db *gorm.DB, model domains.Model, id uint) (int64, error) {
 	result := db.Scopes(usingContextScope(c), whereIdEqualScope(id)).Delete(model)
 	if result.RowsAffected == 0 {
 		return 0, domains.ErrRecordNotFound
@@ -59,4 +59,35 @@ func convertRepoError(q *gorm.DB) error {
 
 func getMaxPage(countRes uint) uint {
 	return uint(math.Ceil(float64(countRes) / configs.PAGINATION_PER_PAGE))
+}
+
+type readRepoFunc func(db *gorm.DB) *gorm.DB
+
+func basicReadFunc(
+	c context.Context,
+	results any,
+	repo *gorm.DB,
+	callFunc readRepoFunc,
+	page uint,
+	orderBy string,
+	desc bool,
+	withPagination bool,
+	model domains.Model,
+) (uint, error) {
+	var count int64
+	query := repo.Scopes(
+		usingContextScope(c),
+		usingModelScope(model),
+		orderScope(model, orderBy, desc),
+	)
+	searchQuery := callFunc(query)
+	if withPagination {
+		searchQuery = searchQuery.Scopes(paginateScope(page))
+	}
+	result := searchQuery.Find(results)
+	if withPagination {
+		_ = searchQuery.Count(&count)
+	}
+	maxPage := getMaxPage(uint(count))
+	return maxPage, convertRepoError(result)
 }

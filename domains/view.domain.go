@@ -23,18 +23,36 @@ type BasicCrudView interface {
 }
 
 // ----- MASTER DATA -----
-type ServiceCategoryView interface {
+type CategoryView interface {
 	BasicCrudView
 	GetIcon(c echo.Context) error
 }
-type DistrictView interface {
+
+// ----- END OF MASTER DATA -----
+// ----- USER -----
+type EmployeeView interface {
 	BasicCrudView
 }
-type SubDistrictView interface {
+type AdminView interface {
 	BasicCrudView
 }
-type VillageView interface {
+type SupervisorView interface {
+	BasicCrudView
+}
+type UserServiceView interface {
 	BasicCrudView
 }
 
-//----- END OF MASTER DATA -----
+// ----- END OF USER -----
+// ---- APP SERVICE -----
+type ServiceItemView interface {
+	BasicCrudView
+}
+type PartialServiceView interface {
+	BasicCrudView
+}
+type ServicePackageView interface {
+	BasicCrudView
+}
+
+// ---- END OF APP SERVICE ----
