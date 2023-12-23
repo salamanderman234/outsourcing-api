@@ -38,7 +38,7 @@ func (s *userRepository) RegisterUser(c context.Context, authData domains.UserMo
 		created, err := s.Create(c, user, tx)
 		if errors.Is(err, domains.ErrDuplicateEntries) {
 			tx.Rollback()
-			return domains.ErrEmailDuplicate
+			return err
 		}
 		if err != nil {
 			tx.Rollback()
@@ -107,7 +107,12 @@ func (s *userRepository) Create(c context.Context, data domains.UserModel, repo 
 	}
 	err := basicCreateRepoFunc(c, db, &s.model, &data)
 	if errors.Is(err, domains.ErrDuplicateEntries) {
-		return data, domains.ErrEmailDuplicate
+		conv := err.(domains.GeneralError)
+		conv.DatabaseError = domains.DatabaseKeyError{
+			Field: "email",
+			Msg:   "this email already exists",
+		}
+		return data, conv
 	}
 	return data, err
 }
@@ -123,7 +128,12 @@ func (s *userRepository) Update(c context.Context, id uint, data domains.UserMod
 	}
 	aff, err := basicUpdateRepoFunc(c, db, &s.model, id, &data)
 	if errors.Is(err, domains.ErrDuplicateEntries) {
-		return aff, data, domains.ErrEmailDuplicate
+		conv := err.(domains.GeneralError)
+		conv.DatabaseError = domains.DatabaseKeyError{
+			Field: "email",
+			Msg:   "this email already exists",
+		}
+		return aff, data, conv
 	}
 	return aff, data, err
 }

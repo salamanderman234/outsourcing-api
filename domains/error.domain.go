@@ -1,11 +1,16 @@
 package domains
 
-import "errors"
+import (
+	"errors"
+	"net/http"
+)
 
 type GeneralError struct {
-	Msg    string
-	Field  *string
-	Status int
+	Msg              string
+	Status           int
+	GeneralMessage   string
+	ValidationErrors error
+	DatabaseError    error
 }
 
 func (a GeneralError) Error() string {
@@ -13,45 +18,123 @@ func (a GeneralError) Error() string {
 }
 
 var (
-	ErrRepository                    = errors.New("gorm error")
-	ErrRepositoryInterfaceConversion = errors.New("repository interface error")
+	ErrRepository = GeneralError{
+		Msg:            "repository error",
+		Status:         http.StatusInternalServerError,
+		GeneralMessage: "Internal Server Error",
+	}
+	ErrRepositoryInterfaceConversion = GeneralError{
+		Msg:            "failed to perform type conversion on repository level",
+		Status:         http.StatusInternalServerError,
+		GeneralMessage: "Conversion Error",
+	}
 	// service
 	ErrHashingPassword = errors.New("hashing password error")
-	ErrInvalidCreds    = errors.New("invalid credentials error")
-	ErrConversionType  = errors.New("conversion type error")
-	ErrValidation      = errors.New("validation error")
+	ErrInvalidCreds    = GeneralError{
+		Msg:            "invalid credentials",
+		Status:         http.StatusUnauthorized,
+		GeneralMessage: "Request Error",
+	}
+	ErrConversionType = GeneralError{
+		Msg:            "failed to perform type conversion",
+		Status:         http.StatusInternalServerError,
+		GeneralMessage: "Conversion Error",
+	}
+	ErrValidation = GeneralError{
+		Msg:            "request does not match validation",
+		Status:         http.StatusBadRequest,
+		GeneralMessage: "Request Error",
+	}
 	// token
 	ErrGenerateToken = errors.New("generate token error")
-	ErrExpiredToken  = errors.New("expired token error")
-	ErrInvalidToken  = errors.New("invalid token error")
+	ErrExpiredToken  = GeneralError{
+		Msg:            "token is expired, generate new one",
+		Status:         http.StatusUnauthorized,
+		GeneralMessage: "Token Error",
+	}
+	ErrInvalidToken = GeneralError{
+		Msg:            "token is invalid",
+		Status:         http.StatusUnauthorized,
+		GeneralMessage: "Token Error",
+	}
 	// convert
-	ErrJsonConvert = errors.New("json convert error")
+	ErrJsonConvert = GeneralError{
+		Msg:            "failed to perform json conversion",
+		Status:         http.StatusNotFound,
+		GeneralMessage: "Conversion Error",
+	}
 	// bind
-	ErrGenerateBindingErrs = errors.New("generate binding error")
+	ErrGenerateBindingErrs = GeneralError{
+		Msg:            "failed to generate binding error",
+		Status:         http.StatusInternalServerError,
+		GeneralMessage: "Binding Error",
+	}
 	// http
-	ErrBadRequest = errors.New("bad request error")
+	ErrBadRequest = GeneralError{
+		Msg:            "bad request",
+		Status:         http.StatusBadRequest,
+		GeneralMessage: "Request Error",
+	}
 	// gorm
-	ErrRecordNotFound     = errors.New("resource not found error")
-	ErrDuplicateEntries   = errors.New("duplicate entries error")
-	ErrForeignKeyViolated = errors.New("invalid foreign key error")
-	ErrCardIdDuplicate    = errors.New("duplicate entries for identity card number field")
-	ErrEmailDuplicate     = errors.New("duplicate entries for email field")
+	ErrRecordNotFound = GeneralError{
+		Msg:            "requested resource is not found",
+		Status:         http.StatusNotFound,
+		GeneralMessage: "Not Found Error",
+	}
+	ErrDuplicateEntries = GeneralError{
+		Msg:            "duplicate entries not allowed",
+		Status:         http.StatusConflict,
+		GeneralMessage: "Resource Conflict Error",
+	}
+
+	ErrForeignKeyViolated = GeneralError{
+		Msg:            "invalid foreign key",
+		Status:         http.StatusUnprocessableEntity,
+		GeneralMessage: "Foreign Key Violated  Error",
+	}
 	// access
-	ErrInvalidAccess = errors.New("invalid access error")
+	ErrInvalidAccess = GeneralError{
+		Msg:            "access denied",
+		Status:         http.StatusForbidden,
+		GeneralMessage: "Invalid Access Error",
+	}
 	// role
-	ErrInvalidRole = errors.New("invalid request role")
+	ErrInvalidRole = GeneralError{
+		Msg:            "invalid role",
+		Status:         http.StatusBadRequest,
+		GeneralMessage: "Invalid Access Error",
+	}
 	// file
-	ErrGetMultipartFormData = errors.New("get multipart formdata error")
-	ErrFileOpen             = errors.New("file open error")
-	ErrFileCreate           = errors.New("file create error")
-	ErrFileCopy             = errors.New("file copy error")
-	ErrDeleteFile           = errors.New("file delete error")
+	ErrGetMultipartFormData = GeneralError{
+		Msg:            "wrong content type, must be multipart form data",
+		Status:         http.StatusBadRequest,
+		GeneralMessage: "Request Error",
+	}
+	ErrFileOpen = GeneralError{
+		Msg:            "failed to open file",
+		Status:         http.StatusInternalServerError,
+		GeneralMessage: "File Error",
+	}
+	ErrFileCreate = GeneralError{
+		Msg:            "failed to create file",
+		Status:         http.StatusInternalServerError,
+		GeneralMessage: "File Error",
+	}
+	ErrFileCopy = GeneralError{
+		Msg:            "failed to copy file",
+		Status:         http.StatusInternalServerError,
+		GeneralMessage: "File Error",
+	}
+	ErrDeleteFile = GeneralError{
+		Msg:            "failed to delete file",
+		Status:         http.StatusInternalServerError,
+		GeneralMessage: "File Error",
+	}
 )
 
 type DatabaseKeyError struct {
-	Msg    string
-	Field  string
-	Status int
+	Msg   string
+	Field string
 }
 
 func (e DatabaseKeyError) Error() string {

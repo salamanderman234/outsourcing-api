@@ -26,11 +26,12 @@ func (ps *partialServiceRepository) Create(ctx context.Context, data domains.Ser
 	}
 	err := basicCreateRepoFunc(ctx, db, &ps.model, &data)
 	if errors.Is(err, domains.ErrForeignKeyViolated) {
-		err = domains.DatabaseKeyError{
+		conv := err.(domains.GeneralError)
+		conv.DatabaseError = domains.DatabaseKeyError{
 			Field: "category_id",
-			Msg:   "category id does not exists",
+			Msg:   "this category id does not exists",
 		}
-		return data, err
+		return data, conv
 	}
 	return data, err
 }
@@ -73,11 +74,12 @@ func (ps *partialServiceRepository) Update(ctx context.Context, id uint, data do
 	}
 	aff, err := basicUpdateRepoFunc(ctx, db, &ps.model, id, &data)
 	if errors.Is(err, domains.ErrForeignKeyViolated) {
-		err = domains.DatabaseKeyError{
+		conv := err.(domains.GeneralError)
+		conv.DatabaseError = domains.DatabaseKeyError{
 			Field: "category_id",
-			Msg:   "category id does not exists",
+			Msg:   "this category id does not exists",
 		}
-		return 0, data, err
+		return 0, data, conv
 	}
 	return int(aff), data, err
 }

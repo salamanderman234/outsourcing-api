@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"errors"
 	"net/http"
 	"strings"
 
@@ -77,73 +76,21 @@ func GenerateValidationError(errs error) (domains.ErrorBodyResponse, error) {
 
 func HandleError(err error) (int, string, *domains.ErrorBodyResponse) {
 	resp := domains.ErrorBodyResponse{}
-	_, ok := err.(govalidator.Errors)
-	if ok {
-		resp, _ = GenerateValidationError(err)
-		return http.StatusBadRequest, domains.ErrValidation.Error(), &resp
-	}
-	_, ok = err.(domains.DatabaseKeyError)
-	if ok {
-		resp := GenerateDatabaseKeyError(err)
-		return http.StatusUnprocessableEntity, domains.ErrForeignKeyViolated.Error(), resp
-	}
-	msg := err.Error()
-	if err == domains.ErrBadRequest {
-		errString := "invalid user request"
-		resp.Error = &errString
-		return http.StatusBadRequest, msg, &resp
-	} else if err == domains.ErrInvalidToken {
-		errString := "token is invalid"
-		resp.Error = &errString
-		return http.StatusUnauthorized, msg, &resp
-	} else if err == domains.ErrRecordNotFound {
-		errString := "not found"
-		resp.Error = &errString
-		return http.StatusNotFound, msg, &resp
-	} else if err == domains.ErrDuplicateEntries {
-		errString := "duplicate data entries"
-		resp.Error = &errString
-		return http.StatusConflict, msg, &resp
-	} else if errors.Is(err, domains.ErrEmailDuplicate) {
-		rule := "unique"
-		field := "email"
-		detail := "this email is already exists"
-		resp.Errors = []domains.ErrorDetailResponse{
-			{
-				Field:  &field,
-				Rule:   &rule,
-				Detail: &detail,
-			},
-		}
-		return http.StatusConflict, msg, &resp
-	} else if err == domains.ErrInvalidAccess {
-		errString := "don't have access to these resources"
-		resp.Error = &errString
-		return http.StatusForbidden, msg, &resp
-	} else if errors.Is(err, domains.ErrInvalidRole) {
-		errString := "invalid role"
-		resp.Error = &errString
-		return http.StatusBadRequest, msg, &resp
-	} else if errors.Is(err, domains.ErrForeignKeyViolated) {
-		errString := "foreign key error"
-		resp.Error = &errString
-		return http.StatusUnprocessableEntity, msg, &resp
-	} else if errors.Is(err, domains.ErrExpiredToken) {
-		errString := "token is expired"
-		resp.Error = &errString
-		return http.StatusUnauthorized, msg, &resp
-	} else if errors.Is(err, domains.ErrInvalidCreds) {
-		errString := "wrong email or password"
-		resp.Error = &errString
-		return http.StatusUnauthorized, msg, &resp
-	} else if errors.Is(err, domains.ErrGetMultipartFormData) {
-		errString := "request content type must be multipart/form-data"
-		resp.Error = &errString
-		return http.StatusBadRequest, msg, &resp
-	} else if err != nil {
-		errString := "there's something wrong"
-		resp.Error = &errString
+	appErr, ok := err.(domains.GeneralError)
+	if !ok {
+		msg := "there's something wrong"
+		resp.Error = &msg
 		return http.StatusInternalServerError, "internal server error", &resp
 	}
-	return 200, "ok", nil
+	resp.Error = &appErr.Msg
+	if appErr.ValidationErrors != nil {
+		errs, _ := GenerateValidationError(appErr.ValidationErrors)
+		resp.Errors = errs.Errors
+		appErr.ValidationErrors = nil
+	} else if appErr.DatabaseError != nil {
+		errs := GenerateDatabaseKeyError(appErr.DatabaseError)
+		resp.Errors = errs.Errors
+		appErr.DatabaseError = nil
+	}
+	return appErr.Status, appErr.GeneralMessage, &resp
 }

@@ -3,7 +3,6 @@ package repositories
 import (
 	"context"
 	"errors"
-	"net/http"
 
 	"github.com/salamanderman234/outsourcing-api/domains"
 	"gorm.io/gorm"
@@ -28,12 +27,12 @@ func (s *supervisorRepository) Create(c context.Context, data domains.Supervisor
 	}
 	err := basicCreateRepoFunc(c, db, &s.model, &data)
 	if errors.Is(err, domains.ErrDuplicateEntries) {
-		err = domains.DatabaseKeyError{
-			Field:  "identity_card_number",
-			Msg:    "this identity card number already exists",
-			Status: http.StatusConflict,
+		conv := err.(domains.GeneralError)
+		conv.DatabaseError = domains.DatabaseKeyError{
+			Field: "identity_card_number",
+			Msg:   "this identity card number already exists",
 		}
-		return data, err
+		return data, conv
 	}
 	return data, err
 }
@@ -49,12 +48,12 @@ func (s *supervisorRepository) Update(c context.Context, id uint, data domains.S
 	}
 	aff, err := basicUpdateRepoFunc(c, db, &s.model, id, &data)
 	if errors.Is(err, domains.ErrDuplicateEntries) {
-		err = domains.DatabaseKeyError{
-			Field:  "identity_card_number",
-			Msg:    "this identity card number already exists",
-			Status: http.StatusConflict,
+		conv := err.(domains.GeneralError)
+		conv.DatabaseError = domains.DatabaseKeyError{
+			Field: "identity_card_number",
+			Msg:   "this identity card number already exists",
 		}
-		return aff, data, err
+		return aff, data, conv
 	}
 	return aff, data, err
 }
