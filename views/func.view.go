@@ -31,13 +31,10 @@ func basicCreateView(c echo.Context, data any, callFunc callCreateServFunc) erro
 		Message: "created",
 	}
 	if err := c.Bind(data); err != nil {
-		msg := "invalid request"
-		payload := domains.ErrorBodyResponse{
-			Error: &msg,
-		}
-		resp.Message = domains.ErrBadRequest.Error()
-		resp.Body = payload
-		return c.JSON(http.StatusBadRequest, resp)
+		status, msg, errBody := helpers.HandleError(domains.ErrBadRequest)
+		resp.Message = msg
+		resp.Body = *errBody
+		return c.JSON(status, resp)
 	}
 	created, err := callFunc(ctx)
 	if err != nil {
@@ -61,13 +58,10 @@ func basicUpdateView(c echo.Context, data any, callFunc callUpdateServFunc) erro
 	}
 	var id uint
 	if err := echo.QueryParamsBinder(c).Uint("id", &id).BindError(); err != nil || id == 0 {
-		msg := "id is required, must be an unsigned integer and cannot be 0"
-		payload := domains.ErrorBodyResponse{
-			Error: &msg,
-		}
-		resp.Message = domains.ErrBadRequest.Error()
-		resp.Body = payload
-		return c.JSON(http.StatusBadRequest, resp)
+		status, msg, errBody := helpers.HandleError(domains.ErrMissingId)
+		resp.Message = msg
+		resp.Body = *errBody
+		return c.JSON(status, resp)
 	}
 	if err := c.Bind(data); err != nil {
 		msg := "invalid request"
@@ -102,13 +96,10 @@ func basicDeleteView(c echo.Context, callFunc callDeleteServFunc) error {
 	}
 	var id uint
 	if err := echo.QueryParamsBinder(c).Uint("id", &id).BindError(); err != nil || id == 0 {
-		msg := "id is required, must be an unsigned integer and cannot be 0"
-		payload := domains.ErrorBodyResponse{
-			Error: &msg,
-		}
-		resp.Message = domains.ErrBadRequest.Error()
-		resp.Body = payload
-		return c.JSON(http.StatusBadRequest, resp)
+		status, msg, errBody := helpers.HandleError(domains.ErrMissingId)
+		resp.Message = msg
+		resp.Body = *errBody
+		return c.JSON(status, resp)
 	}
 	deleted, aff, err := callFunc(ctx, id)
 	deletedID := uint(deleted)

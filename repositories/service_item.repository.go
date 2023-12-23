@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"errors"
 
 	"github.com/salamanderman234/outsourcing-api/domains"
 	"gorm.io/gorm"
@@ -25,19 +26,32 @@ func (cr *serviceItemRepository) Create(c context.Context, data domains.ServiceI
 		db = repo[0]
 	}
 	err := basicCreateRepoFunc(c, db, &cr.model, &data)
+	if errors.Is(err, domains.ErrForeignKeyViolated) {
+		conv := err.(domains.GeneralError)
+		conv.DatabaseError = domains.DatabaseKeyError{
+			Field: "service_id",
+			Msg:   "this service id does not exists",
+		}
+		return data, conv
+	}
 	return data, err
 }
 func (cr *serviceItemRepository) Find(c context.Context, id uint) (domains.ServiceItemModel, error) {
 	var result domains.ServiceItemModel
-	err := basicFindRepoFunc(c, cr.db, &cr.model, id, &result)
+	err := basicFindRepoFunc(c, cr.db, &cr.model, id, &result, "Service")
 	return result, err
 }
-func (cr *serviceItemRepository) Read(c context.Context, q string, page uint, orderBy string, desc bool, withPagination bool) ([]domains.ServiceItemModel, uint, error) {
+func (cr *serviceItemRepository) Read(c context.Context, serviceId uint, q string, page uint, orderBy string, desc bool, withPagination bool) ([]domains.ServiceItemModel, uint, error) {
 	var results []domains.ServiceItemModel
 	callFunc := func(db *gorm.DB) *gorm.DB {
-		return db.Where("service_items.item_name LIKE ?", "%"+q+"%").
-			Or("service_items.description LIKE ?", "%"+q+"%").
-			Preload("Service")
+		query := db
+		if serviceId != 0 {
+			query = query.Where("partial_service_id = ?", serviceId)
+		} else {
+			query = query.Where("item_name LIKE ?", "%"+q+"%").
+				Or("description LIKE ?", "%"+q+"%")
+		}
+		return query.Preload("Service")
 	}
 	maxPage, err := basicReadFunc(
 		c,
@@ -64,6 +78,14 @@ func (cr *serviceItemRepository) Update(c context.Context, id uint, data domains
 		db = repo[0]
 	}
 	aff, err := basicUpdateRepoFunc(c, db, &cr.model, id, &data)
+	if errors.Is(err, domains.ErrForeignKeyViolated) {
+		conv := err.(domains.GeneralError)
+		conv.DatabaseError = domains.DatabaseKeyError{
+			Field: "service_id",
+			Msg:   "this service id does not exists",
+		}
+		return aff, data, conv
+	}
 	return aff, data, err
 }
 func (cr *serviceItemRepository) Delete(c context.Context, id uint, repo ...*gorm.DB) (int64, int64, error) {

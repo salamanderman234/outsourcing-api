@@ -35,12 +35,18 @@ func (ps *partialServiceRepository) Create(ctx context.Context, data domains.Ser
 	}
 	return data, err
 }
-func (ps *partialServiceRepository) Read(ctx context.Context, q string, page uint, orderBy string, desc bool, withPagination bool) ([]domains.ServiceModel, uint, error) {
+func (ps *partialServiceRepository) Read(ctx context.Context, categoryId uint, q string, page uint, orderBy string, desc bool, withPagination bool) ([]domains.ServiceModel, uint, error) {
 	var results []domains.ServiceModel
 	callFunc := func(db *gorm.DB) *gorm.DB {
-		return db.Where("service_name LIKE ?", "%"+q+"%").
-			Or("description LIKE ?", "%"+q+"%").
-			Preload("Category").
+		query := db
+		if categoryId != 0 {
+			query = query.Where("category_id = ?", categoryId)
+		} else {
+			query = query.Where("service_name LIKE ?", "%"+q+"%").
+				Or("description LIKE ?", "%"+q+"%")
+		}
+
+		return query.Preload("Category").
 			Preload("ServiceItems")
 	}
 	maxPage, err := basicReadFunc(
@@ -64,7 +70,7 @@ func (ps *partialServiceRepository) Read(ctx context.Context, q string, page uin
 }
 func (ps *partialServiceRepository) Find(ctx context.Context, id uint) (domains.ServiceModel, error) {
 	var result domains.ServiceModel
-	err := basicFindRepoFunc(ctx, ps.db, &ps.model, id, &result)
+	err := basicFindRepoFunc(ctx, ps.db, &ps.model, id, &result, "Category")
 	return result, err
 }
 func (ps *partialServiceRepository) Update(ctx context.Context, id uint, data domains.ServiceModel, repo ...*gorm.DB) (int, domains.ServiceModel, error) {

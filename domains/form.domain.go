@@ -93,22 +93,23 @@ type VillageUpdateForm struct {
 // ----- END OF MASTER DATA FORM -----
 // ----- APP SERVICE FORM -----
 type ServiceItemCreateForm struct {
+	// MinValue         uint   `form:"min_value" json:"min_value" valid:"range(0|1000)~maximum value is 1000 and minimum is 0"`
+	ServiceID        uint   `form:"partial_service_id" json:"partial_service_id" valid:"required~this field is required"`
 	ItemName         string `form:"item_name" json:"item_name" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
 	Description      string `form:"description" json:"description" valid:"stringlength(0|255)~maximum 255 character"`
-	MinValue         uint   `form:"min_value" json:"min_value" valid:"required~this field is required,range(0|1000)~maximum value is 1000 and minimum is 0"`
 	MaxValue         uint   `form:"max_value" json:"max_value" valid:"required~this field is required,range(1|1000)~maximum value is 1000 and minimum is 1"`
 	PricePerItem     uint64 `form:"price_per_item" json:"price_per_item" valid:"required~this field is required,range(0|10000000)~maximum value is 10000000 and minimum is 0"`
-	IsOptionalChoice bool   `form:"is_optional_choice" json:"is_optional_choice" valid:"required~this field is required"`
-	Unit             string `form:"unit" json:"unit" valid:"stringlength(0|255)~maximum 255 character"`
+	IsOptionalChoice bool   `form:"is_optional_choice" json:"is_optional_choice"`
+	Unit             string `form:"unit" json:"unit" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
 }
 type ServiceItemUpdateForm struct {
-	ItemName         *string `form:"item_name" json:"item_name,omitempty" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
-	Description      *string `form:"description" json:"description,omitempty" valid:"stringlength(0|255)~maximum 255 character"`
-	MinValue         *uint   `form:"min_value" json:"min_value,omitempty" valid:"required~this field is required,range(0|1000)~maximum value is 1000 and minimum is 0"`
-	MaxValue         *uint   `form:"max_value" json:"max_value,omitempty" valid:"required~this field is required,range(1|1000)~maximum value is 1000 and minimum is 1"`
-	PricePerItem     *uint64 `form:"price_per_item" json:"price_per_item,omitempty" valid:"required~this field is required,range(0|10000000)~maximum value is 10000000 and minimum is 0"`
-	IsOptionalChoice *bool   `form:"is_optional_choice" json:"is_optional_choice,omitempty" valid:"required~this field is required"`
-	Unit             *string `form:"unit" json:"unit,omitempty" valid:"stringlength(0|255)~maximum 255 character"`
+	// MinValue         uint   `form:"min_value" json:"min_value,omitempty" valid:"range(0|1000)~maximum value is 1000 and minimum is 0"`
+	ItemName         string `form:"item_name" json:"item_name,omitempty" valid:"stringlength(0|255)~maximum 255 character"`
+	Description      string `form:"description" json:"description,omitempty" valid:"stringlength(0|255)~maximum 255 character"`
+	MaxValue         uint   `form:"max_value" json:"max_value,omitempty" valid:"range(1|1000)~maximum value is 1000 and minimum is 1"`
+	PricePerItem     uint64 `form:"price_per_item" json:"price_per_item,omitempty" valid:"range(0|10000000)~maximum value is 10000000 and minimum is 0"`
+	IsOptionalChoice bool   `form:"is_optional_choice" json:"is_optional_choice,omitempty"`
+	Unit             string `form:"unit" json:"unit,omitempty" valid:"stringlength(0|255)~maximum 255 character"`
 }
 type PartialServiceCreateForm struct {
 	ServiceName string `form:"service_name" json:"service_name" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
@@ -117,9 +118,9 @@ type PartialServiceCreateForm struct {
 	CategoryID  uint   `form:"category_id" json:"category_id" valid:"required~this field is required,int~must integer"`
 }
 type PartialServiceUpdateForm struct {
-	ServiceName *string `form:"service_name" json:"service_name,omitempty" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
+	ServiceName *string `form:"service_name" json:"service_name,omitempty" valid:"stringlength(0|255)~maximum 255 character"`
 	Description *string `form:"description" json:"description,omitempty" valid:"stringlength(0|255)~maximum 255 character"`
-	BasePrice   *uint64 `form:"base_price" json:"base_price,omitempty" valid:"required~this field is required,int~must integer,range(0|1000000000)~min value is 0"`
+	BasePrice   *uint64 `form:"base_price" json:"base_price,omitempty" valid:"int~must integer,range(0|1000000000)~min value is 0"`
 }
 
 // --> Service Package

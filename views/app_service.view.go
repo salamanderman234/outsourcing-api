@@ -3,6 +3,7 @@ package views
 import (
 	"context"
 	"math"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/salamanderman234/outsourcing-api/domains"
@@ -23,9 +24,11 @@ func (serviceItemView) Create(c echo.Context) error {
 }
 
 func (serviceItemView) Read(c echo.Context) error {
-	callFunc := func(c context.Context, id uint, query string, page uint, orderBy string, desc bool, withPagination bool) (any, *domains.Pagination, error) {
-		return domains.ServiceRegistry.ServiceItemServ.Read(c,
-			id, query, uint(math.Max(float64(1), float64(page))), orderBy, desc, withPagination,
+	callFunc := func(ctx context.Context, id uint, query string, page uint, orderBy string, desc bool, withPagination bool) (any, *domains.Pagination, error) {
+		serviceIdString := c.QueryParam("partial_service_id")
+		serviceId, _ := strconv.Atoi(serviceIdString)
+		return domains.ServiceRegistry.ServiceItemServ.Read(ctx,
+			uint(serviceId), id, query, uint(math.Max(float64(1), float64(page))), orderBy, desc, withPagination,
 		)
 	}
 	return basicReadView(c, callFunc)
@@ -73,9 +76,13 @@ func (partialServiceView) Create(c echo.Context) error {
 }
 
 func (partialServiceView) Read(c echo.Context) error {
-	callFunc := func(c context.Context, id uint, query string, page uint, orderBy string, desc bool, withPagination bool) (any, *domains.Pagination, error) {
-		return domains.ServiceRegistry.ServiceServ.Read(c,
-			id, query, uint(math.Max(float64(1), float64(page))), orderBy, desc, withPagination,
+	callFunc := func(ctx context.Context, id uint, query string, page uint, orderBy string, desc bool, withPagination bool) (any, *domains.Pagination, error) {
+		categoryIdString := c.QueryParam("category_id")
+		categoryId, _ := strconv.Atoi(categoryIdString)
+		return domains.ServiceRegistry.ServiceServ.Read(ctx,
+			uint(categoryId), id,
+			query, uint(math.Max(float64(1),
+				float64(page))), orderBy, desc, withPagination,
 		)
 	}
 	return basicReadView(c, callFunc)

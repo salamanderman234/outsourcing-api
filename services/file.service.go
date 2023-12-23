@@ -2,12 +2,13 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"mime/multipart"
 	"os"
+	"slices"
 	"strings"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/salamanderman234/outsourcing-api/configs"
 	"github.com/salamanderman234/outsourcing-api/domains"
 	"github.com/salamanderman234/outsourcing-api/helpers"
@@ -18,8 +19,11 @@ type fileService struct{}
 func NewFileService() domains.FileService {
 	return &fileService{}
 }
-func (f fileService) Store(file *multipart.FileHeader, dest string) (string, error) {
+func (f fileService) Store(file *multipart.FileHeader, dest string, fileConfig configs.FileConfig) (string, error) {
 	vaultPath := configs.FILE_VAULT_PATH
+	if file.Size > fileConfig.MaximumFileSize {
+		return "", domains.ErrFileSize
+	}
 	src, err := file.Open()
 	if err != nil {
 		return "", domains.ErrFileOpen
@@ -28,6 +32,10 @@ func (f fileService) Store(file *multipart.FileHeader, dest string) (string, err
 	fileName := helpers.GenerateRandomString(10)
 	splittedFileName := strings.Split(file.Filename, ".")
 	fileType := splittedFileName[len(splittedFileName)-1]
+	valid := slices.Contains(fileConfig.AcceptedFileTypes, fileType)
+	if !valid {
+		return "", domains.ErrInvalidFileType
+	}
 	nameType := fileName + "." + fileType
 	finalDest := "." + vaultPath + "/" + dest + "/"
 	// Destination
@@ -37,7 +45,6 @@ func (f fileService) Store(file *multipart.FileHeader, dest string) (string, err
 	finalDest += nameType
 	dst, err := os.Create(finalDest)
 	if err != nil {
-		fmt.Println(err)
 		return "", domains.ErrFileCreate
 	}
 	defer dst.Close()
@@ -48,16 +55,48 @@ func (f fileService) Store(file *multipart.FileHeader, dest string) (string, err
 	}
 	return finalDest, nil
 }
-func (f fileService) BatchStore(files []*multipart.FileHeader, dest string) ([]string, error) {
-	filePaths := []string{}
-	for _, file := range files {
-		filePath, err := f.Store(file, dest)
-		if err != nil {
-			return nil, err
-		}
-		filePaths = append(filePaths, filePath)
+func (f fileService) cancelOperations(filePaths map[string]string) {
+	for _, filePath := range filePaths {
+		f.Destroy(filePath)
 	}
-	return filePaths, nil
+}
+func (f fileService) BatchStore(files map[string]domains.FileWrapper) (map[string]string, string, error) {
+	filePaths := map[string]string{}
+	for key, file := range files {
+		content := file.File
+		dest := file.Dest
+		config := file.Config
+		filePath, err := f.Store(content, dest, config)
+		if err != nil {
+			go f.cancelOperations(filePaths)
+			if errors.Is(err, domains.ErrInvalidFileType) {
+				conv := err.(domains.GeneralError)
+				conv.ValidationErrors = govalidator.Errors{
+					govalidator.Error{
+						Name:                     key,
+						Validator:                "file type",
+						CustomErrorMessageExists: true,
+						Err:                      errors.New(files[key].Config.AcceptedErrMsg),
+					},
+				}
+				return filePaths, key, conv
+			} else if errors.Is(err, domains.ErrFileSize) {
+				conv := err.(domains.GeneralError)
+				conv.ValidationErrors = govalidator.Errors{
+					govalidator.Error{
+						Name:                     key,
+						Validator:                "file size",
+						CustomErrorMessageExists: true,
+						Err:                      errors.New(files[key].Config.MaximumErrMsg),
+					},
+				}
+				return filePaths, key, conv
+			}
+			return filePaths, key, err
+		}
+		filePaths[key] = filePath
+	}
+	return filePaths, "", nil
 }
 
 func (f fileService) Destroy(target string) error {

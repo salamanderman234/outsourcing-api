@@ -3,12 +3,14 @@ package domains
 import (
 	"context"
 	"mime/multipart"
+
+	"github.com/salamanderman234/outsourcing-api/configs"
 )
 
 // ----- FILE SERVICE -----
 type FileService interface {
-	Store(file *multipart.FileHeader, dest string) (string, error)
-	BatchStore(files []*multipart.FileHeader, dest string) ([]string, error)
+	Store(file *multipart.FileHeader, dest string, fileConfig configs.FileConfig) (string, error)
+	BatchStore(files map[string]FileWrapper) (map[string]string, string, error)
 	Destroy(target string) error
 	// Read(target string) (*multipart.aff,FileHeader, error)
 }
@@ -69,13 +71,13 @@ type CategoryService interface {
 // ---- APP SERVICE SERVICE -----
 type ServiceItemService interface {
 	Create(c context.Context, data ServiceItemCreateForm, files ...EntityFileMap) (ServiceItemEntity, error)
-	Read(c context.Context, id uint, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *Pagination, error)
+	Read(c context.Context, serviceId uint, id uint, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *Pagination, error)
 	Update(c context.Context, id uint, data ServiceItemUpdateForm, files ...EntityFileMap) (int, ServiceItemEntity, error)
 	Delete(c context.Context, id uint) (int, int, error)
 }
 type PartialServiceService interface {
 	Create(c context.Context, data PartialServiceCreateForm, files ...EntityFileMap) (ServiceEntity, error)
-	Read(c context.Context, id uint, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *Pagination, error)
+	Read(c context.Context, categoryId uint, id uint, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *Pagination, error)
 	Update(c context.Context, id uint, data PartialServiceUpdateForm, files ...EntityFileMap) (int, ServiceEntity, error)
 	Delete(c context.Context, id uint) (int, int, error)
 }

@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 
+	"github.com/salamanderman234/outsourcing-api/configs"
 	"github.com/salamanderman234/outsourcing-api/domains"
 	"github.com/salamanderman234/outsourcing-api/helpers"
 )
@@ -17,14 +18,19 @@ func (categoryService) storeIcon(entity *domains.CategoryModel, files ...domains
 	if len(files) == 1 {
 		file := files[0]
 		if file.Field == "icon" && file.File != nil {
-			savedPath, err := domains.
-				ServiceRegistry.
-				FileServ.
-				Store(file.File, "master/category")
+			zippedFile := map[string]domains.FileWrapper{
+				"icon": {
+					Config: configs.IMAGE_FILE_CONFIG,
+					File:   file.File,
+					Field:  file.Field,
+					Dest:   configs.FILE_DESTS["category/"+file.Field],
+				},
+			}
+			savedPaths, _, err := domains.ServiceRegistry.FileServ.BatchStore(zippedFile)
 			if err != nil {
 				return false, err
 			}
-			entity.Icon = savedPath
+			entity.Icon = savedPaths["icon"]
 			return true, nil
 		}
 	}
@@ -39,7 +45,11 @@ func (cs categoryService) Create(c context.Context, data domains.CategoryCreateF
 		if err != nil {
 			return nil, err
 		}
-		return domains.RepoRegistry.CategoryRepo.Create(c, dataModel)
+		result, err := domains.RepoRegistry.CategoryRepo.Create(c, dataModel)
+		if err != nil {
+			go domains.ServiceRegistry.FileServ.Destroy(dataModel.Icon)
+		}
+		return result, nil
 	}
 	_, err := basicCreateService(data, &dataModel, &categoryEntity, fun)
 	return categoryEntity, err
@@ -95,7 +105,10 @@ func (cs categoryService) Update(c context.Context, id uint, data domains.Catego
 			go domains.ServiceRegistry.FileServ.Destroy(icon)
 		}
 		aff, updated, err := domains.RepoRegistry.CategoryRepo.Update(c, id, dataModel)
-		return int(aff), updated, err
+		if err != nil {
+			go domains.ServiceRegistry.FileServ.Destroy(dataModel.Icon)
+		}
+		return int(aff), updated, nil
 	}
 	aff, _, err := basicUpdateService(id, data, &dataModel, &categoryEntity, fun)
 	return aff, categoryEntity, err

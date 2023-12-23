@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 
+	"github.com/salamanderman234/outsourcing-api/configs"
 	"github.com/salamanderman234/outsourcing-api/domains"
 	"github.com/salamanderman234/outsourcing-api/helpers"
 )
@@ -17,18 +18,32 @@ func (cs serviceItemService) Create(c context.Context, data domains.ServiceItemC
 	var dataModel domains.ServiceItemModel
 	var dataEntity domains.ServiceItemEntity
 	fun := func() (domains.Model, error) {
+		min := uint(0)
+		dataModel.MinValue = &min
+		if data.IsOptionalChoice {
+			max := uint(1)
+			dataModel.MaxValue = &max
+		}
 		return domains.RepoRegistry.ServiceItemRepo.Create(c, dataModel)
 	}
 	_, err := basicCreateService(data, &dataModel, &dataEntity, fun)
 	return dataEntity, err
 }
-func (serviceItemService) Read(c context.Context, id uint, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *domains.Pagination, error) {
+func (serviceItemService) Read(c context.Context, serviceId uint, id uint, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *domains.Pagination, error) {
 	var pagination domains.Pagination
 	if id != 0 {
+		var ent domains.ServiceItemEntity
 		result, err := domains.RepoRegistry.ServiceItemRepo.Find(c, id)
-		return result, nil, err
+		if err != nil {
+			return nil, nil, err
+		}
+		err = helpers.Convert(result, &ent)
+		if err != nil {
+			return nil, nil, domains.ErrConversionType
+		}
+		return ent, nil, err
 	}
-	datas, maxPage, err := domains.RepoRegistry.ServiceItemRepo.Read(c, q, page, orderBy, isDesc, withPagination)
+	datas, maxPage, err := domains.RepoRegistry.ServiceItemRepo.Read(c, serviceId, q, page, orderBy, isDesc, withPagination)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -49,11 +64,20 @@ func (cs serviceItemService) Update(c context.Context, id uint, data domains.Ser
 	var dataModel domains.ServiceItemModel
 	var dataEntity domains.ServiceItemEntity
 	fun := func(id uint) (int, domains.Model, error) {
+		min := uint(0)
+		dataModel.MinValue = &min
+		if data.IsOptionalChoice {
+			max := uint(1)
+			dataModel.MaxValue = &max
+		}
 		aff, updated, err := domains.RepoRegistry.ServiceItemRepo.Update(c, id, dataModel)
 		return int(aff), updated, err
 	}
 	aff, _, err := basicUpdateService(id, data, &dataModel, &dataEntity, fun)
-	return aff, dataEntity, err
+	if err != nil {
+		return 0, domains.ServiceItemEntity{}, err
+	}
+	return aff, dataEntity, nil
 }
 func (serviceItemService) Delete(c context.Context, id uint) (int, int, error) {
 	idResult, aff, err := domains.RepoRegistry.ServiceItemRepo.Delete(c, id)
@@ -70,25 +94,28 @@ func NewPartialServiceService() domains.PartialServiceService {
 func (partialServiceService) storeIconImage(model *domains.ServiceModel, files ...domains.EntityFileMap) (bool, error) {
 	filesLen := len(files)
 	if filesLen <= 2 && filesLen > 0 {
+		zippedFile := map[string]domains.FileWrapper{}
 		for _, file := range files {
-			if file.Field == "icon" && file.File != nil {
-				savedPath, err := domains.
-					ServiceRegistry.
-					FileServ.
-					Store(file.File, "service/icon")
-				if err != nil {
-					return false, err
+			if (file.Field == "icon" || file.Field == "image") && file.File != nil {
+				fileWrap := domains.FileWrapper{
+					Config: configs.IMAGE_FILE_CONFIG,
+					File:   file.File,
+					Field:  file.Field,
+					Dest:   configs.FILE_DESTS["partial-service/"+file.Field],
 				}
-				model.Icon = savedPath
-			} else if file.Field == "image" && file.File != nil {
-				savedPath, err := domains.
-					ServiceRegistry.
-					FileServ.
-					Store(file.File, "service/image")
-				if err != nil {
-					return false, err
-				}
-				model.Image = savedPath
+
+				zippedFile[fileWrap.Field] = fileWrap
+			}
+		}
+		savedPaths, _, err := domains.ServiceRegistry.FileServ.BatchStore(zippedFile)
+		if err != nil {
+			return false, err
+		}
+		for index, path := range savedPaths {
+			if index == "icon" {
+				model.Icon = path
+			} else if index == "image" {
+				model.Image = path
 			}
 		}
 		return true, nil
@@ -105,7 +132,12 @@ func (ps partialServiceService) Create(c context.Context, data domains.PartialSe
 		if err != nil {
 			return nil, err
 		}
-		return domains.RepoRegistry.ServiceRepo.Create(c, dataModel)
+		result, err := domains.RepoRegistry.ServiceRepo.Create(c, dataModel)
+		if err != nil {
+			go domains.ServiceRegistry.FileServ.Destroy(dataModel.Icon)
+			go domains.ServiceRegistry.FileServ.Destroy(dataModel.Image)
+		}
+		return result, nil
 	}
 	_, err := basicCreateService(data, &dataModel, &dataEntity, fun)
 	if err != nil {
@@ -113,13 +145,21 @@ func (ps partialServiceService) Create(c context.Context, data domains.PartialSe
 	}
 	return dataEntity, nil
 }
-func (partialServiceService) Read(c context.Context, id uint, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *domains.Pagination, error) {
+func (partialServiceService) Read(c context.Context, categoryId uint, id uint, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *domains.Pagination, error) {
 	var pagination domains.Pagination
-	if id == 0 {
+	if id != 0 {
+		var ent domains.ServiceEntity
 		result, err := domains.RepoRegistry.ServiceRepo.Find(c, id)
-		return result, nil, err
+		if err != nil {
+			return nil, nil, err
+		}
+		err = helpers.Convert(result, &ent)
+		if err != nil {
+			return nil, nil, domains.ErrConversionType
+		}
+		return ent, nil, err
 	}
-	datas, maxPage, err := domains.RepoRegistry.ServiceRepo.Read(c, q, page, orderBy, isDesc, withPagination)
+	datas, maxPage, err := domains.RepoRegistry.ServiceRepo.Read(c, categoryId, q, page, orderBy, isDesc, withPagination)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -160,13 +200,17 @@ func (ps partialServiceService) Update(c context.Context, id uint, data domains.
 			go domains.ServiceRegistry.FileServ.Destroy(image)
 		}
 		aff, updated, err := domains.RepoRegistry.ServiceRepo.Update(c, id, dataModel)
+		if err != nil {
+			go domains.ServiceRegistry.FileServ.Destroy(dataModel.Icon)
+			go domains.ServiceRegistry.FileServ.Destroy(dataModel.Image)
+		}
 		return int(aff), updated, err
 	}
-	aff, result, err := basicUpdateService(id, data, &dataModel, &dataEntity, fun)
+	aff, _, err := basicUpdateService(id, data, &dataModel, &dataEntity, fun)
 	if err != nil {
 		return 0, domains.ServiceEntity{}, err
 	}
-	return aff, result.(domains.ServiceEntity), nil
+	return aff, dataEntity, nil
 }
 func (partialServiceService) Delete(c context.Context, id uint) (int, int, error) {
 	idResult, aff, err := domains.RepoRegistry.ServiceRepo.Delete(c, id)

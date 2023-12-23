@@ -86,13 +86,13 @@ type VillageRepository interface {
 type ServiceItemRepository interface {
 	Create(c context.Context, data ServiceItemModel, repo ...*gorm.DB) (ServiceItemModel, error)
 	Find(c context.Context, id uint) (ServiceItemModel, error)
-	Read(c context.Context, q string, page uint, orderBy string, desc bool, withPagination bool) ([]ServiceItemModel, uint, error)
+	Read(c context.Context, serviceId uint, q string, page uint, orderBy string, desc bool, withPagination bool) ([]ServiceItemModel, uint, error)
 	Update(c context.Context, id uint, data ServiceItemModel, repo ...*gorm.DB) (int64, ServiceItemModel, error)
 	Delete(c context.Context, id uint, repo ...*gorm.DB) (int64, int64, error)
 }
 type PartialServiceRepository interface {
 	Create(ctx context.Context, partialServiceData ServiceModel, repo ...*gorm.DB) (ServiceModel, error)
-	Read(ctx context.Context, q string, page uint, orderBy string, desc bool, withPagination bool) ([]ServiceModel, uint, error)
+	Read(ctx context.Context, categoryId uint, q string, page uint, orderBy string, desc bool, withPagination bool) ([]ServiceModel, uint, error)
 	Find(ctx context.Context, id uint) (ServiceModel, error)
 	Update(ctx context.Context, id uint, data ServiceModel, repo ...*gorm.DB) (int, ServiceModel, error)
 	Delete(ctx context.Context, id uint, repo ...*gorm.DB) (int, int, error)

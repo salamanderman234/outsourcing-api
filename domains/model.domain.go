@@ -181,8 +181,8 @@ type ServiceItemModel struct {
 	PricePerItem     *uint64       `json:"price_per_item" gorm:"not null;default:0"`
 	IsOptionalChoice *bool         `json:"is_optional_choice" gorm:"not null;default:0"`
 	Unit             *string       `json:"unit" gorm:"default:unit;type:varchar(255)"`
-	ServiceID        *uint         `json:"service_id" gorm:"not null"`
-	Service          *ServiceModel `json:"service" gorm:"foreignKey:ServiceID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	PartialServiceID *uint         `json:"partial_service_id" gorm:"not null"`
+	Service          *ServiceModel `json:"service" gorm:"foreignKey:PartialServiceID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 func (ServiceItemModel) GetPolicy() Policy {
@@ -201,7 +201,7 @@ type ServiceModel struct {
 	BasePrice    *uint64                `json:"base_price" gorm:"not null;default:0"`
 	CategoryID   *uint                  `json:"category_id" gorm:"not null"`
 	Category     *CategoryModel         `json:"category" gorm:"foreignKey:CategoryID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	ServiceItems []ServiceItemModel     `json:"service_items" gorm:"foreignKey:ServiceID"`
+	ServiceItems []ServiceItemModel     `json:"service_items" gorm:"foreignKey:PartialServiceID"`
 	Packages     []*ServicePackageModel `json:"packages" gorm:"many2many:service_package_services"`
 }
 

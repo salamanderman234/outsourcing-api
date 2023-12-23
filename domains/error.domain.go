@@ -3,6 +3,8 @@ package domains
 import (
 	"errors"
 	"net/http"
+
+	"github.com/asaskevich/govalidator"
 )
 
 type GeneralError struct {
@@ -75,6 +77,19 @@ var (
 		Status:         http.StatusBadRequest,
 		GeneralMessage: "Request Error",
 	}
+	ErrMissingId = GeneralError{
+		Msg:            "query params id is required and must be an unsigned integer",
+		Status:         http.StatusBadRequest,
+		GeneralMessage: "Request Error",
+		ValidationErrors: govalidator.Errors{
+			govalidator.Error{
+				Name:                     "id",
+				Validator:                "required and must be an unsigned integer",
+				CustomErrorMessageExists: true,
+				Err:                      errors.New("this field is required and must be an unsigned integer"),
+			},
+		},
+	}
 	// gorm
 	ErrRecordNotFound = GeneralError{
 		Msg:            "requested resource is not found",
@@ -128,6 +143,16 @@ var (
 	ErrDeleteFile = GeneralError{
 		Msg:            "failed to delete file",
 		Status:         http.StatusInternalServerError,
+		GeneralMessage: "File Error",
+	}
+	ErrInvalidFileType = GeneralError{
+		Msg:            "invalid file type",
+		Status:         http.StatusUnprocessableEntity,
+		GeneralMessage: "File Error",
+	}
+	ErrFileSize = GeneralError{
+		Msg:            "file size is too large",
+		Status:         http.StatusRequestEntityTooLarge,
 		GeneralMessage: "File Error",
 	}
 )

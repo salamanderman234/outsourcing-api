@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/salamanderman234/outsourcing-api/configs"
 	"github.com/salamanderman234/outsourcing-api/domains"
 	"github.com/salamanderman234/outsourcing-api/repositories"
@@ -16,6 +19,7 @@ func init() {
 
 func main() {
 	server := echo.New()
+	server.Use(middleware.BodyLimit(fmt.Sprintf("%dM", configs.MAXIMUM_CONTENT_SIZE)))
 	// server.Use(middleware.Logger())
 	// database
 	connection, err := configs.ConnectDatabase()

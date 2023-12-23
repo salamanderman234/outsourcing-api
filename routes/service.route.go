@@ -6,9 +6,15 @@ import (
 )
 
 func registerServiceRoute(group *echo.Group) {
-	serviceCategoryGroup := group.Group("services")
-	serviceCategoryGroup.GET("/", domains.ViewRegistry.ServiceView.Read)
-	serviceCategoryGroup.POST("/", domains.ViewRegistry.ServiceView.Create)
-	serviceCategoryGroup.PATCH("/", domains.ViewRegistry.ServiceView.Update)
-	serviceCategoryGroup.DELETE("/", domains.ViewRegistry.ServiceView.Delete)
+	serviceGroup := group.Group("services")
+	serviceGroup.GET("/", domains.ViewRegistry.ServiceView.Read)
+	serviceGroup.POST("/", domains.ViewRegistry.ServiceView.Create)
+	serviceGroup.PATCH("/", domains.ViewRegistry.ServiceView.Update)
+	serviceGroup.DELETE("/", domains.ViewRegistry.ServiceView.Delete)
+
+	serviceItemGroup := group.Group("service-items")
+	serviceItemGroup.GET("/", domains.ViewRegistry.ServiceItemView.Read)
+	serviceItemGroup.POST("/", domains.ViewRegistry.ServiceItemView.Create)
+	serviceItemGroup.PATCH("/", domains.ViewRegistry.ServiceItemView.Update)
+	serviceItemGroup.DELETE("/", domains.ViewRegistry.ServiceItemView.Delete)
 }

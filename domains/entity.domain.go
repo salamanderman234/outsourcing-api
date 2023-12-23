@@ -4,6 +4,7 @@ import (
 	"mime/multipart"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/salamanderman234/outsourcing-api/configs"
 )
 
 // basic
@@ -12,6 +13,13 @@ type Entity interface {
 }
 type BasicEntity struct {
 	ID uint `json:"id"`
+}
+
+type FileWrapper struct {
+	File   *multipart.FileHeader
+	Config configs.FileConfig
+	Dest   string
+	Field  string
 }
 
 func (BasicEntity) IsEntity() bool {
@@ -158,15 +166,15 @@ type VillageEntity struct {
 // ----- SERVICE -----
 type ServiceItemEntity struct {
 	BasicEntity
-	ItemName         string        `json:"item_name"`
-	Description      string        `json:"description"`
-	MinValue         uint          `json:"min_value"`
-	MaxValue         uint          `json:"max_value"`
-	ServiceID        uint          `json:"service_id"`
-	Service          ServiceEntity `json:"service"`
-	PricePerItem     uint64        `json:"price_per_item"`
-	IsOptionalChoice bool          `json:"is_optional_choice"`
-	Unit             string        `json:"unit"`
+	ItemName         string         `json:"item_name"`
+	Description      string         `json:"description"`
+	MinValue         uint           `json:"min_value"`
+	MaxValue         uint           `json:"max_value"`
+	ServiceID        uint           `json:"partial_service_id"`
+	Service          *ServiceEntity `json:"service,omitempty"`
+	PricePerItem     uint64         `json:"price_per_item"`
+	IsOptionalChoice bool           `json:"is_optional_choice"`
+	Unit             string         `json:"unit"`
 }
 type ServiceEntity struct {
 	BasicEntity
@@ -177,7 +185,7 @@ type ServiceEntity struct {
 	BasePrice    uint64              `json:"base_price"`
 	CategoryID   uint                `json:"category_id"`
 	Category     *CategoryEntity     `json:"category,omitempty"`
-	ServiceItems []ServiceItemEntity `json:"service_items,omitempty"`
+	ServiceItems []ServiceItemEntity `json:"service_items"`
 }
 type ServicePackageEntity struct {
 	BasicEntity
