@@ -28,7 +28,9 @@ func (s serviceOrderRepository) Create(c context.Context, data domains.ServiceOr
 			return convertRepoError(result)
 		}
 		details := []domains.ServiceOrderDetailModel{}
+		orderId := data.ID
 		for _, detail := range data.ServiceOrderDetails {
+			detail.ServiceOrderID = &orderId
 			detailResult, err := domains.RepoRegistry.
 				ServiceOrderDetailRepo.
 				Create(c, detail, tx)

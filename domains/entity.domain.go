@@ -79,6 +79,7 @@ type JWTClaims struct {
 	JWTPayload
 }
 type JWTPayload struct {
+	ID         uint    `json:"id"`
 	Username   *string `json:"username"`
 	Role       *string `json:"role"`
 	ProfilePic *string `json:"profile_pic"`
@@ -212,6 +213,8 @@ type ServiceOrderEntity struct {
 	BasicEntity
 	// PaymentStatus       string                     `json:"payment_status"`
 	ServiceUserID       uint                       `json:"service_user_id"`
+	PurchasePrice       *uint64                    `json:"purchase_price"`
+	TotalDiscount       uint64                     `json:"total_discount"`
 	TotalPrice          uint64                     `json:"total_price"`
 	TotalItem           uint                       `json:"total_item"`
 	Date                time.Time                  `json:"date"`
@@ -233,6 +236,7 @@ type ServiceOrderDetailEntity struct {
 	PartialServiceID    uint                           `json:"partial_service_id"`
 	ServicePrice        uint64                         `json:"service_price"`
 	AdditionalPrice     uint64                         `json:"additional_price"`
+	TotalPrice          uint64                         `json:"total_price"`
 	PartialServiceItems []ServiceOrderDetailItemEntity `json:"order_detail_items"`
 	PartialService      *ServiceEntity                 `json:"partial_service"`
 }

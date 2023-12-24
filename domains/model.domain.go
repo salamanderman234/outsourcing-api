@@ -259,6 +259,8 @@ type ServiceOrderModel struct {
 	gorm.Model
 	// PaymentStatus       *string                   `json:"payment_status" gorm:"not null"`
 	ServiceUserID       *uint                     `json:"service_user_id" gorm:"not null"`
+	PurchasePrice       *uint64                   `json:"purchase_price" gorm:"not null"`
+	TotalDiscount       uint64                    `json:"total_discount" gorm:"not null;default:0"`
 	TotalPrice          *uint64                   `json:"total_price" gorm:"not null"`
 	TotalItem           *uint                     `json:"total_item" gorm:"not null"`
 	Date                *time.Time                `json:"date" gorm:"not null"`
@@ -269,7 +271,7 @@ type ServiceOrderModel struct {
 	PaymentType         *PaymentTypeEnum          `json:"payment_type" gorm:"not null"`
 	Status              *OrderStatusEnum          `json:"status" gorm:"not null"`
 	MOU                 string                    `json:"mou" gorm:"type:varchar(255)"`
-	ServicePackageID    *uint                     `json:"service_package_id" gorm:"not null"`
+	ServicePackageID    *uint                     `json:"service_package_id"`
 	ServicePackage      *ServicePackageModel      `json:"service_package" gorm:"foreignKey:ServicePackageID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	ServiceUser         *ServiceUserModel         `json:"service_user" gorm:"foreignKey:ServiceUserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	ServiceOrderDetails []ServiceOrderDetailModel `json:"order_details" gorm:"foreignKey:ServiceOrderID"`
@@ -288,6 +290,7 @@ type ServiceOrderDetailModel struct {
 	PartialServiceID    *uint                         `json:"partial_service_id" gorm:"not null"`
 	ServicePrice        *uint64                       `json:"service_price" gorm:"not null"`
 	AdditionalPrice     *uint64                       `json:"additional_price" gorm:"not null"`
+	TotalPrice          *uint64                       `json:"total_price" gorm:"not null"`
 	PartialServiceItems []ServiceOrderDetailItemModel `json:"order_detail_items" gorm:"foreignKey:ServiceOrderDetailID"`
 	PartialService      *ServiceModel                 `json:"partial_service" gorm:"foreignKey:PartialServiceID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }

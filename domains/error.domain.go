@@ -47,6 +47,11 @@ var (
 		Status:         http.StatusBadRequest,
 		GeneralMessage: "Request Error",
 	}
+	ErrUnmatchedData = GeneralError{
+		Msg:            "this data pair cannot be used",
+		Status:         http.StatusUnprocessableEntity,
+		GeneralMessage: "Request Error",
+	}
 	// token
 	ErrGenerateToken = errors.New("generate token error")
 	ErrExpiredToken  = GeneralError{

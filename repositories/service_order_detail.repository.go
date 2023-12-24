@@ -30,8 +30,10 @@ func (s serviceOrderDetailRepository) Create(c context.Context, data domains.Ser
 			tx.Rollback()
 			return convertRepoError(result)
 		}
+		orderDetailId := data.ID
 		items := []domains.ServiceOrderDetailItemModel{}
 		for _, item := range data.PartialServiceItems {
+			item.ServiceOrderDetailID = &orderDetailId
 			detailResult, err := domains.RepoRegistry.
 				ServiceOrderDetailItemRepo.
 				Create(c, item, tx)

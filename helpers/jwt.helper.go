@@ -34,6 +34,7 @@ func CreateJWTClaims(id uint, username *string, role *string, profilePic *string
 			ExpiresAt: expiresAt,
 		},
 		JWTPayload: domains.JWTPayload{
+			ID:         id,
 			Username:   username,
 			Role:       role,
 			ProfilePic: profilePic,
