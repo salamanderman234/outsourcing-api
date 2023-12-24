@@ -7,8 +7,10 @@ func RegisterAllRoutes(server *echo.Echo) {
 	authGroup := server.Group("")
 	masterGroup := server.Group("/master/")
 	serviceGroup := server.Group("")
+	orderGroup := server.Group("/service-orders")
 	// register
 	registerAuthRoute(authGroup)
 	registerMasterRoutes(masterGroup)
 	registerServiceRoute(serviceGroup)
+	registerOrderRoutes(orderGroup)
 }

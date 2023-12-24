@@ -29,5 +29,6 @@ var (
 		CategoryView    CategoryView
 		ServiceItemView ServiceItemView
 		ServiceView     PartialServiceView
+		OrderView       ServiceOrderView
 	}{}
 )

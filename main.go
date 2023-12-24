@@ -35,17 +35,22 @@ func main() {
 	domains.RepoRegistry.CategoryRepo = repositories.NewCategoryRepository(connection)
 	domains.RepoRegistry.ServiceItemRepo = repositories.NewServiceItemRepository(connection)
 	domains.RepoRegistry.ServiceRepo = repositories.NewPartialServiceRepository(connection)
+	domains.RepoRegistry.ServiceOrderDetailItemRepo = repositories.NewServiceOrderDetailItemRepository(connection)
+	domains.RepoRegistry.ServiceOrderDetailRepo = repositories.NewServiceOrderDetailRepository(connection)
+	domains.RepoRegistry.ServiceOrderRepo = repositories.NewServiceOrderRepository(connection)
 	// services
 	domains.ServiceRegistry.AuthServ = services.NewUserAuthService()
 	domains.ServiceRegistry.CategoryServ = services.NewCategoryService()
 	domains.ServiceRegistry.FileServ = services.NewFileService()
 	domains.ServiceRegistry.ServiceItemServ = services.NewServiceItemService()
 	domains.ServiceRegistry.ServiceServ = services.NewPartialServiceService()
+	domains.ServiceRegistry.OrderServ = services.NewOrderService()
 	// views
 	domains.ViewRegistry.AuthView = views.NewAuthView()
 	domains.ViewRegistry.CategoryView = views.NewCategoryView()
 	domains.ViewRegistry.ServiceItemView = views.NewServiceItemView()
 	domains.ViewRegistry.ServiceView = views.NewPartialServiceView()
+	domains.ViewRegistry.OrderView = views.NewOrderView()
 	// register routes
 	routes.RegisterAllRoutes(server)
 	server.Logger.Fatal(server.Start(":8080"))
