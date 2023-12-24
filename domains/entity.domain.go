@@ -2,6 +2,7 @@ package domains
 
 import (
 	"mime/multipart"
+	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/salamanderman234/outsourcing-api/configs"
@@ -206,3 +207,43 @@ type ServicePackageServiceEntity struct {
 }
 
 // ----- END OF SERVICE -----
+// ----- ORDER ENTITY -----
+type ServiceOrderEntity struct {
+	BasicEntity
+	// PaymentStatus       string                     `json:"payment_status"`
+	ServiceUserID       uint                       `json:"service_user_id"`
+	TotalPrice          uint64                     `json:"total_price"`
+	TotalItem           uint                       `json:"total_item"`
+	Date                time.Time                  `json:"date"`
+	ContractDuration    uint                       `json:"contract_duration"`
+	StartDate           time.Time                  `json:"start_date"`
+	Address             string                     `json:"address"`
+	Note                string                     `json:"buyer_note"`
+	PaymentType         PaymentTypeEnum            `json:"payment_type"`
+	Status              OrderStatusEnum            `json:"status"`
+	MOU                 string                     `json:"mou"`
+	ServicePackageID    uint                       `json:"service_package_id"`
+	ServicePackage      *ServicePackageEntity      `json:"service_package,omitempty"`
+	ServiceUser         *ServiceUserEntity         `json:"service_user"`
+	ServiceOrderDetails []ServiceOrderDetailEntity `json:"order_details"`
+}
+type ServiceOrderDetailEntity struct {
+	BasicEntity
+	ServiceOrderID      uint                           `json:"service_order_id"`
+	PartialServiceID    uint                           `json:"partial_service_id"`
+	ServicePrice        uint64                         `json:"service_price"`
+	AdditionalPrice     uint64                         `json:"additional_price"`
+	PartialServiceItems []ServiceOrderDetailItemEntity `json:"order_detail_items"`
+	PartialService      *ServiceEntity                 `json:"partial_service"`
+}
+type ServiceOrderDetailItemEntity struct {
+	BasicEntity
+	ServiceOrderDetailID uint               `json:"service_order_detail_id"`
+	PartialServiceItemID uint               `json:"partial_service_item_id"`
+	Value                uint               `json:"value"`
+	ItemPrice            uint64             `json:"item_price"`
+	TotalPrice           uint64             `json:"total_price"`
+	ServiceItem          *ServiceItemEntity `json:"partial_service_item"`
+}
+
+// ----- END OF ORDER ENTITY -----

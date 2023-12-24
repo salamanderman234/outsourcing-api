@@ -64,13 +64,10 @@ func basicUpdateView(c echo.Context, data any, callFunc callUpdateServFunc) erro
 		return c.JSON(status, resp)
 	}
 	if err := c.Bind(data); err != nil {
-		msg := "invalid request"
-		payload := domains.ErrorBodyResponse{
-			Error: &msg,
-		}
-		resp.Message = domains.ErrBadRequest.Error()
-		resp.Body = payload
-		return c.JSON(http.StatusBadRequest, resp)
+		status, msg, errBody := helpers.HandleError(domains.ErrBadRequest)
+		resp.Message = msg
+		resp.Body = *errBody
+		return c.JSON(status, resp)
 	}
 	aff, updated, err := callFunc(ctx, id)
 	if err != nil {

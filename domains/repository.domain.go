@@ -99,3 +99,27 @@ type PartialServiceRepository interface {
 }
 
 // ----- END OF APP SERVICE REPOSITORY -----
+// ----- SERVICE ORDER REPOSITORY -----
+type ServiceOrderRepository interface {
+	Create(c context.Context, data ServiceOrderModel, repo ...*gorm.DB) (ServiceOrderModel, error)
+	Read(c context.Context, status string, service_user_id uint, page uint, orderBy string, desc bool, withPagination bool) ([]ServiceOrderModel, uint, error)
+	Find(c context.Context, id uint) (ServiceOrderModel, error)
+	Update(c context.Context, id uint, data ServiceOrderModel, repo ...*gorm.DB) (int64, ServiceOrderModel, error)
+	Delete(c context.Context, id uint, repo ...*gorm.DB) (uint, int64, error)
+}
+type ServiceOrderDetailRepository interface {
+	Create(c context.Context, data ServiceOrderDetailModel, repo ...*gorm.DB) (ServiceOrderDetailModel, error)
+	Read(c context.Context, serviceOrderId uint) ([]ServiceOrderDetailModel, error)
+	Find(c context.Context, id uint) (ServiceOrderDetailModel, error)
+	Update(c context.Context, id uint, data ServiceOrderDetailModel, repo ...*gorm.DB) (int, ServiceOrderDetailModel, error)
+	Delete(c context.Context, id uint, repo ...*gorm.DB) (uint, int64, error)
+}
+type ServiceOrderDetailItemRepository interface {
+	Create(c context.Context, data ServiceOrderDetailItemModel, repo ...*gorm.DB) (ServiceOrderDetailItemModel, error)
+	Read(c context.Context, serviceOrderDetailId uint) ([]ServiceOrderDetailItemModel, error)
+	Find(c context.Context, id uint) (ServiceOrderDetailItemModel, error)
+	Update(c context.Context, id uint, data ServiceOrderDetailItemModel, repo ...*gorm.DB) (int, ServiceOrderDetailItemModel, error)
+	Delete(c context.Context, id uint, repo ...*gorm.DB) (uint, int64, error)
+}
+
+// ----- END OF SERVICE ORDER REPOSITORY -----

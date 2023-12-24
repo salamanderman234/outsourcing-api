@@ -37,9 +37,7 @@ type createCallRepoFunc func() (domains.Model, error)
 
 func basicCreateService(data any, model domains.Model, entity domains.Entity, fun createCallRepoFunc) (domains.Entity, error) {
 	if ok, err := helpers.Validate(data); !ok {
-		valErr := domains.ErrValidation
-		valErr.ValidationErrors = err
-		return nil, valErr
+		return nil, err
 	}
 	if err := helpers.Convert(data, model); err != nil {
 		return nil, err
@@ -58,9 +56,7 @@ type updateCallRepoFunc func(id uint) (int, domains.Model, error)
 
 func basicUpdateService(id uint, data any, model domains.Model, entity domains.Entity, fun updateCallRepoFunc) (int, any, error) {
 	if ok, err := helpers.Validate(data); !ok {
-		valErr := domains.ErrValidation
-		valErr.ValidationErrors = err
-		return 0, nil, valErr
+		return 0, nil, err
 	}
 	if err := helpers.Convert(data, model); err != nil {
 		return 0, nil, err

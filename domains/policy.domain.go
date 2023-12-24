@@ -2,110 +2,75 @@ package domains
 
 // --> BASIC
 type Policy interface {
-	Create(payload JWTClaims) bool
-	Find(id uint, payload JWTClaims) bool
-	ReadAll(payload JWTClaims) bool
-	Update(id uint, payload JWTClaims) bool
-	Delete(id uint, payload JWTClaims) bool
+	Create(user UserModel) bool
+	Find(id uint, user UserModel) bool
+	ReadAll(user UserModel, id ...uint) bool
+	Update(id uint, user UserModel) bool
+	Delete(id uint, user UserModel) bool
 }
 
 type BasicAdminOnlyPolicy struct{}
 
-func (BasicAdminOnlyPolicy) Create(payload JWTClaims) bool {
-	return *payload.Role == string(AdminRole)
+func (BasicAdminOnlyPolicy) Create(user UserModel) bool {
+	return user.Role == string(AdminRole)
 }
-func (BasicAdminOnlyPolicy) Find(id uint, payload JWTClaims) bool {
+func (BasicAdminOnlyPolicy) Find(id uint, user UserModel) bool {
 	return true
 }
-func (BasicAdminOnlyPolicy) ReadAll(payload JWTClaims) bool {
+func (BasicAdminOnlyPolicy) ReadAll(user UserModel, id ...uint) bool {
 	return true
 }
-func (BasicAdminOnlyPolicy) Update(id uint, payload JWTClaims) bool {
-	return *payload.Role == string(AdminRole)
+func (BasicAdminOnlyPolicy) Update(id uint, user UserModel) bool {
+	return user.Role == string(AdminRole)
 }
-func (BasicAdminOnlyPolicy) Delete(id uint, payload JWTClaims) bool {
-	return *payload.Role == string(AdminRole)
+func (BasicAdminOnlyPolicy) Delete(id uint, user UserModel) bool {
+	return user.Role == string(AdminRole)
+}
+
+type BasicOnlyServiceUser struct{}
+
+func (BasicOnlyServiceUser) Create(user UserModel) bool {
+	return user.Role == string(ServiceUserRole)
+}
+func (BasicOnlyServiceUser) Find(id uint, user UserModel) bool {
+	return id == user.ID
+}
+func (BasicOnlyServiceUser) ReadAll(user UserModel, id ...uint) bool {
+	if len(id) == 1 {
+		return user.Role == string(AdminRole) || id[0] == user.ID
+	}
+	return user.Role == string(AdminRole)
+}
+func (BasicOnlyServiceUser) Update(id uint, user UserModel) bool {
+	return user.Role == string(AdminRole)
+}
+func (BasicOnlyServiceUser) Delete(id uint, user UserModel) bool {
+	return id == user.ID
 }
 
 // ----- AUTH POLICY -----
 type ServiceUserAuthPolicy struct{}
 
-func (ServiceUserAuthPolicy) Register(payload JWTPayload) bool {
+func (ServiceUserAuthPolicy) Register(user UserModel) bool {
 	return true
 }
 
 // ----- END OF AUTH POLICY -----
 // ----- MASTER POLICY -----
-type CategoryPolicy struct{}
-
-func (CategoryPolicy) Create(payload JWTClaims) bool {
-	return *payload.Role == string(AdminRole)
-}
-func (CategoryPolicy) Find(id uint, payload JWTClaims) bool {
-	return true
-}
-func (CategoryPolicy) ReadAll(payload JWTClaims) bool {
-	return true
-}
-func (CategoryPolicy) Update(id uint, payload JWTClaims) bool {
-	return *payload.Role == string(AdminRole)
-}
-func (CategoryPolicy) Delete(id uint, payload JWTClaims) bool {
-	return *payload.Role == string(AdminRole)
+type CategoryPolicy struct {
+	BasicAdminOnlyPolicy
 }
 
-type DistrictPolicy struct{}
-
-func (DistrictPolicy) Create(payload JWTClaims) bool {
-	return *payload.Role == string(AdminRole)
-}
-func (DistrictPolicy) Find(id uint, payload JWTClaims) bool {
-	return true
-}
-func (DistrictPolicy) ReadAll(payload JWTClaims) bool {
-	return true
-}
-func (DistrictPolicy) Update(id uint, payload JWTClaims) bool {
-	return *payload.Role == string(AdminRole)
-}
-func (DistrictPolicy) Delete(id uint, payload JWTClaims) bool {
-	return *payload.Role == string(AdminRole)
+type DistrictPolicy struct {
+	BasicAdminOnlyPolicy
 }
 
-type SubDistrictPolicy struct{}
-
-func (SubDistrictPolicy) Create(payload JWTClaims) bool {
-	return *payload.Role == string(AdminRole)
-}
-func (SubDistrictPolicy) Find(id uint, payload JWTClaims) bool {
-	return true
-}
-func (SubDistrictPolicy) ReadAll(payload JWTClaims) bool {
-	return true
-}
-func (SubDistrictPolicy) Update(id uint, payload JWTClaims) bool {
-	return *payload.Role == string(AdminRole)
-}
-func (SubDistrictPolicy) Delete(id uint, payload JWTClaims) bool {
-	return *payload.Role == string(AdminRole)
+type SubDistrictPolicy struct {
+	BasicAdminOnlyPolicy
 }
 
-type VillagePolicy struct{}
-
-func (VillagePolicy) Create(payload JWTClaims) bool {
-	return *payload.Role == string(AdminRole)
-}
-func (VillagePolicy) Find(id uint, payload JWTClaims) bool {
-	return true
-}
-func (VillagePolicy) ReadAll(payload JWTClaims) bool {
-	return true
-}
-func (VillagePolicy) Update(id uint, payload JWTClaims) bool {
-	return *payload.Role == string(AdminRole)
-}
-func (VillagePolicy) Delete(id uint, payload JWTClaims) bool {
-	return *payload.Role == string(AdminRole)
+type VillagePolicy struct {
+	BasicAdminOnlyPolicy
 }
 
 // ----- END OF MASTER POLICY -----
@@ -118,3 +83,9 @@ type ServicePolicy struct {
 }
 
 // ----- END OF APP SERVICE POLICY -----
+// ----- SERVICE ORDER POLICY -----
+type ServiceOrderPolicy struct {
+	BasicOnlyServiceUser
+}
+
+// ----- END OF SERVICE ORDER POLICY -----

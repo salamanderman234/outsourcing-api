@@ -254,3 +254,66 @@ func (ServicePackageServiceItemModel) TableName() string {
 }
 
 // ----- END OF SERVICE -----
+// ----- ORDER MODEL -----
+type ServiceOrderModel struct {
+	gorm.Model
+	// PaymentStatus       *string                   `json:"payment_status" gorm:"not null"`
+	ServiceUserID       *uint                     `json:"service_user_id" gorm:"not null"`
+	TotalPrice          *uint64                   `json:"total_price" gorm:"not null"`
+	TotalItem           *uint                     `json:"total_item" gorm:"not null"`
+	Date                *time.Time                `json:"date" gorm:"not null"`
+	ContractDuration    *uint                     `json:"contract_duration" gorm:"not null"`
+	StartDate           *time.Time                `json:"start_date" gorm:"not null"`
+	Address             *string                   `json:"address" gorm:"not null;type:text"`
+	Note                string                    `json:"buyer_note" gorm:"type:text"`
+	PaymentType         *PaymentTypeEnum          `json:"payment_type" gorm:"not null"`
+	Status              *OrderStatusEnum          `json:"status" gorm:"not null"`
+	MOU                 string                    `json:"mou" gorm:"type:varchar(255)"`
+	ServicePackageID    *uint                     `json:"service_package_id" gorm:"not null"`
+	ServicePackage      *ServicePackageModel      `json:"service_package" gorm:"foreignKey:ServicePackageID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ServiceUser         *ServiceUserModel         `json:"service_user" gorm:"foreignKey:ServiceUserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ServiceOrderDetails []ServiceOrderDetailModel `json:"order_details" gorm:"foreignKey:ServiceOrderID"`
+}
+
+func (ServiceOrderModel) TableName() string {
+	return "service_orders"
+}
+func (ServiceOrderModel) GetPolicy() Policy {
+	return &ServiceOrderPolicy{}
+}
+
+type ServiceOrderDetailModel struct {
+	gorm.Model
+	ServiceOrderID      *uint                         `json:"service_order_id" gorm:"not null"`
+	PartialServiceID    *uint                         `json:"partial_service_id" gorm:"not null"`
+	ServicePrice        *uint64                       `json:"service_price" gorm:"not null"`
+	AdditionalPrice     *uint64                       `json:"additional_price" gorm:"not null"`
+	PartialServiceItems []ServiceOrderDetailItemModel `json:"order_detail_items" gorm:"foreignKey:ServiceOrderDetailID"`
+	PartialService      *ServiceModel                 `json:"partial_service" gorm:"foreignKey:PartialServiceID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+}
+
+func (ServiceOrderDetailModel) TableName() string {
+	return "service_order_details"
+}
+func (ServiceOrderDetailModel) GetPolicy() Policy {
+	return &ServiceOrderPolicy{}
+}
+
+type ServiceOrderDetailItemModel struct {
+	gorm.Model
+	ServiceOrderDetailID *uint             `json:"service_order_detail_id" gorm:"not null"`
+	PartialServiceItemID *uint             `json:"partial_service_item_id" gorm:"not null"`
+	Value                *uint             `json:"value" gorm:"not null"`
+	ItemPrice            *uint64           `json:"item_price" gorm:"not null"`
+	TotalPrice           *uint64           `json:"total_price" gorm:"not null"`
+	ServiceItem          *ServiceItemModel `json:"partial_service_item" gorm:"foreignKey:PartialServiceItemID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+}
+
+func (ServiceOrderDetailItemModel) TableName() string {
+	return "service_order_detail_items"
+}
+func (ServiceOrderDetailItemModel) GetPolicy() Policy {
+	return &ServiceOrderPolicy{}
+}
+
+// ----- END OF ORDER MODEL -----

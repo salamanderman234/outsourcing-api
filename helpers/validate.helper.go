@@ -8,7 +8,13 @@ import (
 )
 
 func Validate(data any) (bool, error) {
-	return govalidator.ValidateStruct(data)
+	ok, errs := govalidator.ValidateStruct(data)
+	if !ok {
+		valErr := domains.ErrValidation
+		valErr.ValidationErrors = errs
+		return false, valErr
+	}
+	return true, nil
 }
 
 func GenerateErrorResponse(errs error) []domains.ErrorDetailResponse {

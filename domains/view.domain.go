@@ -56,3 +56,13 @@ type ServicePackageView interface {
 }
 
 // ---- END OF APP SERVICE ----
+// ---- ORDER VIEW ----
+type ServiceOrderView interface {
+	MakeServiceOrder(c echo.Context) error
+	CancelServiceOrder(c echo.Context) error
+	ListOrder(c echo.Context) error
+	UserListOrder(c echo.Context) error
+	UpdateStatusServiceOrder(c echo.Context) error
+}
+
+// ---- END OF ORDER VIEW ----

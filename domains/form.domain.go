@@ -1,5 +1,7 @@
 package domains
 
+import "time"
+
 // ----- AUTH FORM -----
 type BasicLoginForm struct {
 	Email    string `json:"email" form:"email" valid:"required~this field is required"`
@@ -168,3 +170,27 @@ type AdminUpdateForm struct {
 }
 
 // ----- END OF USER FORM -----
+// ----- ORDER FORM -----
+type ServiceOrderUpdateStatusForm struct {
+	Status OrderStatusEnum `json:"status" form:"status" valid:"required~this field is required,in(waiting_for_payment|waiting_for_confirmation|processed|waiting_for_further_payment|ongoing|completed|cancelled)~invalid value"`
+}
+type ServiceOrderForm struct {
+	ServiceUserID    uint                     `json:"service_user_id" valid:"required~this field is required"`
+	ContractDuration uint                     `json:"contract_duration" valid:"required~this field is required"`
+	StartDate        time.Time                `json:"start_date" valid:"required~this field is required"`
+	Address          string                   `json:"address" valid:"required~this field is required,stringlength(0|2000)~maximum 2000 character"`
+	Note             string                   `json:"buyer_note" valid:"required~this field is required,stringlength(0|2000)~maximum 2000 character"`
+	PaymentType      PaymentTypeEnum          `json:"payment_type" valid:"required~this field is required,in(full|dp|3_termin)~accepted value are full or dp or 3_termin"`
+	ServicePackageID uint                     `json:"service_package_id"`
+	Details          []ServiceOrderDetailForm `json:"order_details"`
+}
+type ServiceOrderDetailForm struct {
+	PartialServiceID uint                         `json:"partial_service_id" valid:"required~this field is required"`
+	Items            []ServiceOrderDetailItemForm `json:"order_detail_items"`
+}
+type ServiceOrderDetailItemForm struct {
+	PartialServiceItemID uint `json:"partial_service_item_id" valid:"required~this field is required"`
+	Value                uint `json:"value" valid:"required~this field is required"`
+}
+
+// ----- END OF ORDER FORM -----

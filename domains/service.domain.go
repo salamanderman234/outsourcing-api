@@ -83,3 +83,13 @@ type PartialServiceService interface {
 }
 
 // ---- END OF APP SERVICE SERVICE -----
+// ---- ORDER SERVICE ----
+type OrderService interface {
+	MakeOrder(c context.Context, user UserModel, orderData ServiceOrderForm) (ServiceOrderEntity, error)
+	CancelOrder(c context.Context, user UserModel, orderId uint) (bool, error)
+	ListOrder(c context.Context, user UserModel, serviceUserId uint, status string, page uint, orderBy string, desc bool, withPagination bool) ([]ServiceOrderEntity, *Pagination, error)
+	DetailOrder(c context.Context, user UserModel, id uint) (ServiceOrderEntity, error)
+	UpdateOrderStatus(c context.Context, user UserModel, id uint, updateForm ServiceOrderUpdateStatusForm) (int, ServiceOrderEntity, error)
+}
+
+// ---- END OF ORDER SERVICE -----
