@@ -36,6 +36,11 @@ type BasicCrudService interface {
 }
 
 // ----- USER SERVICE ------
+type UserService interface {
+	Find(c context.Context, id uint) (UserEntity, error)
+	Update(c context.Context, id uint, data UserEditForm) (int64, UserEntity, error)
+	Delete(c context.Context, id uint) (uint, int64, error)
+}
 type ServiceUserService interface {
 	Read(c context.Context, id uint, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *Pagination, error)
 	Update(c context.Context, id uint, data ServiceUserUpdateForm, files ...EntityFileMap) (int, ServiceUserEntity, error)
@@ -85,11 +90,11 @@ type PartialServiceService interface {
 // ---- END OF APP SERVICE SERVICE -----
 // ---- ORDER SERVICE ----
 type OrderService interface {
-	MakeOrder(c context.Context, user UserModel, orderData ServiceOrderForm) (ServiceOrderEntity, error)
-	CancelOrder(c context.Context, user UserModel, orderId uint) (bool, error)
-	ListOrder(c context.Context, user UserModel, serviceUserId uint, status string, page uint, orderBy string, desc bool, withPagination bool) ([]ServiceOrderEntity, *Pagination, error)
-	DetailOrder(c context.Context, user UserModel, id uint) (ServiceOrderEntity, error)
-	UpdateOrderStatus(c context.Context, user UserModel, id uint, updateForm ServiceOrderUpdateStatusForm) (int, ServiceOrderEntity, error)
+	MakeOrder(c context.Context, user UserEntity, orderData ServiceOrderForm) (ServiceOrderEntity, error)
+	CancelOrder(c context.Context, user UserEntity, orderId uint) (bool, error)
+	ListOrder(c context.Context, user UserEntity, serviceUserId uint, status string, page uint, orderBy string, desc bool, withPagination bool) ([]ServiceOrderEntity, *Pagination, error)
+	DetailOrder(c context.Context, user UserEntity, id uint) (ServiceOrderEntity, error)
+	UpdateOrderStatus(c context.Context, user UserEntity, id uint, updateForm ServiceOrderUpdateStatusForm) (int, ServiceOrderEntity, error)
 }
 
 // ---- END OF ORDER SERVICE -----

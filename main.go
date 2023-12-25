@@ -45,6 +45,7 @@ func main() {
 	domains.ServiceRegistry.ServiceItemServ = services.NewServiceItemService()
 	domains.ServiceRegistry.ServiceServ = services.NewPartialServiceService()
 	domains.ServiceRegistry.OrderServ = services.NewOrderService()
+	domains.ServiceRegistry.UserServ = services.NewUserService()
 	// views
 	domains.ViewRegistry.AuthView = views.NewAuthView()
 	domains.ViewRegistry.CategoryView = views.NewCategoryView()

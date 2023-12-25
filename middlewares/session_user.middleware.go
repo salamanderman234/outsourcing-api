@@ -25,7 +25,7 @@ func RetrieveSessionUser(next echo.HandlerFunc) echo.HandlerFunc {
 			resp.Body = *errBody
 			return c.JSON(status, resp)
 		}
-		user, err := domains.ServiceRegistry.UserService.Find(ctx, payload.ID)
+		user, err := domains.ServiceRegistry.UserServ.Find(ctx, payload.ID)
 		if errors.Is(err, domains.ErrRecordNotFound) {
 			status, msg, errBody := helpers.HandleError(err)
 			resp.Message = msg

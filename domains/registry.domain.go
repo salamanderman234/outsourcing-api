@@ -8,6 +8,11 @@ var (
 		ServiceItemServ ServiceItemService
 		ServiceServ     PartialServiceService
 		OrderServ       OrderService
+		UserServ        UserService
+		ServiceUserServ ServiceUserService
+		EmployeeServ    EmployeeService
+		AdminServ       AdminService
+		SupervisorServ  SupervisorService
 	}{}
 
 	RepoRegistry = struct {
@@ -26,6 +31,11 @@ var (
 
 	ViewRegistry = struct {
 		AuthView        BasicAuthView
+		UserView        UserView
+		ServiceUserView UserServiceView
+		EmployeeView    EmployeeView
+		SupervisorView  SupervisorView
+		AdminView       AdminView
 		CategoryView    CategoryView
 		ServiceItemView ServiceItemView
 		ServiceView     PartialServiceView

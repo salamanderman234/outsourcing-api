@@ -26,8 +26,7 @@ func (s serviceOrderDetailRepository) Create(c context.Context, data domains.Ser
 	err := db.Transaction(func(tx *gorm.DB) error {
 		result := tx.Scopes(usingContextScope(c), usingModelScope(s.model)).
 			Create(&data)
-		if result != nil {
-			tx.Rollback()
+		if result.Error != nil {
 			return convertRepoError(result)
 		}
 		orderDetailId := data.ID
@@ -38,7 +37,6 @@ func (s serviceOrderDetailRepository) Create(c context.Context, data domains.Ser
 				ServiceOrderDetailItemRepo.
 				Create(c, item, tx)
 			if err != nil {
-				tx.Rollback()
 				return err
 			}
 			items = append(items, detailResult)

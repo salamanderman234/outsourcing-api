@@ -2,11 +2,8 @@ package services
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"time"
 
-	"github.com/asaskevich/govalidator"
 	"github.com/salamanderman234/outsourcing-api/domains"
 	"github.com/salamanderman234/outsourcing-api/helpers"
 )
@@ -17,7 +14,7 @@ func NewOrderService() domains.OrderService {
 	return &orderService{}
 }
 
-func (orderService) MakeOrder(c context.Context, user domains.UserModel, orderData domains.ServiceOrderForm) (domains.ServiceOrderEntity, error) {
+func (orderService) MakeOrder(c context.Context, user domains.UserEntity, orderData domains.ServiceOrderForm) (domains.ServiceOrderEntity, error) {
 	var orderEntity domains.ServiceOrderEntity
 	var orderModel domains.ServiceOrderModel
 	details := orderData.Details
@@ -26,7 +23,8 @@ func (orderService) MakeOrder(c context.Context, user domains.UserModel, orderDa
 		return domains.ServiceOrderEntity{}, err
 	}
 	var orderTotalPrice uint64
-	for indexDetail, detail := range details {
+	var validatedDetail []domains.ServiceOrderDetailModel
+	for _, detail := range details {
 		detailItems := detail.Items
 		detail.Items = nil
 		if ok, err := helpers.Validate(detail); !ok {
@@ -36,14 +34,6 @@ func (orderService) MakeOrder(c context.Context, user domains.UserModel, orderDa
 		ps, err := domains.RepoRegistry.ServiceRepo.Find(c, psId)
 		if err != nil {
 			conv := domains.ErrForeignKeyViolated
-			conv.ValidationErrors = govalidator.Errors{
-				govalidator.Error{
-					Name:                     fmt.Sprintf("order_details[%d].partial_service_id", indexDetail),
-					CustomErrorMessageExists: true,
-					Validator:                "foreign key",
-					Err:                      errors.New("this partial service does not exists"),
-				},
-			}
 			return orderEntity, conv
 		}
 		var additionalPrice uint64
@@ -51,34 +41,19 @@ func (orderService) MakeOrder(c context.Context, user domains.UserModel, orderDa
 			PartialServiceID: &ps.ID,
 			ServicePrice:     ps.BasePrice,
 		}
-		for indexItem, item := range detailItems {
+		itemList := []domains.ServiceOrderDetailItemModel{}
+		for _, item := range detailItems {
 			if ok, err := helpers.Validate(item); !ok {
 				return domains.ServiceOrderEntity{}, err
 			}
-			psId := detail.PartialServiceID
-			si, err := domains.RepoRegistry.ServiceItemRepo.Find(c, psId)
+			itemId := item.PartialServiceItemID
+			si, err := domains.RepoRegistry.ServiceItemRepo.Find(c, itemId)
 			if err != nil {
 				conv := domains.ErrForeignKeyViolated
-				conv.ValidationErrors = govalidator.Errors{
-					govalidator.Error{
-						Name:                     fmt.Sprintf("order_details[%d].partial_service_id.order_detail_items[%d].partial_service_item_id", indexDetail, indexItem),
-						CustomErrorMessageExists: true,
-						Validator:                "foreign key",
-						Err:                      errors.New("this partial service item does not exists"),
-					},
-				}
 				return orderEntity, conv
 			}
 			if si.Service.ID != ps.ID {
 				conv := domains.ErrUnmatchedData
-				conv.ValidationErrors = govalidator.Errors{
-					govalidator.Error{
-						Name:                     fmt.Sprintf("order_details[%d].partial_service_id.order_detail_items[%d].partial_service_item_id", indexDetail, indexItem),
-						CustomErrorMessageExists: true,
-						Validator:                "unmatched",
-						Err:                      errors.New("this item cannot be paired with this partial service"),
-					},
-				}
 				return orderEntity, conv
 			}
 			total := *si.PricePerItem * uint64(item.Value)
@@ -89,24 +64,31 @@ func (orderService) MakeOrder(c context.Context, user domains.UserModel, orderDa
 				ItemPrice:            si.PricePerItem,
 				TotalPrice:           &total,
 			}
-			detailData.PartialServiceItems = append(detailData.PartialServiceItems, detailDataItem)
+			itemList = append(itemList, detailDataItem)
 		}
-		detailTotalPrice := additionalPrice + *detailData.ServicePrice
+		detailData.PartialServiceItems = itemList
+		detailTotalPrice := (additionalPrice + *detailData.ServicePrice) * uint64(orderData.ContractDuration)
 		detailData.AdditionalPrice = &additionalPrice
 		detailData.TotalPrice = &detailTotalPrice
 		orderTotalPrice += detailTotalPrice
-		orderModel.ServiceOrderDetails = append(orderModel.ServiceOrderDetails, detailData)
+		validatedDetail = append(validatedDetail, detailData)
 	}
+	status := domains.WaitingMOU
+	totalItem := uint(len(details))
 	finalPrice := orderTotalPrice * uint64(orderData.ContractDuration)
 	orderModel.TotalPrice = &finalPrice
 	orderModel.TotalDiscount = 0
 	orderModel.PurchasePrice = &finalPrice
+	orderModel.TotalItem = &totalItem
+	orderModel.Status = &status
+	orderModel.ServicePackageID = nil
 	now := time.Now()
 	orderModel.Date = &now
 	orderModel.ServiceUserID = &user.ServiceUser.ID
 	if err := helpers.Convert(orderData, &orderModel); err != nil {
 		return orderEntity, err
 	}
+	orderModel.ServiceOrderDetails = validatedDetail
 	result, err := domains.RepoRegistry.ServiceOrderRepo.Create(c, orderModel)
 	if err != nil {
 		return orderEntity, err
@@ -116,7 +98,7 @@ func (orderService) MakeOrder(c context.Context, user domains.UserModel, orderDa
 	}
 	return orderEntity, nil
 }
-func (orderService) CancelOrder(c context.Context, user domains.UserModel, orderId uint) (bool, error) {
+func (orderService) CancelOrder(c context.Context, user domains.UserEntity, orderId uint) (bool, error) {
 	cancelStatus := domains.CancelledOrderStatus
 	data := domains.ServiceOrderModel{
 		Status: &cancelStatus,
@@ -128,7 +110,7 @@ func (orderService) CancelOrder(c context.Context, user domains.UserModel, order
 	return true, nil
 }
 func (orderService) ListOrder(c context.Context,
-	user domains.UserModel,
+	user domains.UserEntity,
 	serviceUserId uint,
 	status string,
 	page uint,
@@ -164,7 +146,7 @@ func (orderService) ListOrder(c context.Context,
 	}
 	return ordersEntity, nil, nil
 }
-func (orderService) DetailOrder(c context.Context, user domains.UserModel, id uint) (domains.ServiceOrderEntity, error) {
+func (orderService) DetailOrder(c context.Context, user domains.UserEntity, id uint) (domains.ServiceOrderEntity, error) {
 	var order domains.ServiceOrderEntity
 	mod, err := domains.RepoRegistry.ServiceOrderRepo.Find(c, id)
 	if err != nil {
@@ -175,7 +157,7 @@ func (orderService) DetailOrder(c context.Context, user domains.UserModel, id ui
 	}
 	return order, err
 }
-func (orderService) UpdateOrderStatus(c context.Context, user domains.UserModel, id uint, data domains.ServiceOrderUpdateStatusForm) (int, domains.ServiceOrderEntity, error) {
+func (orderService) UpdateOrderStatus(c context.Context, user domains.UserEntity, id uint, data domains.ServiceOrderUpdateStatusForm) (int, domains.ServiceOrderEntity, error) {
 	var dataModel domains.ServiceOrderModel
 	var dataEntity domains.ServiceOrderEntity
 	fun := func(id uint) (int, domains.Model, error) {

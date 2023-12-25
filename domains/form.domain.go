@@ -53,6 +53,10 @@ func (s SupervisorRegisterForm) GetCreds() BasicRegisterForm {
 	}
 }
 
+type UserEditForm struct {
+	Password string `json:"password" form:"password" valid:"required~this field is required,stringlength(6|32)~password length must be 6 to 32 character,"`
+}
+
 // ----- END OF AUTH FORM -----
 // ----- MASTER DATA FORM -----
 type CategoryCreateForm struct {
@@ -181,7 +185,6 @@ type ServiceOrderForm struct {
 	Address          string                   `json:"address" valid:"required~this field is required,stringlength(0|2000)~maximum 2000 character"`
 	Note             string                   `json:"buyer_note" valid:"stringlength(0|2000)~maximum 2000 character"`
 	PaymentType      PaymentTypeEnum          `json:"payment_type" valid:"required~this field is required,in(full|dp|3_termin)~accepted value are full or dp or 3_termin"`
-	ServicePackageID uint                     `json:"service_package_id"`
 	Details          []ServiceOrderDetailForm `json:"order_details"`
 }
 type ServiceOrderDetailForm struct {

@@ -30,6 +30,9 @@ type CategoryView interface {
 
 // ----- END OF MASTER DATA -----
 // ----- USER -----
+type UserView interface {
+	BasicCrudView
+}
 type EmployeeView interface {
 	BasicCrudView
 }

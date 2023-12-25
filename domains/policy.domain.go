@@ -2,56 +2,56 @@ package domains
 
 // --> BASIC
 type Policy interface {
-	Create(user UserModel) bool
-	Find(id uint, user UserModel) bool
-	ReadAll(user UserModel, id ...uint) bool
-	Update(id uint, user UserModel) bool
-	Delete(id uint, user UserModel) bool
+	Create(user UserEntity) bool
+	Find(id uint, user UserEntity) bool
+	ReadAll(user UserEntity, id ...uint) bool
+	Update(id uint, user UserEntity) bool
+	Delete(id uint, user UserEntity) bool
 }
 
 type BasicAdminOnlyPolicy struct{}
 
-func (BasicAdminOnlyPolicy) Create(user UserModel) bool {
+func (BasicAdminOnlyPolicy) Create(user UserEntity) bool {
 	return user.Role == string(AdminRole)
 }
-func (BasicAdminOnlyPolicy) Find(id uint, user UserModel) bool {
+func (BasicAdminOnlyPolicy) Find(id uint, user UserEntity) bool {
 	return true
 }
-func (BasicAdminOnlyPolicy) ReadAll(user UserModel, id ...uint) bool {
+func (BasicAdminOnlyPolicy) ReadAll(user UserEntity, id ...uint) bool {
 	return true
 }
-func (BasicAdminOnlyPolicy) Update(id uint, user UserModel) bool {
+func (BasicAdminOnlyPolicy) Update(id uint, user UserEntity) bool {
 	return user.Role == string(AdminRole)
 }
-func (BasicAdminOnlyPolicy) Delete(id uint, user UserModel) bool {
+func (BasicAdminOnlyPolicy) Delete(id uint, user UserEntity) bool {
 	return user.Role == string(AdminRole)
 }
 
 type BasicOnlyServiceUser struct{}
 
-func (BasicOnlyServiceUser) Create(user UserModel) bool {
+func (BasicOnlyServiceUser) Create(user UserEntity) bool {
 	return user.Role == string(ServiceUserRole)
 }
-func (BasicOnlyServiceUser) Find(id uint, user UserModel) bool {
+func (BasicOnlyServiceUser) Find(id uint, user UserEntity) bool {
 	return id == user.ID
 }
-func (BasicOnlyServiceUser) ReadAll(user UserModel, id ...uint) bool {
+func (BasicOnlyServiceUser) ReadAll(user UserEntity, id ...uint) bool {
 	if len(id) == 1 {
 		return user.Role == string(AdminRole) || id[0] == user.ID
 	}
 	return user.Role == string(AdminRole)
 }
-func (BasicOnlyServiceUser) Update(id uint, user UserModel) bool {
+func (BasicOnlyServiceUser) Update(id uint, user UserEntity) bool {
 	return user.Role == string(AdminRole)
 }
-func (BasicOnlyServiceUser) Delete(id uint, user UserModel) bool {
+func (BasicOnlyServiceUser) Delete(id uint, user UserEntity) bool {
 	return id == user.ID
 }
 
 // ----- AUTH POLICY -----
 type ServiceUserAuthPolicy struct{}
 
-func (ServiceUserAuthPolicy) Register(user UserModel) bool {
+func (ServiceUserAuthPolicy) Register(user UserEntity) bool {
 	return true
 }
 

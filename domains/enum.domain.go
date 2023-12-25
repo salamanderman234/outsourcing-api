@@ -12,6 +12,7 @@ const (
 type OrderStatusEnum string
 
 const (
+	WaitingMOU                        OrderStatusEnum = "waiting_mou"
 	WaitingForPaymentOrderStatus      OrderStatusEnum = "waiting_for_payment"
 	WaitingForConfirmationOrderStatus OrderStatusEnum = "waiting_for_confirmation"
 	ProcessedOrderStatus              OrderStatusEnum = "processed"

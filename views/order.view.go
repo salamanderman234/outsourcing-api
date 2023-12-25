@@ -18,8 +18,9 @@ func NewOrderView() domains.ServiceOrderView {
 
 func (orderView) MakeServiceOrder(c echo.Context) error {
 	var data domains.ServiceOrderForm
+	user := c.Get("user").(domains.UserEntity)
 	createCallFunc := func(ctx context.Context) (domains.Entity, error) {
-		return domains.ServiceRegistry.OrderServ.MakeOrder(ctx, domains.UserModel{}, data)
+		return domains.ServiceRegistry.OrderServ.MakeOrder(ctx, user, data)
 	}
 	return basicCreateView(c, &data, createCallFunc)
 }
@@ -35,7 +36,7 @@ func (orderView) CancelServiceOrder(c echo.Context) error {
 		resp.Body = *errBody
 		return c.JSON(status, resp)
 	}
-	ok, err := domains.ServiceRegistry.OrderServ.CancelOrder(ctx, domains.UserModel{}, id)
+	ok, err := domains.ServiceRegistry.OrderServ.CancelOrder(ctx, domains.UserEntity{}, id)
 	if !ok {
 		status, msg, errBody := helpers.HandleError(err)
 		resp.Message = msg
@@ -74,10 +75,10 @@ func (orderView) ListOrder(c echo.Context) error {
 	var datas any
 	var pagination *domains.Pagination
 	if id != 0 {
-		datas, err = domains.ServiceRegistry.OrderServ.DetailOrder(ctx, domains.UserModel{}, id)
+		datas, err = domains.ServiceRegistry.OrderServ.DetailOrder(ctx, domains.UserEntity{}, id)
 	} else {
 		datas, pagination, err = domains.ServiceRegistry.OrderServ.ListOrder(
-			ctx, domains.UserModel{},
+			ctx, domains.UserEntity{},
 			serviceUserId, status, uint(math.Max(float64(1), float64(page))),
 			order, desc > 0, withPagination > 0,
 		)
@@ -108,7 +109,7 @@ func (orderView) UpdateStatusServiceOrder(c echo.Context) error {
 	var data domains.ServiceOrderUpdateStatusForm
 	updateCallFunc := func(ctx context.Context, id uint) (int, any, error) {
 		return domains.ServiceRegistry.OrderServ.UpdateOrderStatus(ctx,
-			domains.UserModel{}, id, data,
+			domains.UserEntity{}, id, data,
 		)
 	}
 	return basicUpdateView(c, &data, updateCallFunc)

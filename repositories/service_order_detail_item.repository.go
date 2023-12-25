@@ -23,6 +23,7 @@ func (s serviceOrderDetailItemRepository) Create(c context.Context, data domains
 	if len(repo) == 1 {
 		db = repo[0]
 	}
+	data.ID = 0
 	err := basicCreateRepoFunc(c, db, &s.model, &data)
 	return data, err
 }

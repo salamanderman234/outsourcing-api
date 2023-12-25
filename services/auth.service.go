@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"errors"
-	"strconv"
 
 	"github.com/salamanderman234/outsourcing-api/configs"
 	"github.com/salamanderman234/outsourcing-api/domains"
@@ -127,7 +126,7 @@ func (s serviceUserAuthService) Refresh(c context.Context, refreshToken string) 
 	if err != nil {
 		return tokenPair, err
 	}
-	id, _ := strconv.Atoi(claims.ID)
+	id := claims.JWTPayload.ID
 	if id == 0 {
 		return tokenPair, domains.ErrInvalidToken
 	}

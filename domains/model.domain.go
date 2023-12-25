@@ -216,10 +216,11 @@ func (ServiceModel) TableName() string {
 type ServicePackageModel struct {
 	gorm.Model
 	PackageName *string                      `json:"package_name" gorm:"not null;type:varchar(255)"`
-	Description string                       `json:"description" gorm:"type:varchar(255)"`
+	Description string                       `json:"description" gorm:"type:text"`
 	Image       string                       `json:"image" gorm:"type:varchar(255)"`
 	Icon        string                       `json:"icon" gorm:"type:varchar(255)"`
-	BasePrice   *uint64                      `json:"base_price" gorm:"not null;default:0"`
+	TotalPrice  *uint64                      `json:"total_price" gorm:"not null;default:0"`
+	FinalPrice  *uint64                      `json:"final_price" gorm:"not null;default:0"`
 	Services    []ServicePackageServiceModel `json:"services" gorm:"foreignKey:ServicePackageID"`
 }
 
@@ -271,7 +272,7 @@ type ServiceOrderModel struct {
 	PaymentType         *PaymentTypeEnum          `json:"payment_type" gorm:"not null"`
 	Status              *OrderStatusEnum          `json:"status" gorm:"not null"`
 	MOU                 string                    `json:"mou" gorm:"type:varchar(255)"`
-	ServicePackageID    *uint                     `json:"service_package_id"`
+	ServicePackageID    *uint                     `json:"service_package_id" gorm:"default:null"`
 	ServicePackage      *ServicePackageModel      `json:"service_package" gorm:"foreignKey:ServicePackageID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	ServiceUser         *ServiceUserModel         `json:"service_user" gorm:"foreignKey:ServiceUserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	ServiceOrderDetails []ServiceOrderDetailModel `json:"order_details" gorm:"foreignKey:ServiceOrderID"`
