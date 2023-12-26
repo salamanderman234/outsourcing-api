@@ -2,8 +2,12 @@ package services
 
 import (
 	"context"
+	"errors"
+	"slices"
 	"time"
 
+	"github.com/asaskevich/govalidator"
+	"github.com/salamanderman234/outsourcing-api/configs"
 	"github.com/salamanderman234/outsourcing-api/domains"
 	"github.com/salamanderman234/outsourcing-api/helpers"
 )
@@ -169,4 +173,62 @@ func (orderService) UpdateOrderStatus(c context.Context, user domains.UserEntity
 		return 0, dataEntity, err
 	}
 	return aff, dataEntity, nil
+}
+
+func (orderService) UploadMOU(c context.Context, user domains.UserEntity, orderId uint, fileObj domains.EntityFileMap) (bool, error) {
+	var dataModel domains.ServiceOrderModel
+	var dataEntity domains.ServiceOrderEntity
+	fun := func(id uint) (int, domains.Model, error) {
+		order, err := domains.RepoRegistry.ServiceOrderRepo.Find(c, orderId)
+		if err != nil {
+			return 0, dataModel, err
+		}
+		status := order.Status
+		acceptedStatus := []string{
+			string(domains.WaitingForConfirmationOrderStatus),
+			string(domains.WaitingMOU),
+		}
+		if !slices.Contains(acceptedStatus, string(*status)) {
+			return 0, dataModel, domains.ErrUnprocessAbleEntity
+		}
+		file := fileObj.File
+		if file == nil {
+			err := domains.ErrValidation
+			err.ValidationErrors = govalidator.Errors{
+				govalidator.Error{
+					Name:                     "mou",
+					Validator:                "required",
+					CustomErrorMessageExists: true,
+					Err:                      errors.New("mou file is required"),
+				},
+			}
+			return 0, dataModel, err
+		}
+		mapped := map[string]domains.FileWrapper{
+			"mou": {
+				File:   file,
+				Dest:   configs.FILE_DESTS["order/mou"],
+				Field:  "mou",
+				Config: configs.PDF_FILE_CONFIG,
+			},
+		}
+		saveResult, _, err := domains.ServiceRegistry.FileServ.BatchStore(mapped)
+		if err != nil {
+			return 0, dataModel, err
+		}
+		old := dataModel.MOU
+		go domains.ServiceRegistry.FileServ.Destroy(old)
+		dataModel = order
+		dataModel.ID = 0
+		dataModel.MOU = saveResult["mou"]
+		toStatus := domains.WaitingForConfirmationOrderStatus
+		dataModel.Status = &toStatus
+		aff, updated, err := domains.RepoRegistry.ServiceOrderRepo.Update(c, orderId, dataModel)
+		return int(aff), updated, err
+	}
+	_, _, err := basicUpdateService(orderId, domains.ServiceOrderEntity{}, &dataModel, &dataEntity, fun)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

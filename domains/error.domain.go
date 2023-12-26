@@ -35,6 +35,11 @@ var (
 		Status:         http.StatusInternalServerError,
 		GeneralMessage: "Conversion Error",
 	}
+	ErrUnprocessAbleEntity = GeneralError{
+		Msg:            "rule violation",
+		Status:         http.StatusUnprocessableEntity,
+		GeneralMessage: "Status Error",
+	}
 	// service
 	ErrHashingPassword = errors.New("hashing password error")
 	ErrInvalidCreds    = GeneralError{

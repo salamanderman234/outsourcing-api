@@ -91,6 +91,7 @@ type PartialServiceService interface {
 // ---- ORDER SERVICE ----
 type OrderService interface {
 	MakeOrder(c context.Context, user UserEntity, orderData ServiceOrderForm) (ServiceOrderEntity, error)
+	UploadMOU(c context.Context, user UserEntity, orderId uint, fileObj EntityFileMap) (bool, error)
 	CancelOrder(c context.Context, user UserEntity, orderId uint) (bool, error)
 	ListOrder(c context.Context, user UserEntity, serviceUserId uint, status string, page uint, orderBy string, desc bool, withPagination bool) ([]ServiceOrderEntity, *Pagination, error)
 	DetailOrder(c context.Context, user UserEntity, id uint) (ServiceOrderEntity, error)

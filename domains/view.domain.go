@@ -64,6 +64,7 @@ type ServiceOrderView interface {
 	MakeServiceOrder(c echo.Context) error
 	CancelServiceOrder(c echo.Context) error
 	ListOrder(c echo.Context) error
+	UploadMOU(c echo.Context) error
 	UserListOrder(c echo.Context) error
 	UpdateStatusServiceOrder(c echo.Context) error
 }

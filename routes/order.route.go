@@ -14,4 +14,12 @@ func registerOrderRoutes(group *echo.Group) {
 	group.GET("/", domains.ViewRegistry.OrderView.ListOrder,
 		middlewares.RetrieveSessionUser,
 	)
+	group.GET("/user-list/", domains.ViewRegistry.OrderView.ListOrder,
+		middlewares.RetrieveSessionUser,
+		middlewares.OnlyServiceUser,
+	)
+	group.POST("/upload-mou/", domains.ViewRegistry.OrderView.UploadMOU,
+		middlewares.RetrieveSessionUser,
+		middlewares.OnlyServiceUser,
+	)
 }

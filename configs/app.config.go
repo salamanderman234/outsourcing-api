@@ -43,6 +43,7 @@ var (
 		"partial-service/icon": "service/icon",
 		"patial-service/image": "service/image",
 		"category/icon":        "master/category/icon",
+		"order/mou":            "order/mou",
 	}
 )
 
