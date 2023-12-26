@@ -59,7 +59,7 @@ func (s serviceOrderRepository) Read(c context.Context, status string, service_u
 		q = q.Where("status = ?", status)
 	}
 	if service_user_id != 0 {
-		q = q.Where("service_user_id")
+		q = q.Where("service_user_id = ?", service_user_id)
 	}
 	if withPagination {
 		q = q.Scopes(paginateScope(page))
@@ -68,7 +68,13 @@ func (s serviceOrderRepository) Read(c context.Context, status string, service_u
 		Preload("ServicePackage").
 		Preload("ServiceUser").
 		Preload("ServiceOrderDetails").
-		Find(results)
+		Preload("ServiceOrderDetails.PartialServiceItems").
+		Preload("ServiceOrderDetails.PartialServiceItems.ServiceItem").
+		Preload("ServiceOrderDetails.PartialService").
+		Find(&results)
+	if len(results) == 0 {
+		return nil, 0, domains.ErrRecordNotFound
+	}
 	if withPagination {
 		_ = q.Count(&count)
 	}

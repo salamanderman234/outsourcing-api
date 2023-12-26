@@ -20,6 +20,11 @@ func (a GeneralError) Error() string {
 }
 
 var (
+	ErrRequestTimeOut = GeneralError{
+		Msg:            "server taking too long to respond",
+		Status:         http.StatusRequestTimeout,
+		GeneralMessage: "Request Error",
+	}
 	ErrRepository = GeneralError{
 		Msg:            "repository error",
 		Status:         http.StatusInternalServerError,

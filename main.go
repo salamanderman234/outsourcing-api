@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -20,6 +21,11 @@ func init() {
 func main() {
 	server := echo.New()
 	server.Use(middleware.BodyLimit(fmt.Sprintf("%dM", configs.MAXIMUM_CONTENT_SIZE)))
+	server.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
+		Skipper:      middleware.DefaultSkipper,
+		ErrorMessage: domains.ErrRequestTimeOut.Msg,
+		Timeout:      60 * time.Second,
+	}))
 	// server.Use(middleware.Logger())
 	// database
 	connection, err := configs.ConnectDatabase()

@@ -11,4 +11,7 @@ func registerOrderRoutes(group *echo.Group) {
 		middlewares.RetrieveSessionUser,
 		middlewares.OnlyServiceUser,
 	)
+	group.GET("/", domains.ViewRegistry.OrderView.ListOrder,
+		middlewares.RetrieveSessionUser,
+	)
 }
