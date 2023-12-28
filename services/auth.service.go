@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/salamanderman234/outsourcing-api/configs"
 	"github.com/salamanderman234/outsourcing-api/domains"
 	"github.com/salamanderman234/outsourcing-api/helpers"
@@ -26,11 +27,29 @@ func (s serviceUserAuthService) Login(c context.Context, loginForm domains.Basic
 	password := loginForm.Password
 	user, err := domains.RepoRegistry.UserRepo.GetUserWithCreds(c, loginForm.Email)
 	if err != nil {
-		return tokenPair, userWithProfile, err
+		errConv := domains.ErrInvalidCreds
+		errConv.ValidationErrors = govalidator.Errors{
+			govalidator.Error{
+				Name:                     "email",
+				Validator:                "invalid creds",
+				CustomErrorMessageExists: true,
+				Err:                      errors.New("incorrect email or password"),
+			},
+		}
+		return tokenPair, userWithProfile, errConv
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(password))
 	if err != nil {
-		return tokenPair, userWithProfile, domains.ErrInvalidCreds
+		errConv := domains.ErrInvalidCreds
+		errConv.ValidationErrors = govalidator.Errors{
+			govalidator.Error{
+				Name:                     "email",
+				Validator:                "invalid creds",
+				CustomErrorMessageExists: true,
+				Err:                      errors.New("incorrect email or password"),
+			},
+		}
+		return tokenPair, userWithProfile, errConv
 	}
 	tokenPair, err = generatePairToken(user.ID, *user.Email, user.Role, user.Profile, remember)
 	if err != nil {

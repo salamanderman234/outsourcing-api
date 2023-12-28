@@ -114,7 +114,7 @@ type ServiceItemUpdateForm struct {
 	Description      string `form:"description" json:"description,omitempty" valid:"stringlength(0|255)~maximum 255 character"`
 	MaxValue         uint   `form:"max_value" json:"max_value,omitempty" valid:"range(1|1000)~maximum value is 1000 and minimum is 1"`
 	PricePerItem     uint64 `form:"price_per_item" json:"price_per_item,omitempty" valid:"range(0|10000000)~maximum value is 10000000 and minimum is 0"`
-	IsOptionalChoice bool   `form:"is_optional_choice" json:"is_optional_choice,omitempty"`
+	IsOptionalChoice bool   `form:"is_optional_choice" json:"is_optional_choice"`
 	Unit             string `form:"unit" json:"unit,omitempty" valid:"stringlength(0|255)~maximum 255 character"`
 }
 type PartialServiceCreateForm struct {

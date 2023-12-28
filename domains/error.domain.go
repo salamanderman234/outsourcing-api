@@ -66,7 +66,7 @@ var (
 	ErrGenerateToken = errors.New("generate token error")
 	ErrExpiredToken  = GeneralError{
 		Msg:            "token is expired, generate new one",
-		Status:         http.StatusUnauthorized,
+		Status:         419,
 		GeneralMessage: "Token Error",
 	}
 	ErrInvalidToken = GeneralError{

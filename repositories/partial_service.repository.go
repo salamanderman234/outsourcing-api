@@ -70,7 +70,7 @@ func (ps *partialServiceRepository) Read(ctx context.Context, categoryId uint, q
 }
 func (ps *partialServiceRepository) Find(ctx context.Context, id uint) (domains.ServiceModel, error) {
 	var result domains.ServiceModel
-	err := basicFindRepoFunc(ctx, ps.db, &ps.model, id, &result, "Category")
+	err := basicFindRepoFunc(ctx, ps.db, &ps.model, id, &result, "Category", "ServiceItems")
 	return result, err
 }
 func (ps *partialServiceRepository) Update(ctx context.Context, id uint, data domains.ServiceModel, repo ...*gorm.DB) (int, domains.ServiceModel, error) {
