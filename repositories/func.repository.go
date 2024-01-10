@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math"
 
 	"github.com/salamanderman234/outsourcing-api/configs"
@@ -90,4 +91,19 @@ func basicReadFunc(
 	}
 	maxPage := getMaxPage(uint(count))
 	return maxPage, convertRepoError(result)
+}
+
+func basicReadInFuncFunc(
+	c context.Context,
+	db *gorm.DB,
+	model domains.Model,
+	field string,
+	conds []string,
+	result any,
+) error {
+	queryString := fmt.Sprintf("%s IN ?", field)
+	queryResult := db.Scopes(usingContextScope(c)).
+		Where(queryString, conds).
+		Find(result)
+	return convertRepoError(queryResult)
 }

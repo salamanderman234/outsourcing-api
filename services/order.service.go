@@ -35,6 +35,7 @@ func (orderService) MakeOrder(c context.Context, user domains.UserEntity, orderD
 			return domains.ServiceOrderEntity{}, err
 		}
 		psId := detail.PartialServiceID
+		// perlu dioptimasi menggunakan in parameter
 		ps, err := domains.RepoRegistry.ServiceRepo.Find(c, psId)
 		if err != nil {
 			conv := domains.ErrForeignKeyViolated

@@ -97,3 +97,14 @@ func (ps *partialServiceRepository) Delete(ctx context.Context, id uint, repo ..
 	aff, err := basicDeleteRepoFunc(ctx, db, &ps.model, id)
 	return int(id), int(aff), err
 }
+func (ps *partialServiceRepository) ReadIn(ctx context.Context, field string, conds []string) ([]domains.ServiceModel, error) {
+	var result []domains.ServiceModel
+	err := basicReadInFuncFunc(ctx, ps.db, &ps.model, field, conds, &result)
+	if err != nil {
+		return result, err
+	}
+	if len(result) == 0 {
+		return result, domains.ErrRecordNotFound
+	}
+	return result, nil
+}

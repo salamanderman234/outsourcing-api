@@ -96,3 +96,14 @@ func (cr *serviceItemRepository) Delete(c context.Context, id uint, repo ...*gor
 	aff, err := basicDeleteRepoFunc(c, db, &cr.model, id)
 	return int64(id), aff, err
 }
+func (cr *serviceItemRepository) ReadIn(ctx context.Context, field string, conds []string) ([]domains.ServiceItemModel, error) {
+	var result []domains.ServiceItemModel
+	err := basicReadInFuncFunc(ctx, cr.db, &cr.model, field, conds, &result)
+	if err != nil {
+		return result, err
+	}
+	if len(result) == 0 {
+		return result, domains.ErrRecordNotFound
+	}
+	return result, nil
+}
