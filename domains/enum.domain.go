@@ -1,5 +1,12 @@
 package domains
 
+type EmployeeStatusEnum string
+
+const (
+	AvailableEmployeeStatus    EmployeeStatusEnum = "available"
+	NotAvailableEmployeeStatus EmployeeStatusEnum = "not_available"
+)
+
 type RoleEnum string
 
 const (
@@ -28,4 +35,19 @@ const (
 	FullPaymentType        PaymentTypeEnum = "full"
 	DownPaymentPaymentType PaymentTypeEnum = "dp"
 	ThreeTerminPaymentType PaymentTypeEnum = "3_termin"
+)
+
+type PlacementStatusEnum string
+
+const (
+	ActiveStatus    PlacementStatusEnum = "active"
+	CompletedStatus PlacementStatusEnum = "completed"
+	SuspendedStatus PlacementStatusEnum = "suspend"
+)
+
+type EmployeePlacementStatusEnum string
+
+const (
+	EmployeePlacementActiveStatus    PlacementStatusEnum = "active"
+	EmployeePlacementNotActiveStatus PlacementStatusEnum = "not_active"
 )

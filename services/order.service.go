@@ -169,7 +169,7 @@ func (orderService) UpdateOrderStatus(c context.Context, user domains.UserEntity
 		aff, updated, err := domains.RepoRegistry.ServiceOrderRepo.Update(c, id, dataModel)
 		return int(aff), updated, err
 	}
-	aff, _, err := basicUpdateService(id, data, &dataModel, &dataEntity, fun)
+	aff, err := basicUpdateService(false, c, id, data, &dataModel, &dataEntity, fun)
 	if err != nil {
 		return 0, dataEntity, err
 	}
@@ -227,7 +227,7 @@ func (orderService) UploadMOU(c context.Context, user domains.UserEntity, orderI
 		aff, updated, err := domains.RepoRegistry.ServiceOrderRepo.Update(c, orderId, dataModel)
 		return int(aff), updated, err
 	}
-	_, _, err := basicUpdateService(orderId, domains.ServiceOrderEntity{}, &dataModel, &dataEntity, fun)
+	_, err := basicUpdateService(false, c, orderId, domains.ServiceOrderEntity{}, &dataModel, &dataEntity, fun)
 	if err != nil {
 		return false, err
 	}

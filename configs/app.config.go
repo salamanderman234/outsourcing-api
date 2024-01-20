@@ -1,6 +1,11 @@
 package configs
 
-import "github.com/spf13/viper"
+import (
+	"context"
+
+	"github.com/labstack/echo/v4"
+	"github.com/spf13/viper"
+)
 
 const (
 	PAGINATION_PER_PAGE         = 10
@@ -23,6 +28,36 @@ type FileConfig struct {
 	MaximumErrMsg     string
 }
 
+// Application
+type ContextKey string
+
+var (
+	UserKey ContextKey = "user"
+)
+
+type ContextValue struct {
+	echo.Context
+}
+
+func (ctx ContextValue) Get(key string) interface{} {
+	// get old context value
+	val := ctx.Context.Get(key)
+	if val != nil {
+		return val
+	}
+	return ctx.Request().Context().Value(key)
+}
+
+func (ctx ContextValue) Set(key string, val interface{}) {
+	contextKey := ContextKey(key)
+	ctx.SetRequest(ctx.Request().WithContext(context.WithValue(ctx.Request().Context(), contextKey, val)))
+}
+func MiddlewareContextValue(fn echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		return fn(ContextValue{ctx})
+	}
+}
+
 // file configuration
 var (
 	IMAGE_FILE_CONFIG = FileConfig{
@@ -40,6 +75,7 @@ var (
 )
 var (
 	FILE_DESTS = map[string]string{
+		"user/profile":         "user/profile",
 		"partial-service/icon": "service/icon",
 		"patial-service/image": "service/image",
 		"category/icon":        "master/category/icon",

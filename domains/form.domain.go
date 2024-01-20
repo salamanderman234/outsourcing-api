@@ -151,7 +151,7 @@ type ServicePackageUpdateForm struct {
 // ----- USER FORM ------
 type ServiceUserUpdateForm struct {
 	Address  *string `json:"address,omitempty" form:"address" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
-	Fullname *string `json:"Fullname,omitempty" form:"fullname" valid:"required~this field is required"`
+	Fullname *string `json:"Fullname,omitempty" form:"fullname" valid:"required~this field is required,stringlength(0|255)~maximum 255 character"`
 	CardID   *string `json:"identity_card_number,omitempty" form:"identity_card_number" valid:"required~this field is required,stringlength(16|16)~must contain 16 character,numeric~only numeric character"`
 	Phone    *string `json:"phone,omitempty" form:"phone" valid:"required~this field is required,stringlength(12|13)~must contain minimum 12 character and maximum 13 character,numeric~only numeric character"`
 }
@@ -197,3 +197,10 @@ type ServiceOrderDetailItemForm struct {
 }
 
 // ----- END OF ORDER FORM -----
+// ----- PLACEMENT FORM -----
+type ServiceOrderPlacementCreateForm struct{}
+type ServiceOrderPlacementUpdateForm struct{}
+type ServiceOrderPlacementEmployeeCreateForm struct{}
+type ServiceOrderPlacementEmployeeUpdateForm struct{}
+
+// ----- END OF PLACEMENT FORM -----

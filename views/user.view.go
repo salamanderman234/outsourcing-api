@@ -112,9 +112,12 @@ func (employeeView) Create(c echo.Context) error {
 	})
 }
 func (employeeView) Read(c echo.Context) error {
+	category := ""
+	status := ""
+	echo.QueryParamsBinder(c).String("category", &category).String("employee_status", &status)
 	callFunc := func(c context.Context, id uint, query string, page uint, orderBy string, desc bool, withPagination bool) (any, *domains.Pagination, error) {
 		return domains.ServiceRegistry.EmployeeServ.Read(c,
-			id, query, uint(math.Max(float64(1), float64(page))), orderBy, desc, withPagination,
+			id, category, domains.EmployeeStatusEnum(status), query, uint(math.Max(float64(1), float64(page))), orderBy, desc, withPagination,
 		)
 	}
 	return basicReadView(c, callFunc)
@@ -148,9 +151,11 @@ func (supervisorView) Create(c echo.Context) error {
 	})
 }
 func (supervisorView) Read(c echo.Context) error {
+	status := ""
+	echo.QueryParamsBinder(c).String("employee_status", &status)
 	callFunc := func(c context.Context, id uint, query string, page uint, orderBy string, desc bool, withPagination bool) (any, *domains.Pagination, error) {
 		return domains.ServiceRegistry.SupervisorServ.Read(c,
-			id, query, uint(math.Max(float64(1), float64(page))), orderBy, desc, withPagination,
+			id, domains.EmployeeStatusEnum(status), query, uint(math.Max(float64(1), float64(page))), orderBy, desc, withPagination,
 		)
 	}
 	return basicReadView(c, callFunc)

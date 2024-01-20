@@ -32,7 +32,7 @@ type ServiceUserRepository interface {
 type SupervisorRepository interface {
 	Create(c context.Context, data SupervisorModel, repo ...*gorm.DB) (SupervisorModel, error)
 	Find(c context.Context, id uint) (SupervisorModel, error)
-	Read(c context.Context, q string, page uint, orderBy string, desc bool, withPagination bool) ([]SupervisorModel, uint, error)
+	Read(c context.Context, employeeStatus EmployeeStatusEnum, q string, page uint, orderBy string, desc bool, withPagination bool) ([]SupervisorModel, uint, error)
 	Update(c context.Context, id uint, data SupervisorModel, repo ...*gorm.DB) (int64, SupervisorModel, error)
 	Delete(c context.Context, id uint, repo ...*gorm.DB) (int64, int64, error)
 }
@@ -46,7 +46,7 @@ type AdminRepository interface {
 type EmployeeRepository interface {
 	Create(c context.Context, data EmployeeModel, repo ...*gorm.DB) (EmployeeModel, error)
 	Find(c context.Context, id uint) (EmployeeModel, error)
-	Read(c context.Context, q string, page uint, orderBy string, desc bool, withPagination bool) ([]EmployeeModel, uint, error)
+	Read(c context.Context, category string, employeeStatus EmployeeStatusEnum, q string, page uint, orderBy string, desc bool, withPagination bool) ([]EmployeeModel, uint, error)
 	Update(c context.Context, id uint, data EmployeeModel, repo ...*gorm.DB) (int64, EmployeeModel, error)
 	Delete(c context.Context, id uint, repo ...*gorm.DB) (int64, int64, error)
 }
@@ -125,3 +125,39 @@ type ServiceOrderDetailItemRepository interface {
 }
 
 // ----- END OF SERVICE ORDER REPOSITORY -----
+// ----- PLACEMENT REPOSITORY -----
+type ServiceOrderPlacementRepository interface {
+	Create(c context.Context, data ServiceOrderPlacementModel, repo ...*gorm.DB) (ServiceOrderPlacementModel, error)
+	Read(c context.Context, orderId uint, page uint, orderBy string, desc bool, withPagination bool) ([]ServiceOrderPlacementModel, uint, error)
+	Find(c context.Context, id uint) (ServiceOrderPlacementModel, error)
+	Update(c context.Context, id uint, data ServiceOrderPlacementModel, repo ...*gorm.DB) (int, ServiceOrderPlacementModel, error)
+	Delete(c context.Context, id uint, repo ...*gorm.DB) (int, int, error)
+}
+type ServiceOrderPlacementDailyReportRepository interface {
+	Create(c context.Context, data ServiceOrderPlacementDailyReportModel, repo ...*gorm.DB) (ServiceOrderPlacementDailyReportModel, error)
+	Find(c context.Context, id uint) (ServiceOrderPlacementDailyReportModel, error)
+	Update(c context.Context, id uint, data ServiceOrderPlacementDailyReportModel, repo ...*gorm.DB) (int, ServiceOrderPlacementDailyReportModel, error)
+	Delete(c context.Context, id uint, repo ...*gorm.DB) (int, int, error)
+}
+type ServiceOrderPlacementServiceRepository interface {
+	BatchCreate(c context.Context, placementId uint, datas []ServiceOrderPlacementServiceModel, repo ...*gorm.DB) ([]ServiceOrderPlacementServiceModel, error)
+	Create(c context.Context, data ServiceOrderPlacementServiceModel, repo ...*gorm.DB) (ServiceOrderPlacementServiceModel, error)
+	Find(c context.Context, id uint) (ServiceOrderPlacementServiceModel, error)
+	Update(c context.Context, id uint, data ServiceOrderPlacementServiceModel, repo ...*gorm.DB) (int, ServiceOrderPlacementServiceModel, error)
+	Delete(c context.Context, id uint, repo ...*gorm.DB) (int, int, error)
+}
+type ServiceOrderPlacementServiceEmployeeRepository interface {
+	Create(c context.Context, data ServiceOrderPlacementServiceEmployeeModel, repo ...*gorm.DB) (ServiceOrderPlacementServiceEmployeeModel, error)
+	// Read(c context.Context, placementId uint, page uint, orderBy string, desc bool, withPagination bool) ([]ServiceOrderPlacementServiceEmployeeModel, uint, error)
+	Find(c context.Context, id uint) (ServiceOrderPlacementServiceEmployeeModel, error)
+	Update(c context.Context, id uint, data ServiceOrderPlacementServiceEmployeeModel, repo ...*gorm.DB) (int, ServiceOrderPlacementServiceEmployeeModel, error)
+	Delete(c context.Context, id uint, repo ...*gorm.DB) (int, int, error)
+}
+type ServiceOrderPlacementServiceEmployeeScheduleRepository interface {
+	Create(c context.Context, data ServiceOrderPlacementServiceEmployeeScheduleModel, repo ...*gorm.DB) (ServiceOrderPlacementServiceEmployeeScheduleModel, error)
+	Find(c context.Context, id uint) (ServiceOrderPlacementServiceEmployeeScheduleModel, error)
+	Update(c context.Context, id uint, data ServiceOrderPlacementServiceEmployeeScheduleModel, repo ...*gorm.DB) (int, ServiceOrderPlacementServiceEmployeeModel, error)
+	Delete(c context.Context, id uint, repo ...*gorm.DB) (int, int, error)
+}
+
+// ----- END OF PLACEMENT REPOSITORY -----

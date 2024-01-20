@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -76,7 +75,6 @@ func GenerateValidationError(errs error) (domains.ErrorBodyResponse, error) {
 }
 
 func HandleError(err error) (int, string, *domains.ErrorBodyResponse) {
-	fmt.Println(err)
 	resp := domains.ErrorBodyResponse{}
 	appErr, ok := err.(domains.GeneralError)
 	if !ok {

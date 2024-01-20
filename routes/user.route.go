@@ -3,9 +3,11 @@ package routes
 import (
 	"github.com/labstack/echo/v4"
 	"github.com/salamanderman234/outsourcing-api/domains"
+	"github.com/salamanderman234/outsourcing-api/middlewares"
 )
 
 func registerUserRoute(group *echo.Group) {
+	group.Use(middlewares.RetrieveSessionUser)
 	userGroup := group
 	userGroup.GET("/", domains.ViewRegistry.UserView.Read)
 	userGroup.PATCH("/", domains.ViewRegistry.UserView.Update)

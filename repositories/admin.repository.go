@@ -51,8 +51,9 @@ func (s *adminRepository) Delete(c context.Context, id uint, repo ...*gorm.DB) (
 func (s *adminRepository) Read(c context.Context, q string, page uint, orderBy string, desc bool, withPagination bool) ([]domains.AdminModel, uint, error) {
 	var admins []domains.AdminModel
 	callFunc := func(db *gorm.DB) *gorm.DB {
-		return db.
-			Where("fullname LIKE ?", "%"+q+"%").
+		return db.Where("users.email LIKE ?", "%"+q+"%").
+			Or("admins.fullname LIKE ?", "%"+q+"%").
+			Joins("JOIN users ON users.id = admins.user_id").
 			Preload("User")
 	}
 	maxPage, err := basicReadFunc(

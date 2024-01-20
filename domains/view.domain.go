@@ -70,3 +70,13 @@ type ServiceOrderView interface {
 }
 
 // ---- END OF ORDER VIEW ----
+// ---- PLACEMENT VIEW ----
+type OrderPlacementView interface {
+	MakePlacement(c echo.Context) error
+	GetPlacements(c echo.Context) error
+	UpdatePlacement(c echo.Context) error
+	MakeEmployeePlacement(c echo.Context) error
+	UpdateEmployeePlacement(c echo.Context) error
+}
+
+// ---- END OF PLACEMENT VIEW ----

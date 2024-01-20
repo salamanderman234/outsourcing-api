@@ -27,6 +27,8 @@ var (
 		ServiceOrderRepo           ServiceOrderRepository
 		ServiceOrderDetailRepo     ServiceOrderDetailRepository
 		ServiceOrderDetailItemRepo ServiceOrderDetailItemRepository
+		PlacementRepo              ServiceOrderPlacementRepository
+		PlacementServiceRepo       ServiceOrderPlacementServiceRepository
 	}{}
 
 	ViewRegistry = struct {

@@ -65,10 +65,15 @@ func (s *supervisorRepository) Delete(c context.Context, id uint, repo ...*gorm.
 	aff, err := basicDeleteRepoFunc(c, db, &s.model, id)
 	return int64(id), aff, err
 }
-func (s *supervisorRepository) Read(c context.Context, q string, page uint, orderBy string, desc bool, withPagination bool) ([]domains.SupervisorModel, uint, error) {
+func (s *supervisorRepository) Read(c context.Context, employeeStatus domains.EmployeeStatusEnum, q string, page uint, orderBy string, desc bool, withPagination bool) ([]domains.SupervisorModel, uint, error) {
 	var results []domains.SupervisorModel
 	callFunc := func(db *gorm.DB) *gorm.DB {
-		return db.Where("fullname LIKE ?", "%"+q+"%").
+		if employeeStatus != "" {
+			db = db.Where("employee_status = ?", employeeStatus)
+		}
+		return db.Where("users.email LIKE ?", "%"+q+"%").
+			Or("supervisors.fullname LIKE ?", "%"+q+"%").
+			Joins("JOIN users ON users.id = supervisors.user_id").
 			Preload("User")
 	}
 	maxPage, err := basicReadFunc(

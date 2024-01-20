@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/salamanderman234/outsourcing-api/configs"
@@ -11,14 +12,14 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type serviceUserAuthService struct {
+type authService struct {
 }
 
-func NewUserAuthService() domains.BasicAuthService {
-	return &serviceUserAuthService{}
+func NewAuthService() domains.BasicAuthService {
+	return &authService{}
 }
 
-func (s serviceUserAuthService) Login(c context.Context, loginForm domains.BasicLoginForm, remember bool) (domains.TokenPair, domains.UserEntity, error) {
+func (authService) Login(c context.Context, loginForm domains.BasicLoginForm, remember bool) (domains.TokenPair, domains.UserEntity, error) {
 	tokenPair := domains.TokenPair{}
 	var userWithProfile domains.UserEntity
 	if ok, err := helpers.Validate(loginForm); !ok {
@@ -61,8 +62,15 @@ func (s serviceUserAuthService) Login(c context.Context, loginForm domains.Basic
 	}
 	return tokenPair, userWithProfile, nil
 }
-func (s serviceUserAuthService) Register(c context.Context, authData domains.BasicRegisterForm, profileData any, role domains.RoleEnum, remember bool) (domains.TokenPair, domains.UserWithProfileEntity, error) {
+func (authService) Register(c context.Context, authData domains.BasicRegisterForm, profileData any, role domains.RoleEnum, remember bool) (domains.TokenPair, domains.UserWithProfileEntity, error) {
 	tokenPair := domains.TokenPair{}
+	userContext, ok := c.Value(configs.UserKey).(domains.UserEntity)
+	if (role == domains.EmployeeRole || role == domains.AdminRole || role == domains.SupervisorRole) && !ok {
+		return tokenPair, domains.UserWithProfileEntity{}, domains.ErrInvalidAccess
+	}
+	if (role == domains.EmployeeRole || role == domains.AdminRole || role == domains.SupervisorRole) && userContext.Role != string(domains.AdminRole) {
+		return tokenPair, domains.UserWithProfileEntity{}, domains.ErrInvalidAccess
+	}
 	var userWithProfile domains.UserWithProfileEntity
 	if ok, err := helpers.Validate(profileData); !ok {
 		return tokenPair, userWithProfile, err
@@ -111,6 +119,8 @@ func (s serviceUserAuthService) Register(c context.Context, authData domains.Bas
 	if err != nil {
 		return tokenPair, userWithProfile, domains.ErrHashingPassword
 	}
+	user.Profile = helpers.GenerateAvatar(helpers.GenerateRandomString(5))
+	user.JoinedDate = time.Now()
 	_, result, err := domains.RepoRegistry.UserRepo.RegisterUser(c, user, profile)
 	if err != nil {
 		return tokenPair, userWithProfile, err
@@ -128,7 +138,7 @@ func (s serviceUserAuthService) Register(c context.Context, authData domains.Bas
 	userWithProfile.Profile = profileResult
 	return tokenPair, userWithProfile, nil
 }
-func (serviceUserAuthService) Check(c context.Context, token string) (domains.JWTPayload, error) {
+func (authService) Check(c context.Context, token string) (domains.JWTPayload, error) {
 	claims, err := helpers.VerifyToken(token)
 	if err != nil {
 		return domains.JWTPayload{}, err
@@ -139,7 +149,7 @@ func (serviceUserAuthService) Check(c context.Context, token string) (domains.JW
 	}
 	return payload, nil
 }
-func (s serviceUserAuthService) Refresh(c context.Context, refreshToken string) (domains.TokenPair, error) {
+func (authService) Refresh(c context.Context, refreshToken string) (domains.TokenPair, error) {
 	tokenPair := domains.TokenPair{}
 	claims, err := helpers.VerifyToken(refreshToken)
 	if err != nil {
@@ -166,4 +176,53 @@ func (s serviceUserAuthService) Refresh(c context.Context, refreshToken string) 
 	tokenPair.Access = access
 	tokenPair.Refresh = refreshToken
 	return tokenPair, nil
+}
+
+func (a authService) UpdateAuthProfile(c context.Context, id uint, password string, profilePic ...domains.EntityFileMap) (bool, error) {
+	var dataModel domains.UserModel
+	var userEntity domains.UserEntity
+	fun := func(id uint) (int, domains.Model, error) {
+		userModel, err := domains.RepoRegistry.UserRepo.Find(c, id)
+		if err != nil {
+			return 0, nil, err
+		}
+		oldProfile := userModel.Profile
+		_, err = a.storeProfile(&dataModel, profilePic...)
+		if err != nil {
+			return 0, nil, err
+		}
+		aff, updated, err := domains.RepoRegistry.UserRepo.Update(c, id, dataModel)
+		if err != nil {
+			go domains.ServiceRegistry.FileServ.Destroy(dataModel.Profile)
+		} else {
+			go domains.ServiceRegistry.FileServ.Destroy(oldProfile)
+		}
+		return int(aff), updated, nil
+	}
+	aff, err := basicUpdateService(true, c, id, &domains.UserEntity{}, &dataModel, &userEntity, fun)
+	return aff == 1, err
+}
+
+func (authService) storeProfile(model *domains.UserModel, files ...domains.EntityFileMap) (bool, error) {
+	if len(files) == 1 {
+		file := files[0]
+		if file.Field == "profile" && file.File != nil {
+			zippedFile := map[string]domains.FileWrapper{
+				"profile": {
+					Config: configs.IMAGE_FILE_CONFIG,
+					File:   file.File,
+					Field:  file.Field,
+					Dest:   configs.FILE_DESTS["user/profile"],
+				},
+			}
+			savedPaths, _, err := domains.ServiceRegistry.FileServ.BatchStore(zippedFile)
+			if err != nil {
+				return false, err
+			}
+			model.Profile = savedPaths["profile"]
+			return true, nil
+		}
+	}
+	model.Profile = ""
+	return false, nil
 }

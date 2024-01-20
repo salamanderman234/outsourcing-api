@@ -13,7 +13,7 @@ type Entity interface {
 	IsEntity() bool
 }
 type BasicEntity struct {
-	ID uint `json:"id"`
+	ID uint `json:"id,omitempty"`
 }
 
 type FileWrapper struct {
@@ -92,8 +92,8 @@ type TokenPair struct {
 // ----- AUTH ------
 type UserEntity struct {
 	BasicEntity
-	Email       string             `json:"email"`
-	Role        string             `json:"role"`
+	Email       string             `json:"email,omitempty"`
+	Role        string             `json:"role,omitempty"`
 	ServiceUser *ServiceUserEntity `json:"service_user_profile,omitempty"`
 	Supervisor  *SupervisorEntity  `json:"supervisor_profile,omitempty"`
 	Admin       *AdminEntity       `json:"admin_profile,omitempty"`
@@ -102,18 +102,20 @@ type UserEntity struct {
 type ServiceUserEntity struct {
 	BasicEntity
 	User               *UserEntity `json:"user,omitempty"`
-	Address            string      `json:"address"`
-	Fullname           string      `json:"fullname"`
-	IdentityCardNumber string      `json:"identity_card_number"`
-	Phone              string      `json:"phone"`
+	Address            string      `json:"address,omitempty"`
+	Fullname           string      `json:"fullname,omitempty"`
+	IdentityCardNumber string      `json:"identity_card_number,omitempty"`
+	Phone              string      `json:"phone,omitempty"`
 }
 type SupervisorEntity struct {
 	BasicEntity
-	User               *UserEntity `json:"user,omitempty"`
-	Address            string      `json:"address"`
-	Fullname           string      `json:"fullname"`
-	IdentityCardNumber string      `json:"identity_card_number"`
-	Phone              string      `json:"phone"`
+	User               *UserEntity         `json:"user,omitempty"`
+	Address            string              `json:"address"`
+	Fullname           string              `json:"fullname"`
+	IdentityCardNumber string              `json:"identity_card_number"`
+	Phone              string              `json:"phone"`
+	Status             EmployeeStatusEnum  `json:"employee_status"`
+	PlacementStatus    PlacementStatusEnum `json:"placement_status"`
 }
 type AdminEntity struct {
 	BasicEntity
@@ -124,11 +126,13 @@ type AdminEntity struct {
 }
 type EmployeeEntity struct {
 	BasicEntity
-	User               *UserEntity `json:"user,omitempty"`
-	Address            string      `json:"address"`
-	Fullname           string      `json:"fullname"`
-	IdentityCardNumber string      `json:"identity_card_number"`
-	Phone              string      `json:"phone"`
+	User               *UserEntity         `json:"user,omitempty"`
+	Address            string              `json:"address"`
+	Fullname           string              `json:"fullname"`
+	IdentityCardNumber string              `json:"identity_card_number"`
+	Phone              string              `json:"phone"`
+	Status             EmployeeStatusEnum  `json:"employee_status"`
+	PlacementStatus    PlacementStatusEnum `json:"placement_status"`
 }
 type UserWithProfileEntity struct {
 	User    UserEntity `json:"created_user"`
@@ -251,3 +255,8 @@ type ServiceOrderDetailItemEntity struct {
 }
 
 // ----- END OF ORDER ENTITY -----
+// ----- PLACEMENT ENTITY -----
+type ServiceOrderPlacementEntity struct{}
+type ServiceOrderPlacementEmployeeEntity struct{}
+
+// ----- END OF PLACEMENT ENTITY -----

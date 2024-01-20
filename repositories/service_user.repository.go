@@ -51,7 +51,9 @@ func (s *serviceUserRepository) Delete(c context.Context, id uint, repo ...*gorm
 func (s *serviceUserRepository) Read(c context.Context, q string, page uint, orderBy string, desc bool, withPagination bool) ([]domains.ServiceUserModel, uint, error) {
 	var results []domains.ServiceUserModel
 	callFunc := func(db *gorm.DB) *gorm.DB {
-		return db.Where("fullname LIKE ?", "%"+q+"%").
+		return db.Where("users.email LIKE ?", "%"+q+"%").
+			Or("service_users.fullname LIKE ?", "%"+q+"%").
+			Joins("JOIN users ON users.id = service_users.user_id").
 			Preload("User")
 	}
 	maxPage, err := basicReadFunc(

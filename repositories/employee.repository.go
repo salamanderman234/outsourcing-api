@@ -38,7 +38,7 @@ func (s *employeeRepository) Create(c context.Context, data domains.EmployeeMode
 }
 func (s *employeeRepository) Find(c context.Context, id uint) (domains.EmployeeModel, error) {
 	var user domains.EmployeeModel
-	err := basicFindRepoFunc(c, s.db, &s.model, id, &user, "User")
+	err := basicFindRepoFunc(c, s.db, &s.model, id, &user, "User", "Category")
 	return user, err
 }
 func (s *employeeRepository) Update(c context.Context, id uint, data domains.EmployeeModel, repo ...*gorm.DB) (int64, domains.EmployeeModel, error) {
@@ -65,11 +65,22 @@ func (s *employeeRepository) Delete(c context.Context, id uint, repo ...*gorm.DB
 	aff, err := basicDeleteRepoFunc(c, db, &s.model, id)
 	return int64(id), aff, err
 }
-func (s *employeeRepository) Read(c context.Context, q string, page uint, orderBy string, desc bool, withPagination bool) ([]domains.EmployeeModel, uint, error) {
+func (s *employeeRepository) Read(c context.Context, category string, employeeStatus domains.EmployeeStatusEnum, q string, page uint, orderBy string, desc bool, withPagination bool) ([]domains.EmployeeModel, uint, error) {
 	var results []domains.EmployeeModel
 	callFunc := func(db *gorm.DB) *gorm.DB {
-		return db.Where("fullname LIKE ?", "%"+q+"%").
-			Preload("User")
+		query := db
+		if employeeStatus != "" {
+			query = query.Where("employees.employee_status = ?", employeeStatus)
+		}
+		if category != "" {
+			query = query.Where("categories.category_name = ?", q).
+				Joins("JOIN categories ON categories.id = employees.category_id")
+		}
+		query = query.Where("users.email LIKE ?", "%"+q+"%").
+			Or("employees.fullname LIKE ?", "%"+q+"%").
+			Joins("JOIN users ON users.id = employees.user_id")
+		return query.Preload("User").
+			Preload("Category")
 	}
 	maxPage, err := basicReadFunc(
 		c,

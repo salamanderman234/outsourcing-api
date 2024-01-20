@@ -3,8 +3,8 @@ package helpers
 import "github.com/salamanderman234/outsourcing-api/domains"
 
 func MakePagination(maxPage uint, currentPage uint, queries map[string]any) domains.Pagination {
-	nextPage := min(maxPage, currentPage)
-	previousPage := max(1, currentPage)
+	nextPage := min(maxPage, currentPage+1)
+	previousPage := max(1, currentPage-1)
 
 	return domains.Pagination{
 		Next:     nextPage,

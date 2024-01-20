@@ -31,7 +31,7 @@ type UserModel struct {
 }
 
 func (UserModel) GetPolicy() Policy {
-	return nil
+	return &UserAuthPolicy{}
 }
 
 func (UserModel) TableName() string {
@@ -40,12 +40,15 @@ func (UserModel) TableName() string {
 
 type EmployeeModel struct {
 	gorm.Model
-	UserID             *uint      `json:"user_id" gorm:"not null"`
-	User               *UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Address            *string    `json:"address" gorm:"not null;type:varchar(255)"`
-	Fullname           *string    `json:"fullname" gorm:"not null;type:varchar(255)"`
-	IdentityCardNumber *string    `json:"identity_card_number" gorm:"not null;type:varchar(255);unique"`
-	Phone              *string    `json:"phone" gorm:"not null;type:varchar(13)"`
+	UserID             *uint              `json:"user_id" gorm:"not null"`
+	User               *UserModel         `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Address            *string            `json:"address" gorm:"not null;type:varchar(255)"`
+	Fullname           *string            `json:"fullname" gorm:"not null;type:varchar(255)"`
+	IdentityCardNumber *string            `json:"identity_card_number" gorm:"not null;type:varchar(255);unique"`
+	Phone              *string            `json:"phone" gorm:"not null;type:varchar(13)"`
+	CategoryID         uint               `json:"category_id"`
+	Category           *CategoryModel     `json:"category" gorm:"foreignKey:CategoryID"`
+	Status             EmployeeStatusEnum `json:"employee_status"`
 }
 
 func (EmployeeModel) GetPolicy() Policy {
@@ -74,12 +77,13 @@ func (ServiceUserModel) TableName() string {
 
 type SupervisorModel struct {
 	gorm.Model
-	UserID             *uint      `json:"user_id" gorm:"not null"`
-	User               *UserModel `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Address            *string    `json:"address" gorm:"not null;type:varchar(255)"`
-	Fullname           *string    `json:"Fullname" gorm:"not null;type:varchar(255)"`
-	IdentityCardNumber *string    `json:"identity_card_number" gorm:"not null;type:varchar(255);unique"`
-	Phone              *string    `json:"phone" gorm:"not null;type:varchar(13)"`
+	UserID             *uint              `json:"user_id" gorm:"not null"`
+	User               *UserModel         `json:"user" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Address            *string            `json:"address" gorm:"not null;type:varchar(255)"`
+	Fullname           *string            `json:"Fullname" gorm:"not null;type:varchar(255)"`
+	IdentityCardNumber *string            `json:"identity_card_number" gorm:"not null;type:varchar(255);unique"`
+	Phone              *string            `json:"phone" gorm:"not null;type:varchar(13)"`
+	Status             EmployeeStatusEnum `json:"employee_status"`
 }
 
 func (SupervisorModel) GetPolicy() Policy {
@@ -99,7 +103,7 @@ type AdminModel struct {
 }
 
 func (AdminModel) GetPolicy() Policy {
-	return &CategoryPolicy{}
+	return &UserAuthPolicy{}
 }
 
 func (AdminModel) TableName() string {
@@ -111,9 +115,11 @@ func (AdminModel) TableName() string {
 // ----- MASTER DATA -----
 type CategoryModel struct {
 	gorm.Model
-	CategoryName *string `json:"category_name" gorm:"not null;type:varchar(255)"`
-	Icon         string  `json:"icon" gorm:"type:varchar(255)"`
-	Description  string  `json:"description" gorm:"type:text"`
+	CategoryName    *string         `json:"category_name" gorm:"not null;type:varchar(255)"`
+	Icon            string          `json:"icon" gorm:"type:varchar(255)"`
+	Description     string          `json:"description" gorm:"type:text"`
+	Employees       []EmployeeModel `json:"employees,omitempty" gorm:"foreignKey:CategoryID"`
+	PartialServices []ServiceModel  `json:"partial_services,omitempty" gorm:"foreignKey:CategoryID"`
 }
 
 func (CategoryModel) GetPolicy() Policy {
@@ -194,15 +200,16 @@ func (ServiceItemModel) TableName() string {
 
 type ServiceModel struct {
 	gorm.Model
-	ServiceName  *string                `json:"service_name" gorm:"not null;type:varchar(255)"`
-	Description  string                 `json:"description" gorm:"type:varchar(255)"`
-	Image        string                 `json:"image" gorm:"type:varchar(255)"`
-	Icon         string                 `json:"icon" gorm:"type:varchar(255)"`
-	BasePrice    *uint64                `json:"base_price" gorm:"not null;default:0"`
-	CategoryID   *uint                  `json:"category_id" gorm:"not null"`
-	Category     *CategoryModel         `json:"category" gorm:"foreignKey:CategoryID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	ServiceItems []ServiceItemModel     `json:"service_items" gorm:"foreignKey:PartialServiceID"`
-	Packages     []*ServicePackageModel `json:"packages" gorm:"many2many:service_package_services"`
+	ServiceName          *string                `json:"service_name" gorm:"not null;type:varchar(255)"`
+	Description          string                 `json:"description" gorm:"type:varchar(255)"`
+	Image                string                 `json:"image" gorm:"type:varchar(255)"`
+	Icon                 string                 `json:"icon" gorm:"type:varchar(255)"`
+	BasePrice            *uint64                `json:"base_price" gorm:"not null;default:0"`
+	BaseNumberOfEmployee *uint64                `json:"base_number_of_employee" gorm:"not null;default:0"`
+	CategoryID           *uint                  `json:"category_id" gorm:"not null"`
+	Category             *CategoryModel         `json:"category" gorm:"foreignKey:CategoryID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	ServiceItems         []ServiceItemModel     `json:"service_items" gorm:"foreignKey:PartialServiceID"`
+	Packages             []*ServicePackageModel `json:"packages" gorm:"many2many:service_package_services"`
 }
 
 func (ServiceModel) GetPolicy() Policy {
@@ -321,3 +328,91 @@ func (ServiceOrderDetailItemModel) GetPolicy() Policy {
 }
 
 // ----- END OF ORDER MODEL -----
+// ----- PLACEMENT MODEL -----
+type ServiceOrderPlacementDailyReportModel struct {
+	gorm.DB
+	ServiceOrderPlacementID uint      `json:"service_order_placement_id"`
+	File                    string    `json:"file"`
+	Date                    time.Time `json:"date"`
+}
+
+func (ServiceOrderPlacementDailyReportModel) TableName() string {
+	return "service_order_placement_daily_reports"
+}
+func (ServiceOrderPlacementDailyReportModel) GetPolicy() Policy {
+	return &PlacementPolicy{}
+}
+
+type ServiceOrderPlacementModel struct {
+	gorm.Model
+	SupervisorID      *uint                                   `json:"supervisor_id"`
+	Supervisor        *SupervisorModel                        `json:"supervisor" gorm:"foreignKey:SupervisorID;"`
+	ServiceOrderID    *uint                                   `json:"service_order_id"`
+	ServiceOrder      *ServiceOrderModel                      `json:"service_order" gorm:"foreignKey:ServiceOrderID"`
+	StartDate         time.Time                               `json:"start_date"`
+	Duration          uint                                    `json:"duration" gorm:"default:0"`
+	EndDate           time.Time                               `json:"end_date"`
+	Address           string                                  `json:"address"`
+	CompanyName       string                                  `json:"company_name"`
+	Status            PlacementStatusEnum                     `json:"status"`
+	ServicePlacements []ServiceOrderPlacementServiceModel     `json:"service_placements" gorm:"foreignKey:ServiceOrderPlacementID"`
+	Reports           []ServiceOrderPlacementDailyReportModel `json:"reports" gorm:"foreignKey:ServiceOrderPlacementID"`
+}
+
+func (ServiceOrderPlacementModel) TableName() string {
+	return "service_order_placements"
+}
+func (ServiceOrderPlacementModel) GetPolicy() Policy {
+	return &PlacementPolicy{}
+}
+
+type ServiceOrderPlacementServiceModel struct {
+	gorm.Model
+	ServiceOrderPlacementID *uint                                       `json:"service_order_placement_id"`
+	ServiceOrderPlacement   *ServiceOrderPlacementModel                 `json:"service_order_placement" gorm:"foreignKey:ServiceOrderPlacementID"`
+	PartialServiceID        *uint                                       `json:"partial_service_id"`
+	PartialService          *ServiceModel                               `json:"partial_service"`
+	Employees               []ServiceOrderPlacementServiceEmployeeModel `json:"employees" gorm:"foreignKey:ServiceOrderPlacementServiceID"`
+}
+
+func (ServiceOrderPlacementServiceModel) TableName() string {
+	return "service_order_placement_service"
+}
+func (ServiceOrderPlacementServiceModel) GetPolicy() Policy {
+	return &PlacementPolicy{}
+}
+
+type ServiceOrderPlacementServiceEmployeeScheduleModel struct {
+	gorm.Model
+	ServiceOrderPlacementServiceEmployeeID *uint  `json:"service_order_placement_service_employee_id"`
+	WeekDay                                string `json:"weekday"`
+	StartShift                             uint   `json:"start_shift"`
+	EndShift                               uint   `json:"end_shift"`
+}
+
+func (ServiceOrderPlacementServiceEmployeeScheduleModel) TableName() string {
+	return "service_order_placement_service_employee_schedules"
+}
+func (ServiceOrderPlacementServiceEmployeeScheduleModel) GetPolicy() Policy {
+	return &PlacementPolicy{}
+}
+
+type ServiceOrderPlacementServiceEmployeeModel struct {
+	gorm.Model
+	EmployeeID                     *uint                                               `json:"employee_id"`
+	Employee                       *EmployeeModel                                      `json:"employee" gorm:"foreignKey:EmployeeID;"`
+	ServiceOrderPlacementServiceID *uint                                               `json:"service_order_placement_service_id"`
+	ServiceOrderPlacementService   *ServiceOrderPlacementServiceModel                  `json:"service_order_placement_service" gorm:"foreignKey:ServiceOrderPlacementServiceID"`
+	PlacementDate                  time.Time                                           `json:"placement_date"`
+	Status                         EmployeePlacementStatusEnum                         `json:"status"`
+	Schedules                      []ServiceOrderPlacementServiceEmployeeScheduleModel `json:"schedules" gorm:"foreignKey:ServiceOrderPlacementServiceID"`
+}
+
+func (ServiceOrderPlacementServiceEmployeeModel) TableName() string {
+	return "service_order_placement_service_employees"
+}
+func (ServiceOrderPlacementServiceEmployeeModel) GetPolicy() Policy {
+	return &PlacementPolicy{}
+}
+
+// ----- END OF PLACEMENT MODEL -----

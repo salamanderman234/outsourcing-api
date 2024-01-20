@@ -24,6 +24,7 @@ type BasicAuthService interface {
 	Register(c context.Context, authData BasicRegisterForm, profileData any, role RoleEnum, remember bool) (TokenPair, UserWithProfileEntity, error)
 	Check(c context.Context, token string) (JWTPayload, error)
 	Refresh(c context.Context, refreshToken string) (TokenPair, error)
+	UpdateAuthProfile(c context.Context, id uint, password string, profilePic ...EntityFileMap) (bool, error)
 }
 
 // ----- END OF AUTH SERVICE -----
@@ -47,7 +48,8 @@ type ServiceUserService interface {
 	Delete(c context.Context, id uint) (int, int, error)
 }
 type EmployeeService interface {
-	Read(c context.Context, id uint, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *Pagination, error)
+	Read(c context.Context, id uint, category string, employeeStatus EmployeeStatusEnum, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *Pagination, error)
+	SetaEmployeeAvailability(c context.Context, id uint, isAvailable bool) (bool, error)
 	Update(c context.Context, id uint, data EmployeeUpdateForm, files ...EntityFileMap) (int, EmployeeEntity, error)
 	Delete(c context.Context, id uint) (int, int, error)
 }
@@ -57,7 +59,8 @@ type AdminService interface {
 	Delete(c context.Context, id uint) (int, int, error)
 }
 type SupervisorService interface {
-	Read(c context.Context, id uint, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *Pagination, error)
+	Read(c context.Context, id uint, employeeStatus EmployeeStatusEnum, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *Pagination, error)
+	SetaSupervisorAvailability(c context.Context, id uint, isAvailable bool) (bool, error)
 	Update(c context.Context, id uint, data SupervisorUpdateForm, files ...EntityFileMap) (int, SupervisorEntity, error)
 	Delete(c context.Context, id uint) (int, int, error)
 }
@@ -99,3 +102,20 @@ type OrderService interface {
 }
 
 // ---- END OF ORDER SERVICE -----
+// ---- PLACEMENT SERVICE ----
+type PlacementService interface {
+	MakePlacementFromOrder(c context.Context, orderId uint, supervisorId uint) error
+	UpdatePlacement(c context.Context, id uint) error
+	GetPlacements(c context.Context) error
+	FindPlacement(c context.Context) error
+	PlaceEmployee(c context.Context) error
+	FindPlacementService(c context.Context) error
+	ChangeEmployeePlacementStatus(c context.Context, status EmployeePlacementStatusEnum) error
+	FindPlacementServiceEmployee(c context.Context) error
+	AssignEmployeeSchedule(c context.Context) error
+	UpdateEmployeeSchedule(c context.Context, id uint) error
+	DeleteEmployeeSchedule(c context.Context, id uint) error
+	MakeDailyReport(c context.Context, placementId uint) error
+}
+
+// ---- END OF PLACEMENT SERVICE ----

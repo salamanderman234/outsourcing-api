@@ -26,7 +26,7 @@ func (cs serviceItemService) Create(c context.Context, data domains.ServiceItemC
 		}
 		return domains.RepoRegistry.ServiceItemRepo.Create(c, dataModel)
 	}
-	_, err := basicCreateService(data, &dataModel, &dataEntity, fun)
+	err := basicCreateService(true, c, data, &dataModel, &dataEntity, fun)
 	return dataEntity, err
 }
 func (serviceItemService) Read(c context.Context, serviceId uint, id uint, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *domains.Pagination, error) {
@@ -73,7 +73,7 @@ func (cs serviceItemService) Update(c context.Context, id uint, data domains.Ser
 		aff, updated, err := domains.RepoRegistry.ServiceItemRepo.Update(c, id, dataModel)
 		return int(aff), updated, err
 	}
-	aff, _, err := basicUpdateService(id, data, &dataModel, &dataEntity, fun)
+	aff, err := basicUpdateService(true, c, id, data, &dataModel, &dataEntity, fun)
 	if err != nil {
 		return 0, domains.ServiceItemEntity{}, err
 	}
@@ -139,7 +139,7 @@ func (ps partialServiceService) Create(c context.Context, data domains.PartialSe
 		}
 		return result, nil
 	}
-	_, err := basicCreateService(data, &dataModel, &dataEntity, fun)
+	err := basicCreateService(true, c, data, &dataModel, &dataEntity, fun)
 	if err != nil {
 		return domains.ServiceEntity{}, err
 	}
@@ -206,7 +206,7 @@ func (ps partialServiceService) Update(c context.Context, id uint, data domains.
 		}
 		return int(aff), updated, err
 	}
-	aff, _, err := basicUpdateService(id, data, &dataModel, &dataEntity, fun)
+	aff, err := basicUpdateService(true, c, id, data, &dataModel, &dataEntity, fun)
 	if err != nil {
 		return 0, domains.ServiceEntity{}, err
 	}

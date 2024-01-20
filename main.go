@@ -20,6 +20,7 @@ func init() {
 
 func main() {
 	server := echo.New()
+	// server.Use(configs.MiddlewareContextValue)
 	server.Use(middleware.BodyLimit(fmt.Sprintf("%dM", configs.MAXIMUM_CONTENT_SIZE)))
 	server.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
 		Skipper:      middleware.DefaultSkipper,
@@ -45,7 +46,7 @@ func main() {
 	domains.RepoRegistry.ServiceOrderDetailRepo = repositories.NewServiceOrderDetailRepository(connection)
 	domains.RepoRegistry.ServiceOrderRepo = repositories.NewServiceOrderRepository(connection)
 	// services
-	domains.ServiceRegistry.AuthServ = services.NewUserAuthService()
+	domains.ServiceRegistry.AuthServ = services.NewAuthService()
 	domains.ServiceRegistry.CategoryServ = services.NewCategoryService()
 	domains.ServiceRegistry.FileServ = services.NewFileService()
 	domains.ServiceRegistry.ServiceItemServ = services.NewServiceItemService()

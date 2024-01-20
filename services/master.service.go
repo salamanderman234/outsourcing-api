@@ -51,42 +51,38 @@ func (cs categoryService) Create(c context.Context, data domains.CategoryCreateF
 		}
 		return result, nil
 	}
-	_, err := basicCreateService(data, &dataModel, &categoryEntity, fun)
+	err := basicCreateService(true, c, data, &dataModel, &categoryEntity, fun)
 	return categoryEntity, err
 }
 func (categoryService) Read(c context.Context, id uint, q string, page uint, orderBy string, isDesc bool, withPagination bool) (any, *domains.Pagination, error) {
-	var pagination domains.Pagination
-	if id != 0 {
-		var resultEntity domains.CategoryEntity
-		result, err := domains.RepoRegistry.CategoryRepo.Find(c, id)
-		if err != nil {
-			return nil, nil, err
-		}
-		err = helpers.Convert(result, &resultEntity)
-		if err != nil {
-			return nil, nil, err
-		}
-		return resultEntity, nil, nil
-	}
-	datas, maxPage, err := domains.RepoRegistry.CategoryRepo.Read(c, q, page, orderBy, isDesc, withPagination)
-	if err != nil {
-		return nil, nil, err
-	}
+	var resultEntity domains.CategoryEntity
 	var datasEntity []domains.CategoryEntity
-	for _, data := range datas {
-		var dataEntity domains.CategoryEntity
-		err := helpers.Convert(data, &dataEntity)
-		if err != nil {
-			return nil, nil, domains.ErrConversionType
+	findFun := func() (any, error) {
+		return domains.RepoRegistry.CategoryRepo.Find(c, id)
+	}
+	readFun := func() (any, uint, error) {
+		return domains.RepoRegistry.CategoryRepo.Read(c, q, page, orderBy, isDesc, withPagination)
+	}
+	conFun := func(datas any) error {
+		datasModel := datas.([]domains.CategoryModel)
+		for _, data := range datasModel {
+			var dataEntity domains.CategoryEntity
+			err := helpers.Convert(data, &dataEntity)
+			if err != nil {
+				return domains.ErrConversionType
+			}
+			datasEntity = append(datasEntity, dataEntity)
 		}
-		datasEntity = append(datasEntity, dataEntity)
+		return nil
 	}
-	if withPagination {
-		queries := helpers.MakeDefaultGetPaginationQueries(q, id, page, orderBy, isDesc, withPagination)
-		pagination = helpers.MakePagination(maxPage, uint(page), queries)
-		return datasEntity, &pagination, nil
+	pagination, err := basicReadService(true,
+		c, id, q, page, orderBy, isDesc, withPagination,
+		&resultEntity, findFun, readFun, conFun, domains.CategoryModel{},
+	)
+	if id != 0 {
+		return resultEntity, nil, err
 	}
-	return datasEntity, nil, nil
+	return datasEntity, pagination, err
 }
 func (cs categoryService) Update(c context.Context, id uint, data domains.CategoryUpdateForm, files ...domains.EntityFileMap) (int, domains.CategoryEntity, error) {
 	var dataModel domains.CategoryModel
@@ -101,19 +97,25 @@ func (cs categoryService) Update(c context.Context, id uint, data domains.Catego
 		if err != nil {
 			return 0, nil, err
 		}
+		// destroy after success
 		if ok {
 			go domains.ServiceRegistry.FileServ.Destroy(icon)
 		}
 		aff, updated, err := domains.RepoRegistry.CategoryRepo.Update(c, id, dataModel)
+		// destroy if failed update
 		if err != nil {
 			go domains.ServiceRegistry.FileServ.Destroy(dataModel.Icon)
 		}
 		return int(aff), updated, nil
 	}
-	aff, _, err := basicUpdateService(id, data, &dataModel, &categoryEntity, fun)
+	aff, err := basicUpdateService(true, c, id, data, &dataModel, &categoryEntity, fun)
 	return aff, categoryEntity, err
 }
 func (categoryService) Delete(c context.Context, id uint) (int, int, error) {
-	idResult, aff, err := domains.RepoRegistry.CategoryRepo.Delete(c, id)
+	delFun := func() (int, int, error) {
+		id, aff, err := domains.RepoRegistry.CategoryRepo.Delete(c, id)
+		return int(id), int(aff), err
+	}
+	idResult, aff, err := basicDeleteService(true, c, id, delFun, domains.CategoryModel{})
 	return int(idResult), int(aff), err
 }

@@ -29,7 +29,7 @@ func (cr *categoryRepository) Create(c context.Context, data domains.CategoryMod
 }
 func (cr *categoryRepository) Find(c context.Context, id uint) (domains.CategoryModel, error) {
 	var result domains.CategoryModel
-	err := basicFindRepoFunc(c, cr.db, &cr.model, id, &result)
+	err := basicFindRepoFunc(c, cr.db, &cr.model, id, &result, "Employees", "PartialServices")
 	return result, err
 }
 func (cr *categoryRepository) Read(c context.Context, q string, page uint, orderBy string, desc bool, withPagination bool) ([]domains.CategoryModel, uint, error) {
