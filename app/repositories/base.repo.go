@@ -53,6 +53,8 @@ func (baseRepo) ReadAll(
 		maxPage := math.Ceil(float64(max) / float64(configs.AppConfig.PaginationPerPage))
 		pagination = helpers.Response.CreatePagination(int64(maxPage), config)
 		db = db.Scopes(paginateScope(config.Page))
+	} else if config.Limit > 0 {
+		db = db.Limit(config.Limit)
 	}
 	finalResult := db.Find(result)
 	if finalResult.RowsAffected == 0 {
@@ -73,7 +75,7 @@ func (baseRepo) Find(ctx context.Context, id uint, cont models.ModelInterface, p
 
 func (baseRepo) FindWhere(ctx context.Context, conds map[string]any, cont models.ModelInterface, preloads ...string) error {
 	db := domains.Connection
-	result := db.WithContext(ctx).Model(&cont).Where(conds)
+	result := db.WithContext(ctx).Model(cont).Where(conds)
 	for _, preload := range preloads {
 		result = result.Preload(preload)
 	}

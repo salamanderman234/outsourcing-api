@@ -15,3 +15,15 @@ type MasterRegencyCreateForm struct {
 type MasterRegencyUpdateForm struct {
 	Regency string `json:"regency" form:"regency" valid:"required,stringlength(1|255)"`
 }
+
+type MasterCategoryCreateForm struct {
+	CategoryName string `json:"category_name" valid:"required"`
+	Icon         string `json:"icon" valid:"required"`
+	Description  string `json:"description" valid:"required"`
+}
+
+type MasterCategoryUpdateForm struct {
+	CategoryName string `json:"category_name" valid:"required"`
+	Icon         string `json:"icon"`
+	Description  string `json:"description" valid:"required"`
+}

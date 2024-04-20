@@ -36,4 +36,6 @@ func (a *appConfig) SetConfig(path string) {
 	RouterConfig.setRouterConfig()
 	// set var config
 	VarConfig.setVarConfig()
+	// set resource config
+	ResourceConfig.setResourceConfig()
 }

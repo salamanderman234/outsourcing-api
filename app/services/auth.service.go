@@ -12,6 +12,7 @@ import (
 	custom_errors "github.com/salamanderman234/outsourcing-api/app/domains/types/errors"
 	"github.com/salamanderman234/outsourcing-api/app/forms"
 	"github.com/salamanderman234/outsourcing-api/app/helpers"
+	"github.com/salamanderman234/outsourcing-api/app/jobs"
 	"github.com/salamanderman234/outsourcing-api/app/mails"
 	"github.com/salamanderman234/outsourcing-api/app/models"
 	"github.com/salamanderman234/outsourcing-api/app/policies"
@@ -36,7 +37,7 @@ func (authService) Login(ctx context.Context, creds forms.LoginForm) (models.Use
 	var user models.User
 	err := domains.RepoRegistry.BaseRepo.FindWhere(ctx,
 		conds,
-		user,
+		&user,
 		"AdminProfile",
 		"SupervisorProfile",
 		"EmployeeProfile",
@@ -82,6 +83,8 @@ func (authService) RegisterUser(
 	if err != nil {
 		return models.User{}, "", err
 	}
+	roleString := string(role)
+	User.Role = &roleString
 	data, err := domains.RepoRegistry.UserRepo.RegisterUser(ctx, User)
 	if err != nil {
 		return models.User{}, "", err
@@ -113,14 +116,12 @@ func (authService) ForgotPassword(ctx context.Context, creds forms.ChangePasswor
 	if err != nil {
 		return err
 	}
-	mail, err := mails.NewResetPasswordMail(map[string]any{
+	mail := mails.NewResetPasswordMail(map[string]any{
 		"email": creds.Email,
 		"token": token,
-	}).GetTemplate()
-	if err != nil {
-		return err
-	}
-	go helpers.Mailer.SendEmail(to, "Change your password", mail)
+	})
+	job := jobs.NewSendMailJob(mail, to)
+	jobs.JobManager.DispatchNow(job)
 	return nil
 }
 func (authService) ResetPassword(ctx context.Context, creds forms.ResetPasswordForm) error {

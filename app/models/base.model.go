@@ -21,3 +21,11 @@ func (m Model) GetID() uint {
 func (m Model) GetTimeStamps() (time.Time, time.Time) {
 	return *m.CreatedAt, *m.UpdatedAt
 }
+
+type Job struct {
+	Model
+	Payload    string    `json:"payload"`
+	JobName    string    `json:"job_name"`
+	ReservedAt time.Time `json:"reserved_at"`
+	Attempts   uint      `json:"attemps" gorm:"default:0"`
+}

@@ -16,4 +16,5 @@ type DBSearchConfig struct {
 	Page           uint
 	Preloads       []string
 	Model          models.ModelInterface
+	Limit          int
 }

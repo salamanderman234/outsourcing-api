@@ -36,6 +36,8 @@ type AdminProfileRegisterForm struct {
 	BirthDate   time.Time `json:"birth_date" form:"birth_date" valid:"required"`
 	Phone       string    `json:"phone" form:"phone" valid:"required,stringlength(12|13)"`
 }
+
+// gender gunakan l dan p
 type EmployeeProfileRegisterForm struct{}
 type SupervisorProfileRegisterForm struct{}
 type ServiceUserProfileRegisterForm struct{}

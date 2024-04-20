@@ -36,7 +36,7 @@ func (j jwtHelper) CreateToken(user models.User, subject enums.TokenType) (strin
 		configs.JWTConfig.SigningMethod,
 		claims,
 	)
-	return token.SignedString(j.secret)
+	return token.SignedString([]byte(j.secret))
 }
 
 func (j jwtHelper) VerifyToken(token string) (auth_types.JWTCLaims, error) {
@@ -46,7 +46,7 @@ func (j jwtHelper) VerifyToken(token string) (auth_types.JWTCLaims, error) {
 		} else if method != j.signMethod {
 			return nil, jwt.ErrTokenSignatureInvalid
 		}
-		return j.secret, nil
+		return []byte(j.secret), nil
 	})
 	if err != nil {
 		return auth_types.JWTCLaims{}, err

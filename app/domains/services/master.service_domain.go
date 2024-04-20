@@ -23,3 +23,11 @@ type MasterRegencyServiceInterface interface {
 	Update(ctx context.Context, id uint, data forms.MasterRegencyUpdateForm) (uint, models.Regency, error)
 	Delete(ctx context.Context, id uint) (uint, error)
 }
+
+type MasterCategoryServiceInterface interface {
+	Create(ctx context.Context, data forms.MasterRegencyCreateForm) (models.Category, error)
+	Read(ctx context.Context, q string, page uint) ([]models.Category, *responses.Pagination, error)
+	Find(ctx context.Context, id uint) (models.Category, error)
+	Update(ctx context.Context, id uint, data forms.MasterRegencyUpdateForm) (uint, models.Category, error)
+	Delete(ctx context.Context, id uint) (uint, error)
+}

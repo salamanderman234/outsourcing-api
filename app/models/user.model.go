@@ -4,16 +4,16 @@ import "time"
 
 type User struct {
 	Model
-	ProfilePic          *string     `json:"profile_pic,omitempty"`
-	Email               *string     `json:"email,omitempty" visible:"true" gorm:"unique"`
-	Password            *string     `json:"password,omitempty" visible:"true"`
-	Role                *string     `json:"role,omitempty"`
-	VerifiedAt          *time.Time  `json:"verified_at,omitempty"`
-	ChangePasswordToken *string     `json:"change_password_token,omitempty"`
-	AdminProfile        *Admin      `json:"admin_profile,omitempty" gorm:"foreignKey:UserID" visible:"true"`
-	SupervisorProfile   *Supervisor `json:"supervisor_profile,omitempty" gorm:"foreignKey:UserID" visible:"true"`
-	EmployeeProfile     *Employee   `json:"employee_profile,omitempty" gorm:"foreignKey:UserID" visible:"true"`
-	ServiceUserProfile  *Admin      `json:"service_user_profile,omitempty" gorm:"foreignKey:UserID" visible:"true"`
+	ProfilePic          *string      `json:"profile_pic,omitempty"`
+	Email               *string      `json:"email,omitempty" visible:"true" gorm:"unique"`
+	Password            *string      `json:"password,omitempty" visible:"true"`
+	Role                *string      `json:"role,omitempty"`
+	VerifiedAt          *time.Time   `json:"verified_at,omitempty"`
+	ChangePasswordToken *string      `json:"change_password_token,omitempty"`
+	AdminProfile        *Admin       `json:"admin_profile,omitempty" gorm:"foreignKey:UserID" visible:"true"`
+	SupervisorProfile   *Supervisor  `json:"supervisor_profile,omitempty" gorm:"foreignKey:UserID" visible:"true"`
+	EmployeeProfile     *Employee    `json:"employee_profile,omitempty" gorm:"foreignKey:UserID" visible:"true"`
+	ServiceUserProfile  *ServiceUser `json:"service_user_profile,omitempty" gorm:"foreignKey:UserID" visible:"true"`
 }
 
 type Admin struct {

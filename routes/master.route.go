@@ -15,6 +15,13 @@ func (masterRoute) RegisterRoutes(router *echo.Echo) {
 	provinceRoute.GET("/:id/", domains.ViewRegistry.MasterProvinceView.Find)
 	provinceRoute.PATCH("/:id/", domains.ViewRegistry.MasterProvinceView.Update)
 	provinceRoute.DELETE("/:id/", domains.ViewRegistry.MasterProvinceView.Delete)
+	// regency
+	regencyRoute := router.Group("/regencies")
+	regencyRoute.POST("/", domains.ViewRegistry.MasterRegencyView.Create)
+	regencyRoute.GET("/", domains.ViewRegistry.MasterRegencyView.Read)
+	regencyRoute.GET("/:id/", domains.ViewRegistry.MasterRegencyView.Find)
+	regencyRoute.PATCH("/:id/", domains.ViewRegistry.MasterRegencyView.Update)
+	regencyRoute.DELETE("/:id/", domains.ViewRegistry.MasterRegencyView.Delete)
 }
 
 func init() {

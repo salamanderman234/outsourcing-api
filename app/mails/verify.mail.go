@@ -9,6 +9,11 @@ func NewVerifyAccountMail(data map[string]any) MailInterface {
 		baseMail: baseMail{
 			Template: "verify-account.html",
 			Data:     data,
+			Subject:  "Verify Your Account",
 		},
 	}
+}
+
+func init() {
+	registerMail(NewVerifyAccountMail)
 }
