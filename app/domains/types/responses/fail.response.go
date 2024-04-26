@@ -8,7 +8,8 @@ type FieldError struct {
 
 type FailResponse struct {
 	BaseResponse
-	Detail   string       `json:"detail"`
-	Errors   []FieldError `json:"errors,omitempty"`
-	DebugMsg *string      `json:"debug,omitempty"`
+	Detail    string       `json:"detail"`
+	Errors    []FieldError `json:"errors,omitempty"`
+	DebugMsg  *string      `json:"debug,omitempty"`
+	ErrorType *string      `json:"error_type,omitempty"`
 }

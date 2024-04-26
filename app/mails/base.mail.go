@@ -9,7 +9,7 @@ import (
 
 type createMailInstanceFunc func(data map[string]any) MailInterface
 
-var mailRegistry map[string]createMailInstanceFunc
+var mailRegistry = map[string]createMailInstanceFunc{}
 
 type MailInterface interface {
 	GetTemplate() (string, error)

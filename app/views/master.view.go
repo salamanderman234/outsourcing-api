@@ -6,7 +6,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/salamanderman234/outsourcing-api/app/domains"
 	"github.com/salamanderman234/outsourcing-api/app/domains/types/enums"
-	custom_errors "github.com/salamanderman234/outsourcing-api/app/domains/types/errors"
 	"github.com/salamanderman234/outsourcing-api/app/domains/types/responses"
 	view_domains "github.com/salamanderman234/outsourcing-api/app/domains/views"
 	"github.com/salamanderman234/outsourcing-api/app/forms"
@@ -25,7 +24,7 @@ func (masterProvinceView) Create(c echo.Context) error {
 	ctx := c.Request().Context()
 	if err := c.Bind(&form); err != nil {
 		status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-			Error: custom_errors.ErrEchoBinding,
+			Error: err,
 		})
 		return c.JSON(status, resp)
 	}
@@ -70,7 +69,7 @@ func (masterProvinceView) Update(c echo.Context) error {
 	ctx := c.Request().Context()
 	if err := c.Bind(&form); err != nil {
 		status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-			Error: custom_errors.ErrEchoBinding,
+			Error: err,
 		})
 		return c.JSON(status, resp)
 	}
@@ -105,9 +104,9 @@ func NewRegencyMasterView() view_domains.MasterRegencyViewInterface {
 func (regencyMasterView) Create(c echo.Context) error {
 	var form forms.MasterRegencyCreateForm
 	ctx := c.Request().Context()
-	if err := c.Bind(&form); err != nil {
+	if err := (&echo.DefaultBinder{}).BindBody(c, &form); err != nil {
 		status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-			Error: custom_errors.ErrEchoBinding,
+			Error: err,
 		})
 		return c.JSON(status, resp)
 	}
@@ -152,7 +151,7 @@ func (regencyMasterView) Update(c echo.Context) error {
 	ctx := c.Request().Context()
 	if err := c.Bind(&form); err != nil {
 		status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-			Error: custom_errors.ErrEchoBinding,
+			Error: err,
 		})
 		return c.JSON(status, resp)
 	}

@@ -39,8 +39,8 @@ var (
 		Status:         http.StatusNotFound,
 		GeneralMessage: "Request Error",
 	}
-	ErrEchoBinding = GeneralError{
-		Msg:            "missing request body",
+	ErrEchoRequest = GeneralError{
+		Msg:            "invalid request body",
 		Status:         http.StatusBadRequest,
 		GeneralMessage: "Request Error",
 	}

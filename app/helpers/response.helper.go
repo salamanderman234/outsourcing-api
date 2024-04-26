@@ -1,7 +1,9 @@
 package helpers
 
 import (
+	"fmt"
 	"math"
+	"reflect"
 
 	database_types "github.com/salamanderman234/outsourcing-api/app/domains/types/databases"
 	custom_errors "github.com/salamanderman234/outsourcing-api/app/domains/types/errors"
@@ -18,6 +20,8 @@ func (r responseHelper) CreateResponse(con responses.ResponseConfig) (int, respo
 		debugMsg := con.Error.Error()
 		if configs.AppConfig.IsDebug {
 			newResponse.DebugMsg = &debugMsg
+			errorType := fmt.Sprint(reflect.TypeOf(con.Error))
+			newResponse.ErrorType = &errorType
 		}
 
 		err := Translator.TranslateError(con.Error)

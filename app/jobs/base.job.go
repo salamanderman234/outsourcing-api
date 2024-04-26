@@ -4,7 +4,7 @@ import "reflect"
 
 type generateNewJobInstance func() JobInterface
 
-var jobRegistry map[string]generateNewJobInstance
+var jobRegistry = map[string]generateNewJobInstance{}
 
 type JobInterface interface {
 	GetData() map[string]any

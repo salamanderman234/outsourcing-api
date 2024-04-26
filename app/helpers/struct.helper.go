@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 )
@@ -18,9 +19,18 @@ func (s structHelper) GetVisibleAttributes(data any) any {
 	}
 	for i := 0; i < reflectVal.NumField(); i++ {
 		field := reflectVal.Type().Field(i)
-		name := strings.ToLower(field.Name)
+		jsonTag := field.Tag.Get("json")
+		name := strings.ReplaceAll(jsonTag, ",omitempty", "")
+		isOmitempty := strings.Contains(jsonTag, "omitempty")
 		value := reflectVal.Field(i).Interface()
 		isVisible := field.Tag.Get("visible")
+
+		fmt.Println(isOmitempty, value, value == nil, name)
+		if field.Type.Kind() == reflect.Pointer {
+			if isOmitempty && reflect.ValueOf(value).IsNil() {
+				continue
+			}
+		}
 		if name == "model" {
 			result, _ := s.GetVisibleAttributes(value).(map[string]any)
 			for key, value := range result {

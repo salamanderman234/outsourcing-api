@@ -24,6 +24,14 @@ var errorMap = map[error]custom_errors.GeneralError{
 type translateHelper struct{}
 
 func (t translateHelper) TranslateError(err error) custom_errors.GeneralError {
+	httpErr, ok := err.(*echo.HTTPError)
+	if ok {
+		msg := httpErr.Message
+		returnErr := custom_errors.ErrEchoRequest
+		returnErr.Status = httpErr.Code
+		returnErr.Msg, _ = msg.(string)
+		return returnErr
+	}
 	if conErrs, ok := err.(govalidator.Errors); ok {
 		return t.translateGovalidatorError(conErrs)
 	}
