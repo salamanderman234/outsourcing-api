@@ -7,3 +7,7 @@ type MasterProvinceViewInterface interface {
 type MasterRegencyViewInterface interface {
 	BaseCRUDViewInterface
 }
+
+type MasterCategoryViewInterface interface {
+	BaseCRUDViewInterface
+}

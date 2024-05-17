@@ -1,10 +1,15 @@
 package mails
 
+import (
+	"github.com/salamanderman234/outsourcing-api/app/domains"
+	"github.com/salamanderman234/outsourcing-api/app/providers"
+)
+
 type resetPasswordMail struct {
 	baseMail
 }
 
-func NewResetPasswordMail(data map[string]any) MailInterface {
+func NewResetPasswordMail(data map[string]any) domains.MailInterface {
 	return &resetPasswordMail{
 		baseMail: baseMail{
 			Template: "reset-password.html",
@@ -15,5 +20,5 @@ func NewResetPasswordMail(data map[string]any) MailInterface {
 }
 
 func init() {
-	registerMail(NewResetPasswordMail)
+	providers.MailProvider.RegisterMail(NewResetPasswordMail)
 }

@@ -4,18 +4,7 @@ import (
 	"bytes"
 	"html/template"
 	"path"
-	"reflect"
 )
-
-type createMailInstanceFunc func(data map[string]any) MailInterface
-
-var mailRegistry = map[string]createMailInstanceFunc{}
-
-type MailInterface interface {
-	GetTemplate() (string, error)
-	GetData() map[string]any
-	GetSubject() string
-}
 
 type baseMail struct {
 	Template string
@@ -32,7 +21,7 @@ func (m baseMail) GetData() map[string]any {
 }
 
 func (m baseMail) GetTemplate() (string, error) {
-	var filepath = path.Join("storage", "mail", m.Template)
+	var filepath = path.Join("storage", "mails", m.Template)
 	tmpl, err := template.ParseFiles(filepath)
 	if err != nil {
 		return "", err
@@ -42,17 +31,4 @@ func (m baseMail) GetTemplate() (string, error) {
 		return "", err
 	}
 	return tpl.String(), nil
-}
-
-func registerMail(fun createMailInstanceFunc) {
-	mailName := reflect.TypeOf(fun(map[string]any{})).Name()
-	mailRegistry[mailName] = fun
-}
-
-func NewMailInstance(name string, data map[string]any) MailInterface {
-	fun, ok := mailRegistry[name]
-	if !ok {
-		return nil
-	}
-	return fun(data)
 }

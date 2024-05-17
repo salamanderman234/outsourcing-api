@@ -1,15 +1,13 @@
 package views
 
 import (
-	"strconv"
+	"context"
 
 	"github.com/labstack/echo/v4"
-	"github.com/salamanderman234/outsourcing-api/app/domains"
-	"github.com/salamanderman234/outsourcing-api/app/domains/types/enums"
-	"github.com/salamanderman234/outsourcing-api/app/domains/types/responses"
 	view_domains "github.com/salamanderman234/outsourcing-api/app/domains/views"
 	"github.com/salamanderman234/outsourcing-api/app/forms"
-	"github.com/salamanderman234/outsourcing-api/app/helpers"
+	"github.com/salamanderman234/outsourcing-api/app/providers"
+	"github.com/salamanderman234/outsourcing-api/app/types"
 )
 
 // province master
@@ -21,76 +19,35 @@ func NewMasterProvinceView() view_domains.MasterProvinceViewInterface {
 
 func (masterProvinceView) Create(c echo.Context) error {
 	var form forms.MasterProviceCreateForm
-	ctx := c.Request().Context()
-	if err := c.Bind(&form); err != nil {
-		status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-			Error: err,
-		})
-		return c.JSON(status, resp)
+	callback := func(ctx context.Context) (any, error) {
+		return providers.ServiceProvider.MasterProvinceService.Create(ctx, form)
 	}
-	result, err := domains.ServiceRegistry.MasterProvinceService.Create(ctx, form)
-	status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-		Action: enums.CreateAction,
-		Data:   result,
-		Error:  err,
-	})
-	return c.JSON(status, resp)
+	return baseCreateFunc(c, &form, callback)
 }
 func (masterProvinceView) Read(c echo.Context) error {
-	q := c.QueryParam("query")
-	idParam := c.QueryParam("page")
-	id, _ := strconv.Atoi(idParam)
-	ctx := c.Request().Context()
-	results, pagination, err := domains.ServiceRegistry.MasterProvinceService.Read(ctx, q, uint(id))
-	status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-		Action:     enums.ReadAction,
-		Error:      err,
-		Datas:      results,
-		Pagination: pagination,
-	})
-	return c.JSON(status, resp)
+	callback := func(ctx context.Context, q string, page uint) (any, *types.Pagination, error) {
+		return providers.ServiceProvider.MasterProvinceService.Read(ctx, q, page)
+	}
+	return baseReadFunc(c, callback)
 }
 func (masterProvinceView) Find(c echo.Context) error {
-	idParam := c.Param("id")
-	id, _ := strconv.Atoi(idParam)
-	ctx := c.Request().Context()
-	result, err := domains.ServiceRegistry.MasterProvinceService.Find(ctx, uint(id))
-	status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-		Action: enums.ReadAction,
-		Error:  err,
-		Data:   result,
-	})
-	return c.JSON(status, resp)
+	callback := func(ctx context.Context, id uint) (any, error) {
+		return providers.ServiceProvider.MasterProvinceService.Find(ctx, id)
+	}
+	return baseFindFunc(c, callback)
 }
 func (masterProvinceView) Update(c echo.Context) error {
 	var form forms.MasterProviceUpdateForm
-	idParam := c.Param("id")
-	id, _ := strconv.Atoi(idParam)
-	ctx := c.Request().Context()
-	if err := c.Bind(&form); err != nil {
-		status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-			Error: err,
-		})
-		return c.JSON(status, resp)
+	callback := func(ctx context.Context, id uint) (uint, any, error) {
+		return providers.ServiceProvider.MasterProvinceService.Update(ctx, id, form)
 	}
-	_, result, err := domains.ServiceRegistry.MasterProvinceService.Update(ctx, uint(id), form)
-	status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-		Action: enums.UpdateAction,
-		Data:   result,
-		Error:  err,
-	})
-	return c.JSON(status, resp)
+	return baseUpdateFunc(c, &form, callback)
 }
 func (masterProvinceView) Delete(c echo.Context) error {
-	idParam := c.Param("id")
-	id, _ := strconv.Atoi(idParam)
-	ctx := c.Request().Context()
-	_, err := domains.ServiceRegistry.MasterProvinceService.Delete(ctx, uint(id))
-	status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-		Action: enums.DeleteAction,
-		Error:  err,
-	})
-	return c.JSON(status, resp)
+	callback := func(ctx context.Context, id uint) (uint, error) {
+		return providers.ServiceProvider.MasterProvinceService.Delete(ctx, id)
+	}
+	return baseDeleteFunc(c, callback)
 }
 
 // end of province master
@@ -103,76 +60,75 @@ func NewRegencyMasterView() view_domains.MasterRegencyViewInterface {
 }
 func (regencyMasterView) Create(c echo.Context) error {
 	var form forms.MasterRegencyCreateForm
-	ctx := c.Request().Context()
-	if err := (&echo.DefaultBinder{}).BindBody(c, &form); err != nil {
-		status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-			Error: err,
-		})
-		return c.JSON(status, resp)
+	callback := func(ctx context.Context) (any, error) {
+		return providers.ServiceProvider.MasterRegencyService.Create(ctx, form)
 	}
-	result, err := domains.ServiceRegistry.MasterRegencyService.Create(ctx, form)
-	status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-		Action: enums.CreateAction,
-		Data:   result,
-		Error:  err,
-	})
-	return c.JSON(status, resp)
+	return baseCreateFunc(c, &form, callback)
 }
 func (regencyMasterView) Read(c echo.Context) error {
-	q := c.QueryParam("query")
-	idParam := c.QueryParam("page")
-	id, _ := strconv.Atoi(idParam)
-	ctx := c.Request().Context()
-	results, pagination, err := domains.ServiceRegistry.MasterRegencyService.Read(ctx, q, uint(id))
-	status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-		Action:     enums.ReadAction,
-		Error:      err,
-		Datas:      results,
-		Pagination: pagination,
-	})
-	return c.JSON(status, resp)
+	callback := func(ctx context.Context, q string, page uint) (any, *types.Pagination, error) {
+		return providers.ServiceProvider.MasterRegencyService.Read(ctx, q, page)
+	}
+	return baseReadFunc(c, callback)
 }
 func (regencyMasterView) Find(c echo.Context) error {
-	idParam := c.Param("id")
-	id, _ := strconv.Atoi(idParam)
-	ctx := c.Request().Context()
-	result, err := domains.ServiceRegistry.MasterRegencyService.Find(ctx, uint(id))
-	status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-		Action: enums.ReadAction,
-		Error:  err,
-		Data:   result,
-	})
-	return c.JSON(status, resp)
+	callback := func(ctx context.Context, id uint) (any, error) {
+		return providers.ServiceProvider.MasterRegencyService.Find(ctx, id)
+	}
+	return baseFindFunc(c, callback)
 }
 func (regencyMasterView) Update(c echo.Context) error {
 	var form forms.MasterRegencyUpdateForm
-	idParam := c.Param("id")
-	id, _ := strconv.Atoi(idParam)
-	ctx := c.Request().Context()
-	if err := c.Bind(&form); err != nil {
-		status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-			Error: err,
-		})
-		return c.JSON(status, resp)
+	callback := func(ctx context.Context, id uint) (uint, any, error) {
+		return providers.ServiceProvider.MasterRegencyService.Update(ctx, id, form)
 	}
-	_, result, err := domains.ServiceRegistry.MasterRegencyService.Update(ctx, uint(id), form)
-	status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-		Action: enums.UpdateAction,
-		Data:   result,
-		Error:  err,
-	})
-	return c.JSON(status, resp)
+	return baseUpdateFunc(c, &form, callback)
 }
 func (regencyMasterView) Delete(c echo.Context) error {
-	idParam := c.Param("id")
-	id, _ := strconv.Atoi(idParam)
-	ctx := c.Request().Context()
-	_, err := domains.ServiceRegistry.MasterRegencyService.Delete(ctx, uint(id))
-	status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-		Action: enums.DeleteAction,
-		Error:  err,
-	})
-	return c.JSON(status, resp)
+	callback := func(ctx context.Context, id uint) (uint, error) {
+		return providers.ServiceProvider.MasterRegencyService.Delete(ctx, id)
+	}
+	return baseDeleteFunc(c, callback)
 }
 
 // end of regency master
+// category master
+type categoryMasterView struct{}
+
+func NewCategoryMasterView() view_domains.MasterCategoryViewInterface {
+	return &categoryMasterView{}
+}
+func (categoryMasterView) Create(c echo.Context) error {
+	var form forms.MasterCategoryCreateForm
+	callback := func(ctx context.Context) (any, error) {
+		return providers.ServiceProvider.MasterCategoryService.Create(ctx, form)
+	}
+	return baseCreateFunc(c, &form, callback)
+}
+func (categoryMasterView) Read(c echo.Context) error {
+	callback := func(ctx context.Context, q string, page uint) (any, *types.Pagination, error) {
+		return providers.ServiceProvider.MasterCategoryService.Read(ctx, q, page)
+	}
+	return baseReadFunc(c, callback)
+}
+func (categoryMasterView) Find(c echo.Context) error {
+	callback := func(ctx context.Context, id uint) (any, error) {
+		return providers.ServiceProvider.MasterCategoryService.Find(ctx, id)
+	}
+	return baseFindFunc(c, callback)
+}
+func (categoryMasterView) Update(c echo.Context) error {
+	var form forms.MasterCategoryUpdateForm
+	callback := func(ctx context.Context, id uint) (uint, any, error) {
+		return providers.ServiceProvider.MasterCategoryService.Update(ctx, id, form)
+	}
+	return baseUpdateFunc(c, &form, callback)
+}
+func (categoryMasterView) Delete(c echo.Context) error {
+	callback := func(ctx context.Context, id uint) (uint, error) {
+		return providers.ServiceProvider.MasterCategoryService.Delete(ctx, id)
+	}
+	return baseDeleteFunc(c, callback)
+}
+
+// end of category master

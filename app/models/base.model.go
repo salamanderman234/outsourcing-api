@@ -2,16 +2,19 @@ package models
 
 import "time"
 
-type ModelInterface interface {
-	GetID() uint
-	GetTimeStamps() (time.Time, time.Time)
-}
-
 type Model struct {
 	ID              uint       `json:"id" visible:"true"`
 	CreatedAt       *time.Time `json:"created_at,omitempty"`
 	UpdatedAt       *time.Time `json:"updated_at,omitempty"`
 	UpdateEmailUser *string    `json:"update_email_user,omitempty"`
+}
+
+func (m *Model) SetUpdatedEmail(email string) {
+	m.UpdateEmailUser = &email
+}
+
+func (m *Model) SetID(id uint) {
+	m.ID = id
 }
 
 func (m Model) GetID() uint {

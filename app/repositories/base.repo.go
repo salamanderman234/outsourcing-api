@@ -6,10 +6,9 @@ import (
 
 	"github.com/salamanderman234/outsourcing-api/app/domains"
 	repository_domains "github.com/salamanderman234/outsourcing-api/app/domains/repositories"
-	database_types "github.com/salamanderman234/outsourcing-api/app/domains/types/databases"
-	"github.com/salamanderman234/outsourcing-api/app/domains/types/responses"
 	"github.com/salamanderman234/outsourcing-api/app/helpers"
-	"github.com/salamanderman234/outsourcing-api/app/models"
+	"github.com/salamanderman234/outsourcing-api/app/providers"
+	"github.com/salamanderman234/outsourcing-api/app/types"
 	"github.com/salamanderman234/outsourcing-api/configs"
 	"gorm.io/gorm"
 )
@@ -21,7 +20,7 @@ func NewBaseRepo() repository_domains.BaseRepositoryInterface {
 }
 
 func (baseRepo) Create(ctx context.Context, datas any, conn ...*gorm.DB) error {
-	db := domains.Connection
+	db := providers.GetConnection()
 	if len(conn) == 1 {
 		db = conn[0]
 	}
@@ -31,18 +30,23 @@ func (baseRepo) Create(ctx context.Context, datas any, conn ...*gorm.DB) error {
 func (baseRepo) ReadAll(
 	ctx context.Context,
 	result any,
-	config database_types.DBSearchConfig,
-) (*responses.Pagination, error) {
-	db := domains.Connection.WithContext(ctx)
-	paginateQuery := *domains.Connection.WithContext(ctx)
-	var pagination *responses.Pagination
+	config types.DBSearchParams,
+) (*types.Pagination, error) {
+	db := providers.GetConnection().WithContext(ctx).Model(config.Model)
+	paginateQuery := *providers.GetConnection().WithContext(ctx)
+	var pagination *types.Pagination
 	for _, param := range config.Params {
-		val := config.Query
+		val := param.Str
 		if param.Operator == "LIKE" {
 			val = "%" + val + "%"
 		}
-		db = db.Where(param.Field+" "+param.Operator+" ?", val)
-		paginateQuery = *paginateQuery.Where(param.Field+" "+param.Operator+" ?", val)
+		if param.IsOr {
+			db = db.Or(param.Field+" "+param.Operator+" ?", val)
+			paginateQuery = *paginateQuery.Or(param.Field+" "+param.Operator+" ?", val)
+		} else {
+			db = db.Where(param.Field+" "+param.Operator+" ?", val)
+			paginateQuery = *paginateQuery.Where(param.Field+" "+param.Operator+" ?", val)
+		}
 	}
 	for _, preload := range config.Preloads {
 		db = db.Preload(preload)
@@ -63,8 +67,8 @@ func (baseRepo) ReadAll(
 	return pagination, finalResult.Error
 }
 
-func (baseRepo) Find(ctx context.Context, id uint, cont models.ModelInterface, preloads ...string) error {
-	db := domains.Connection
+func (baseRepo) Find(ctx context.Context, id uint, cont domains.ModelInterface, preloads ...string) error {
+	db := providers.GetConnection()
 	result := db.WithContext(ctx).Model(cont).Where("id", id)
 	for _, preload := range preloads {
 		result = result.Preload(preload)
@@ -73,8 +77,8 @@ func (baseRepo) Find(ctx context.Context, id uint, cont models.ModelInterface, p
 	return result.Error
 }
 
-func (baseRepo) FindWhere(ctx context.Context, conds map[string]any, cont models.ModelInterface, preloads ...string) error {
-	db := domains.Connection
+func (baseRepo) FindWhere(ctx context.Context, conds map[string]any, cont domains.ModelInterface, preloads ...string) error {
+	db := providers.GetConnection()
 	result := db.WithContext(ctx).Model(cont).Where(conds)
 	for _, preload := range preloads {
 		result = result.Preload(preload)
@@ -83,12 +87,12 @@ func (baseRepo) FindWhere(ctx context.Context, conds map[string]any, cont models
 	return result.Error
 }
 
-func (baseRepo) Update(ctx context.Context, ids []uint, data models.ModelInterface, conn ...*gorm.DB) error {
-	db := domains.Connection
+func (baseRepo) Update(ctx context.Context, ids []uint, data domains.ModelInterface, conn ...*gorm.DB) error {
+	db := providers.GetConnection()
 	if len(conn) == 1 {
 		db = conn[0]
 	}
-	result := db.Model(&data).
+	result := db.Model(data).
 		WithContext(ctx).
 		Where("id IN ?", ids).
 		Updates(data)
@@ -99,10 +103,10 @@ func (baseRepo) Update(ctx context.Context, ids []uint, data models.ModelInterfa
 }
 func (baseRepo) Delete(
 	ctx context.Context,
-	ids []uint, model models.ModelInterface,
+	ids []uint, model domains.ModelInterface,
 	conn ...*gorm.DB,
 ) error {
-	db := domains.Connection
+	db := providers.GetConnection()
 	if len(conn) == 1 {
 		db = conn[0]
 	}

@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type databaseConfig struct {
@@ -40,7 +39,8 @@ func (db databaseConfig) ConnectDatabase() (*gorm.DB, error) {
 	dsn := db.getDSN()
 	return gorm.Open(mysql.Open(dsn), &gorm.Config{
 		TranslateError: true,
-		Logger:         logger.Default.LogMode(logger.Info),
+		// Logger:                                   logger.Default.LogMode(logger.Info),
+		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 }
 

@@ -1,10 +1,15 @@
 package mails
 
+import (
+	"github.com/salamanderman234/outsourcing-api/app/domains"
+	"github.com/salamanderman234/outsourcing-api/app/providers"
+)
+
 type verifyAccountMail struct {
 	baseMail
 }
 
-func NewVerifyAccountMail(data map[string]any) MailInterface {
+func NewVerifyAccountMail(data map[string]any) domains.MailInterface {
 	return &verifyAccountMail{
 		baseMail: baseMail{
 			Template: "verify-account.html",
@@ -15,5 +20,5 @@ func NewVerifyAccountMail(data map[string]any) MailInterface {
 }
 
 func init() {
-	registerMail(NewVerifyAccountMail)
+	providers.MailProvider.RegisterMail(NewVerifyAccountMail)
 }

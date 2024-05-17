@@ -2,13 +2,12 @@ package views
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/salamanderman234/outsourcing-api/app/domains"
-	"github.com/salamanderman234/outsourcing-api/app/domains/types/enums"
-	custom_errors "github.com/salamanderman234/outsourcing-api/app/domains/types/errors"
-	"github.com/salamanderman234/outsourcing-api/app/domains/types/responses"
 	view_domains "github.com/salamanderman234/outsourcing-api/app/domains/views"
 	"github.com/salamanderman234/outsourcing-api/app/forms"
 	"github.com/salamanderman234/outsourcing-api/app/helpers"
+	"github.com/salamanderman234/outsourcing-api/app/providers"
+	"github.com/salamanderman234/outsourcing-api/app/types"
+	"github.com/salamanderman234/outsourcing-api/app/types/enums"
 )
 
 type authView struct{}
@@ -21,13 +20,13 @@ func (authView) Login(c echo.Context) error {
 	var loginForm forms.LoginForm
 	ctx := c.Request().Context()
 	if err := c.Bind(&loginForm); err != nil {
-		status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
+		status, resp := helpers.Response.CreateResponse(types.ResponseParams{
 			Error: err,
 		})
 		return c.JSON(status, resp)
 	}
-	user, token, err := domains.ServiceRegistry.AuthService.Login(ctx, loginForm)
-	status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
+	user, token, err := providers.ServiceProvider.AuthService.Login(ctx, loginForm)
+	status, resp := helpers.Response.CreateResponse(types.ResponseParams{
 		Action: enums.ReadAction,
 		Data: map[string]any{
 			"token": token,
@@ -56,19 +55,19 @@ func (authView) Register(c echo.Context) error {
 		role = enums.ServiceUserRole
 		form.ServiceUserProfile = &forms.ServiceUserProfileRegisterForm{}
 	default:
-		status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
-			Error: custom_errors.ErrRouteNotFound,
+		status, resp := helpers.Response.CreateResponse(types.ResponseParams{
+			Error: types.ErrRouteNotFound,
 		})
 		return c.JSON(status, resp)
 	}
 	if err := c.Bind(&form); err != nil {
-		status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
+		status, resp := helpers.Response.CreateResponse(types.ResponseParams{
 			Error: err,
 		})
 		return c.JSON(status, resp)
 	}
-	user, token, err := domains.ServiceRegistry.AuthService.RegisterUser(ctx, form, role)
-	status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
+	user, token, err := providers.ServiceProvider.AuthService.RegisterUser(ctx, form, role)
+	status, resp := helpers.Response.CreateResponse(types.ResponseParams{
 		Action: enums.ReadAction,
 		Data: map[string]any{
 			"token":           token,
@@ -82,13 +81,13 @@ func (authView) ChangePassword(c echo.Context) error {
 	var form forms.ChangePasswordForm
 	ctx := c.Request().Context()
 	if err := c.Bind(&form); err != nil {
-		status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
+		status, resp := helpers.Response.CreateResponse(types.ResponseParams{
 			Error: err,
 		})
 		return c.JSON(status, resp)
 	}
-	err := domains.ServiceRegistry.AuthService.ForgotPassword(ctx, form)
-	status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
+	err := providers.ServiceProvider.AuthService.ForgotPassword(ctx, form)
+	status, resp := helpers.Response.CreateResponse(types.ResponseParams{
 		Action: enums.ReadAction,
 		Error:  err,
 	})
@@ -98,13 +97,13 @@ func (authView) ResetPassword(c echo.Context) error {
 	var form forms.ResetPasswordForm
 	ctx := c.Request().Context()
 	if err := c.Bind(&form); err != nil {
-		status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
+		status, resp := helpers.Response.CreateResponse(types.ResponseParams{
 			Error: err,
 		})
 		return c.JSON(status, resp)
 	}
-	err := domains.ServiceRegistry.AuthService.ResetPassword(ctx, form)
-	status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
+	err := providers.ServiceProvider.AuthService.ResetPassword(ctx, form)
+	status, resp := helpers.Response.CreateResponse(types.ResponseParams{
 		Action: enums.ReadAction,
 		Error:  err,
 	})
@@ -114,13 +113,13 @@ func (authView) VerifyUser(c echo.Context) error {
 	var form forms.VerifyUserForm
 	ctx := c.Request().Context()
 	if err := c.Bind(&form); err != nil {
-		status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
+		status, resp := helpers.Response.CreateResponse(types.ResponseParams{
 			Error: err,
 		})
 		return c.JSON(status, resp)
 	}
-	err := domains.ServiceRegistry.AuthService.VerifyEmail(ctx, form)
-	status, resp := helpers.Response.CreateResponse(responses.ResponseConfig{
+	err := providers.ServiceProvider.AuthService.VerifyEmail(ctx, form)
+	status, resp := helpers.Response.CreateResponse(types.ResponseParams{
 		Action: enums.ReadAction,
 		Error:  err,
 	})

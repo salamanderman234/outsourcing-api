@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"fmt"
 	"reflect"
 	"strings"
 )
@@ -25,21 +24,37 @@ func (s structHelper) GetVisibleAttributes(data any) any {
 		value := reflectVal.Field(i).Interface()
 		isVisible := field.Tag.Get("visible")
 
-		fmt.Println(isOmitempty, value, value == nil, name)
 		if field.Type.Kind() == reflect.Pointer {
 			if isOmitempty && reflect.ValueOf(value).IsNil() {
 				continue
 			}
 		}
-		if name == "model" {
-			result, _ := s.GetVisibleAttributes(value).(map[string]any)
-			for key, value := range result {
-				mappedData[key] = value
+		if field.Type.Kind() == reflect.Struct && name == "" {
+			result := s.GetVisibleAttributes(value)
+			mapResult, ok := result.(map[string]any)
+			if ok {
+				for y, h := range mapResult {
+					mappedData[y] = h
+				}
 			}
 		} else if field.Type.Kind() == reflect.Struct {
 			result := s.GetVisibleAttributes(value)
 			if isVisible == "true" {
 				mappedData[name] = result
+			}
+		} else if field.Type.Kind() == reflect.Array || field.Type.Kind() == reflect.Slice {
+			rt := reflect.ValueOf(value)
+			desireType := reflect.SliceOf(rt.Type().Elem())
+			if rt.Type().ConvertibleTo(desireType) {
+				converted := rt.Convert(desireType)
+				x := []any{}
+				for i := 0; i < converted.Len(); i++ {
+					data := converted.Index(i)
+					filtered := s.GetVisibleAttributes(data.Interface())
+					x = append(x, filtered)
+
+				}
+				mappedData[name] = x
 			}
 		} else {
 			if isVisible == "true" {

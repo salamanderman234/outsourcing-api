@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"crypto/tls"
+	"fmt"
 
 	"github.com/salamanderman234/outsourcing-api/configs"
 	"gopkg.in/gomail.v2"
@@ -17,6 +18,9 @@ var dialer = gomail.NewDialer(
 type mailerHelper struct{}
 
 func (mailerHelper) SendEmail(to []string, subject string, msg string) error {
+	Logger.Info(
+		fmt.Sprintf("(Mail) Sending a new mail (to: %s, subject: %s)", to, subject),
+	)
 	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	mail := gomail.NewMessage()
 	mail.SetHeader("From", "TEST")

@@ -3,9 +3,9 @@ package service_domains
 import (
 	"context"
 
-	"github.com/salamanderman234/outsourcing-api/app/domains/types/enums"
 	"github.com/salamanderman234/outsourcing-api/app/forms"
 	"github.com/salamanderman234/outsourcing-api/app/models"
+	"github.com/salamanderman234/outsourcing-api/app/types/enums"
 )
 
 type AuthServiceInterface interface {

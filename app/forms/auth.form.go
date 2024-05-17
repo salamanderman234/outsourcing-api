@@ -3,41 +3,129 @@ package forms
 import "time"
 
 type LoginForm struct {
-	Email    string `json:"email" form:"email" valid:"required"`
-	Password string `json:"password" form:"password" valid:"required"`
+	Email    string `json:"email" valid:"required"`
+	Password string `json:"password" valid:"required"`
 }
 
 type ChangePasswordForm struct {
-	Email string `json:"email" form:"email"`
+	Email string `json:"email"`
 }
 type ResetPasswordForm struct {
-	Email       string `json:"email" form:"email"`
-	NewPassword string `json:"new_password" form:"new_password"`
-	ResetToken  string `json:"reset_token" form:"reset_token"`
+	Email       string `json:"email" valid:"required"`
+	NewPassword string `json:"new_password" valid:"required,stringlength(8|32)"`
+	ResetToken  string `json:"reset_token" valid:"required"`
 }
 type VerifyUserForm struct {
-	UserID uint `json:"user_id" form:"user_id"`
+	UserID uint `json:"user_id" valid:"required"`
 }
 
 type UserRegisterForm struct {
-	Email              string                          `json:"email" form:"email" valid:"required"`
-	Password           string                          `json:"password" form:"password" valid:"required"`
-	AdminProfile       *AdminProfileRegisterForm       `json:"admin_profile" form:"admin_profile"`
-	EmployeeProfile    *EmployeeProfileRegisterForm    `json:"employee_profile" form:"employee_profile"`
-	SupervisorProfile  *SupervisorProfileRegisterForm  `json:"supervisor_profile" form:"supervisor_profile"`
-	ServiceUserProfile *ServiceUserProfileRegisterForm `json:"service_user_profile" form:"service_user_profile"`
+	Email              string                          `json:"email" valid:"required,email"`
+	Password           string                          `json:"password" valid:"required,stringlength(8|32)"`
+	AdminProfile       *AdminProfileRegisterForm       `json:"admin_profile"`
+	EmployeeProfile    *EmployeeProfileRegisterForm    `json:"employee_profile"`
+	SupervisorProfile  *SupervisorProfileRegisterForm  `json:"supervisor_profile"`
+	ServiceUserProfile *ServiceUserProfileRegisterForm `json:"service_user_profile"`
 }
 
 type AdminProfileRegisterForm struct {
-	Fullname    string    `json:"fullname" form:"fullname" valid:"required,stringlength(0|255)"`
-	RegencyID   uint      `json:"regency_id" form:"regency_id" valid:"required,int"`
-	FullAddress string    `json:"full_address" form:"full_address" valid:"required,stringlength(0|255)"`
-	BirthPlace  string    `json:"birth_place" form:"birth_place" valid:"required,stringlength(0|255)"`
-	BirthDate   time.Time `json:"birth_date" form:"birth_date" valid:"required"`
-	Phone       string    `json:"phone" form:"phone" valid:"required,stringlength(12|13)"`
+	Fullname    string    `json:"fullname" valid:"required,stringlength(1|255)"`
+	RegencyID   uint      `json:"regency_id" valid:"required,int"`
+	FullAddress string    `json:"full_address" valid:"required,stringlength(1|255)"`
+	BirthPlace  string    `json:"birth_place" valid:"required,stringlength(1|255)"`
+	BirthDate   time.Time `json:"birth_date" valid:"required"`
+	Phone       string    `json:"phone" valid:"required,stringlength(12|13)"`
 }
 
 // gender gunakan l dan p
-type EmployeeProfileRegisterForm struct{}
-type SupervisorProfileRegisterForm struct{}
-type ServiceUserProfileRegisterForm struct{}
+type EmployeeProfileRegisterForm struct {
+	Fullname       string    `json:"fullname" valid:"required,stringlength(1|255)"`
+	RegencyID      uint      `json:"regency_id" valid:"required,int"`
+	CategoryID     uint      `json:"category_id,omitempty" valid:"required,int"`
+	FullAddress    string    `json:"full_address" valid:"required,stringlength(1|255)"`
+	BirthPlace     string    `json:"birth_place" valid:"required,stringlength(1|255)"`
+	BirthDate      time.Time `json:"birth_date" valid:"required"`
+	Phone          string    `json:"phone" valid:"required,stringlength(12|13)"`
+	NIK            string    `json:"nik,omitempty" valid:"required,stringlength(1|255)"`
+	NPWP           string    `json:"npwp,omitempty" valid:"required,stringlength(1|255)"`
+	Gender         string    `json:"gender,omitempty" valid:"required,in(l,p)"`
+	MarriageStatus bool      `json:"marriage_status,omitempty"`
+	LastEducation  string    `json:"last_education,omitempty" valid:"required,in(sd,smp,sma,s1)"`
+}
+type SupervisorProfileRegisterForm struct {
+	Fullname       string    `json:"fullname" valid:"required,stringlength(1|255)"`
+	RegencyID      uint      `json:"regency_id" valid:"required,int"`
+	FullAddress    string    `json:"full_address" valid:"required,stringlength(1|255)"`
+	BirthPlace     string    `json:"birth_place" valid:"required,stringlength(1|255)"`
+	BirthDate      time.Time `json:"birth_date" valid:"required"`
+	Phone          string    `json:"phone" valid:"required,stringlength(12|13)"`
+	NIK            string    `json:"nik,omitempty" valid:"required,stringlength(1|255)"`
+	NPWP           string    `json:"npwp,omitempty" valid:"required,stringlength(1|255)"`
+	Gender         string    `json:"gender,omitempty" valid:"required,in(l,p)"`
+	MarriageStatus bool      `json:"marriage_status,omitempty"`
+}
+type ServiceUserProfileRegisterForm struct {
+	Fullname    string    `json:"fullname" valid:"required,stringlength(1|255)"`
+	RegencyID   uint      `json:"regency_id" valid:"required,int"`
+	FullAddress string    `json:"full_address" valid:"required,stringlength(1|255)"`
+	BirthPlace  string    `json:"birth_place" valid:"required,stringlength(1|255)"`
+	BirthDate   time.Time `json:"birth_date" valid:"required"`
+	Phone       string    `json:"phone" valid:"required,stringlength(12|13)"`
+	NIK         string    `json:"nik,omitempty" valid:"required,stringlength(1|255)"`
+	Gender      string    `json:"gender,omitempty" valid:"required,in(l,p)"`
+}
+
+// update profile form
+type UserUpdateForm struct {
+	Password                 *string                       `json:"password" valid:"optional,stringlength(8|32)"`
+	AdminUpdateProfile       *AdminUpdateProfileForm       `json:"admin_profile"`
+	EmployeeUpdateProfile    *EmployeeUpdateProfileForm    `json:"employee_profile"`
+	SupervisorUpdateProfile  *SupervisorUpdateProfileForm  `json:"supervisor_profile"`
+	ServiceUserUpdateProfile *ServiceUserUpdateProfileForm `json:"service_user_profile"`
+}
+
+type AdminUpdateProfileForm struct {
+	Fullname    *string    `json:"fullname" valid:"optional,stringlength(1|255)"`
+	RegencyID   *uint      `json:"regency_id" valid:"optional,int"`
+	FullAddress *string    `json:"full_address" valid:"optional,stringlength(1|255)"`
+	BirthPlace  *string    `json:"birth_place" valid:"optional,stringlength(1|255)"`
+	BirthDate   *time.Time `json:"birth_date" valid:"optional"`
+	Phone       *string    `json:"phone" valid:"optional,stringlength(12|13)"`
+}
+
+type EmployeeUpdateProfileForm struct {
+	Fullname       *string    `json:"fullname" valid:"optional,stringlength(1|255)"`
+	RegencyID      *uint      `json:"regency_id" valid:"optional,int"`
+	CategoryID     *uint      `json:"category_id,omitempty" valid:"optional,int"`
+	FullAddress    *string    `json:"full_address" valid:"optional,stringlength(1|255)"`
+	BirthPlace     *string    `json:"birth_place" valid:"optional,stringlength(1|255)"`
+	BirthDate      *time.Time `json:"birth_date" valid:"optional"`
+	Phone          *string    `json:"phone" valid:"optional,stringlength(12|13)"`
+	NIK            *string    `json:"nik,omitempty" valid:"optional"`
+	NPWP           *string    `json:"npwp,omitempty" valid:"optional"`
+	Gender         *string    `json:"gender,omitempty" valid:"optional,in(l,p)"`
+	MarriageStatus *bool      `json:"marriage_status,omitempty"`
+	LastEducation  *string    `json:"last_education,omitempty" valid:"optional,in(sd,smp,sma,s1)"`
+}
+type SupervisorUpdateProfileForm struct {
+	Fullname       *string    `json:"fullname" valid:"optional,stringlength(1|255)"`
+	RegencyID      *uint      `json:"regency_id" valid:"optional,int"`
+	FullAddress    *string    `json:"full_address" valid:"optional,stringlength(1|255)"`
+	BirthPlace     *string    `json:"birth_place" valid:"optional,stringlength(1|255)"`
+	BirthDate      *time.Time `json:"birth_date" valid:"optional"`
+	Phone          *string    `json:"phone" valid:"optional,stringlength(12|13)"`
+	NIK            *string    `json:"nik,omitempty" valid:"optional"`
+	NPWP           *string    `json:"npwp,omitempty" valid:"optional"`
+	Gender         *string    `json:"gender,omitempty" valid:"optional,in(l,p)"`
+	MarriageStatus *bool      `json:"marriage_status,omitempty"`
+}
+type ServiceUserUpdateProfileForm struct {
+	Fullname    *string    `json:"fullname" valid:"optional,stringlength(1|255)"`
+	RegencyID   *uint      `json:"regency_id" valid:"optional,int"`
+	FullAddress *string    `json:"full_address" valid:"optional,stringlength(1|255)"`
+	BirthPlace  *string    `json:"birth_place" valid:"optional,stringlength(1|255)"`
+	BirthDate   *time.Time `json:"birth_date" valid:"optional"`
+	Phone       *string    `json:"phone" valid:"optional,stringlength(12|13)"`
+	NIK         *string    `json:"nik,omitempty" valid:"optional"`
+	Gender      *string    `json:"gender,omitempty" valid:"optional,in(l,p)"`
+}

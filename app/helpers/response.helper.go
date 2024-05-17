@@ -5,18 +5,16 @@ import (
 	"math"
 	"reflect"
 
-	database_types "github.com/salamanderman234/outsourcing-api/app/domains/types/databases"
-	custom_errors "github.com/salamanderman234/outsourcing-api/app/domains/types/errors"
-	"github.com/salamanderman234/outsourcing-api/app/domains/types/responses"
+	"github.com/salamanderman234/outsourcing-api/app/types"
 	"github.com/salamanderman234/outsourcing-api/configs"
 )
 
 type responseHelper struct{}
 
-func (r responseHelper) CreateResponse(con responses.ResponseConfig) (int, responses.ResponseInterface) {
-	var response responses.ResponseInterface
+func (r responseHelper) CreateResponse(con types.ResponseParams) (int, types.ResponseInterface) {
+	var response types.ResponseInterface
 	if con.Error != nil {
-		newResponse := responses.FailResponse{}
+		newResponse := types.FailResponse{}
 		debugMsg := con.Error.Error()
 		if configs.AppConfig.IsDebug {
 			newResponse.DebugMsg = &debugMsg
@@ -31,12 +29,14 @@ func (r responseHelper) CreateResponse(con responses.ResponseConfig) (int, respo
 		newResponse.Detail = msg
 		newResponse.Errors = details
 
+		Logger.Error(fmt.Sprintf("(%s) %s", generalMsg, con.Error.Error()))
+
 		response = newResponse
 		return err.Status, response
 	}
 
-	newResponse := responses.DefaultSuccessResponse{
-		BaseResponse: responses.BaseResponse{
+	newResponse := types.DefaultSuccessResponse{
+		BaseResponse: types.BaseResponse{
 			Msg: con.Action.Msg,
 		},
 		Datas:      Struct.LoopGetVisibleStruct(con.Datas),
@@ -47,14 +47,14 @@ func (r responseHelper) CreateResponse(con responses.ResponseConfig) (int, respo
 	return con.Action.Status, response
 }
 
-func (responseHelper) ExtractError(err custom_errors.GeneralError) (string, string, []responses.FieldError) {
+func (responseHelper) ExtractError(err types.GeneralError) (string, string, []types.FieldError) {
 	return err.GeneralMessage, err.Msg, err.ValidationErrors
 }
 
-func (responseHelper) CreatePagination(max int64, config database_types.DBSearchConfig) *responses.Pagination {
+func (responseHelper) CreatePagination(max int64, config types.DBSearchParams) *types.Pagination {
 	next := uint(math.Min(float64(config.Page+1), float64(max)))
 	prev := uint(math.Max(float64(config.Page-1), 1))
-	return &responses.Pagination{
+	return &types.Pagination{
 		PreviousPage: prev,
 		CurrentPage:  config.Page,
 		NextPage:     next,

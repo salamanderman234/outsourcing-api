@@ -1,9 +1,13 @@
 package views
 
-import "github.com/salamanderman234/outsourcing-api/app/domains"
+import (
+	"github.com/salamanderman234/outsourcing-api/app/providers"
+)
 
 func RegisterAllViews() {
-	domains.ViewRegistry.AuthView = NewAuthView()
-	domains.ViewRegistry.MasterProvinceView = NewMasterProvinceView()
-	domains.ViewRegistry.MasterRegencyView = NewRegencyMasterView()
+	providers.ViewProvider.AuthView = NewAuthView()
+	providers.ViewProvider.MasterProvinceView = NewMasterProvinceView()
+	providers.ViewProvider.MasterRegencyView = NewRegencyMasterView()
+	providers.ViewProvider.MasterCategoryView = NewCategoryMasterView()
+	providers.ViewProvider.ApplicationServiceView = NewApplicationServiceView()
 }

@@ -1,8 +1,10 @@
 package repositories
 
-import "github.com/salamanderman234/outsourcing-api/app/domains"
+import (
+	"github.com/salamanderman234/outsourcing-api/app/providers"
+)
 
 func RegisterAllRepos() {
-	domains.RepoRegistry.BaseRepo = NewBaseRepo()
-	domains.RepoRegistry.UserRepo = NewUserRepo()
+	providers.RepoProvider.BaseRepo = NewBaseRepo()
+	providers.RepoProvider.UserRepo = NewUserRepo()
 }

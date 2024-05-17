@@ -3,8 +3,9 @@ package jobs
 import (
 	"reflect"
 
+	"github.com/salamanderman234/outsourcing-api/app/domains"
 	"github.com/salamanderman234/outsourcing-api/app/helpers"
-	"github.com/salamanderman234/outsourcing-api/app/mails"
+	"github.com/salamanderman234/outsourcing-api/app/providers"
 )
 
 type sendMailJob struct {
@@ -13,7 +14,7 @@ type sendMailJob struct {
 	To       []string
 }
 
-func NewSendMailJob(mail mails.MailInterface, to []string) JobInterface {
+func NewSendMailJob(mail domains.MailInterface, to []string) domains.JobInterface {
 	mailName := reflect.TypeOf(mail).Name()
 	data := mail.GetData()
 
@@ -24,14 +25,16 @@ func NewSendMailJob(mail mails.MailInterface, to []string) JobInterface {
 	}
 }
 
-func (s sendMailJob) Handle() error {
-	mail := mails.NewMailInstance(s.MailName, s.Data)
-	tmpl, err := mail.GetTemplate()
-	if err != nil {
-		return err
+func (s sendMailJob) Handle(err chan<- error) {
+	mail := providers.MailProvider.NewMailInstance(s.MailName, s.Data)
+	tmpl, errs := mail.GetTemplate()
+	if errs != nil {
+		err <- errs
 	}
-	go helpers.Mailer.SendEmail(s.To, mail.GetSubject(), tmpl)
-	return nil
+	errs = helpers.Mailer.SendEmail(s.To, mail.GetSubject(), tmpl)
+	if errs != nil {
+		err <- errs
+	}
 }
 
 func (s sendMailJob) GetData() map[string]any {
@@ -54,5 +57,5 @@ func (s *sendMailJob) SetData(data map[string]any) {
 }
 
 func init() {
-	registerJob(&sendMailJob{})
+	providers.JobProvider.RegisterJob(&sendMailJob{})
 }

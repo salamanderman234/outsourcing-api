@@ -1,0 +1,35 @@
+package providers
+
+import (
+	repository_domains "github.com/salamanderman234/outsourcing-api/app/domains/repositories"
+	service_domains "github.com/salamanderman234/outsourcing-api/app/domains/services"
+	view_domains "github.com/salamanderman234/outsourcing-api/app/domains/views"
+)
+
+type repoProvider struct {
+	BaseRepo repository_domains.BaseRepositoryInterface
+	UserRepo repository_domains.UserRepositoryInterface
+}
+
+type serviceProvider struct {
+	AuthService           service_domains.AuthServiceInterface
+	UserService           service_domains.UserServiceInterface
+	MasterProvinceService service_domains.MasterProvinceServiceInterface
+	MasterRegencyService  service_domains.MasterRegencyServiceInterface
+	MasterCategoryService service_domains.MasterCategoryServiceInterface
+	AppServiceService     service_domains.ApplicationServiceServiceInterface
+}
+
+type viewProvider struct {
+	AuthView               view_domains.AuthViewInterface
+	UserView               view_domains.UserViewInterface
+	MasterProvinceView     view_domains.MasterProvinceViewInterface
+	MasterRegencyView      view_domains.MasterRegencyViewInterface
+	MasterCategoryView     view_domains.MasterCategoryViewInterface
+	ApplicationServiceView view_domains.ApplicationServiceViewInterface
+}
+
+// entity
+var RepoProvider repoProvider
+var ServiceProvider serviceProvider
+var ViewProvider viewProvider

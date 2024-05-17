@@ -3,9 +3,9 @@ package repositories
 import (
 	"context"
 
-	"github.com/salamanderman234/outsourcing-api/app/domains"
 	repository_domains "github.com/salamanderman234/outsourcing-api/app/domains/repositories"
 	"github.com/salamanderman234/outsourcing-api/app/models"
+	"github.com/salamanderman234/outsourcing-api/app/providers"
 	"gorm.io/gorm"
 )
 
@@ -16,13 +16,13 @@ func NewUserRepo() repository_domains.UserRepositoryInterface {
 }
 
 func (userRepo) RegisterUser(ctx context.Context, data models.User) (models.User, error) {
-	db := domains.Connection
+	db := providers.GetConnection()
 	var user models.User
 	err := db.Transaction(func(tx *gorm.DB) error {
 		users := []models.User{
 			data,
 		}
-		err := domains.RepoRegistry.BaseRepo.Create(ctx, users, tx)
+		err := providers.RepoProvider.BaseRepo.Create(ctx, users, tx)
 		if err != nil {
 			tx.Rollback()
 			return err

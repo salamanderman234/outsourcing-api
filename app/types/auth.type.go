@@ -1,4 +1,4 @@
-package auth_types
+package types
 
 import "github.com/golang-jwt/jwt/v5"
 
@@ -7,3 +7,9 @@ type JWTCLaims struct {
 	Email string
 	Role  string
 }
+
+type AuthSessionKey string
+
+var (
+	UserContextKey AuthSessionKey = "user"
+)

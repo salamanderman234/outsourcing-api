@@ -1,12 +1,8 @@
 package repositories
 
 import (
-	"sync"
-
 	"github.com/salamanderman234/outsourcing-api/configs"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
-	"gorm.io/gorm/schema"
 )
 
 func paginateScope(page uint) func(db *gorm.DB) *gorm.DB {
@@ -17,29 +13,29 @@ func paginateScope(page uint) func(db *gorm.DB) *gorm.DB {
 	}
 }
 
-func orderScope(model any, orderBy string, desc bool) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		s, err := schema.Parse(model, &sync.Map{}, schema.NamingStrategy{})
-		if err != nil {
-			return db
-		}
-		column := clause.Column{Name: s.Table + ".updated_at"}
-		sortStatement := clause.OrderByColumn{Column: column, Desc: desc}
-		if orderBy != "" {
-			valid := false
-			for _, field := range s.Fields {
-				if orderBy == field.Name {
-					valid = true
-					break
-				}
-			}
-			if valid {
-				column.Name = s.Table + "." + orderBy
-			}
-		}
-		return db.Order(sortStatement)
-	}
-}
+// func orderScope(model any, orderBy string, desc bool) func(db *gorm.DB) *gorm.DB {
+// 	return func(db *gorm.DB) *gorm.DB {
+// 		s, err := schema.Parse(model, &sync.Map{}, schema.NamingStrategy{})
+// 		if err != nil {
+// 			return db
+// 		}
+// 		column := clause.Column{Name: s.Table + ".updated_at"}
+// 		sortStatement := clause.OrderByColumn{Column: column, Desc: desc}
+// 		if orderBy != "" {
+// 			valid := false
+// 			for _, field := range s.Fields {
+// 				if orderBy == field.Name {
+// 					valid = true
+// 					break
+// 				}
+// 			}
+// 			if valid {
+// 				column.Name = s.Table + "." + orderBy
+// 			}
+// 		}
+// 		return db.Order(sortStatement)
+// 	}
+// }
 
 // func whereIdEqualScope(id any) func(db *gorm.DB) *gorm.DB {
 // 	return func(db *gorm.DB) *gorm.DB {
@@ -53,8 +49,8 @@ func orderScope(model any, orderBy string, desc bool) func(db *gorm.DB) *gorm.DB
 // 	}
 // }
 
-func usingModelScope(model any) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		return db.Model(model)
-	}
-}
+// func usingModelScope(model any) func(db *gorm.DB) *gorm.DB {
+// 	return func(db *gorm.DB) *gorm.DB {
+// 		return db.Model(model)
+// 	}
+// }

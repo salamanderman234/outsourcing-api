@@ -21,6 +21,14 @@ func main() {
 		models.Supervisor{},
 		models.Employee{},
 		models.ServiceUser{},
+		models.Job{},
+		// service
+		models.Service{},
+		models.RequiredItemService{},
+		models.AdditionalItemService{},
+		models.Package{},
+		models.PackageService{},
+		models.PackageServiceAdditionalItem{},
 	}
 	connection, err := configs.DatabaseConfig.ConnectDatabase()
 	if err != nil {

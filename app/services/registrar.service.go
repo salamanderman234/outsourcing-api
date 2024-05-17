@@ -1,9 +1,13 @@
 package services
 
-import "github.com/salamanderman234/outsourcing-api/app/domains"
+import (
+	"github.com/salamanderman234/outsourcing-api/app/providers"
+)
 
 func RegisterAllServices() {
-	domains.ServiceRegistry.AuthService = NewAuthService()
-	domains.ServiceRegistry.MasterProvinceService = NewMasterProvinceService()
-	domains.ServiceRegistry.MasterRegencyService = NewRegencyMasterService()
+	providers.ServiceProvider.AuthService = NewAuthService()
+	providers.ServiceProvider.MasterProvinceService = NewMasterProvinceService()
+	providers.ServiceProvider.MasterRegencyService = NewRegencyMasterService()
+	providers.ServiceProvider.MasterCategoryService = NewCategoryMasterService()
+	providers.ServiceProvider.AppServiceService = NewApplicationServiceService()
 }

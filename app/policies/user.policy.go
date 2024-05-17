@@ -1,12 +1,10 @@
 package policies
 
-import (
-	auth_types "github.com/salamanderman234/outsourcing-api/app/domains/types/auth"
-)
+import "github.com/salamanderman234/outsourcing-api/app/types"
 
 type userPolicy struct{}
 
-func (userPolicy) RegisterUser(role string, claims auth_types.JWTCLaims) bool {
+func (userPolicy) RegisterUser(role string, claims types.JWTCLaims) bool {
 	// if role == string(enums.AdminUserRole) ||
 	// 	role == string(enums.EmployeeUserRole) ||
 	// 	role == string(enums.SupervisorUserRole) {

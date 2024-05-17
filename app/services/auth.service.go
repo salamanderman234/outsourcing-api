@@ -2,20 +2,20 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
-	"github.com/salamanderman234/outsourcing-api/app/domains"
 	service_domains "github.com/salamanderman234/outsourcing-api/app/domains/services"
-	auth_types "github.com/salamanderman234/outsourcing-api/app/domains/types/auth"
-	"github.com/salamanderman234/outsourcing-api/app/domains/types/enums"
-	custom_errors "github.com/salamanderman234/outsourcing-api/app/domains/types/errors"
 	"github.com/salamanderman234/outsourcing-api/app/forms"
 	"github.com/salamanderman234/outsourcing-api/app/helpers"
 	"github.com/salamanderman234/outsourcing-api/app/jobs"
 	"github.com/salamanderman234/outsourcing-api/app/mails"
 	"github.com/salamanderman234/outsourcing-api/app/models"
 	"github.com/salamanderman234/outsourcing-api/app/policies"
+	"github.com/salamanderman234/outsourcing-api/app/providers"
+	"github.com/salamanderman234/outsourcing-api/app/types"
+	"github.com/salamanderman234/outsourcing-api/app/types/enums"
 	"github.com/salamanderman234/outsourcing-api/configs"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -35,7 +35,7 @@ func (authService) Login(ctx context.Context, creds forms.LoginForm) (models.Use
 	}
 	// calling repo
 	var user models.User
-	err := domains.RepoRegistry.BaseRepo.FindWhere(ctx,
+	err := providers.RepoProvider.BaseRepo.FindWhere(ctx,
 		conds,
 		&user,
 		"AdminProfile",
@@ -44,7 +44,7 @@ func (authService) Login(ctx context.Context, creds forms.LoginForm) (models.Use
 		"ServiceUserProfile",
 	)
 	if err != nil {
-		return models.User{}, "", custom_errors.ErrNotMatched
+		return models.User{}, "", types.ErrNotMatched
 	}
 	// check password validity
 	err = bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(creds.Password))
@@ -53,13 +53,16 @@ func (authService) Login(ctx context.Context, creds forms.LoginForm) (models.Use
 	}
 	// check verification status
 	if user.VerifiedAt == nil {
-		return models.User{}, "", custom_errors.ErrNotVerifiedUser
+		return models.User{}, "", types.ErrNotVerifiedUser
 	}
 	// create auth token
 	tkn, err := helpers.JWT.CreateToken(user, enums.AuthenticationTokenType)
 	if err != nil {
 		return models.User{}, "", err
 	}
+	helpers.Logger.Info(
+		fmt.Sprintf("User %s is logged in", *user.Email),
+	)
 	return user, tkn, nil
 }
 func (authService) RegisterUser(
@@ -67,9 +70,9 @@ func (authService) RegisterUser(
 	creds forms.UserRegisterForm,
 	role enums.UserRolesEnum,
 ) (models.User, string, error) {
-	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(auth_types.JWTCLaims)
+	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
 	if !policies.UserPolicy.RegisterUser(string(role), claims) {
-		return models.User{}, "", custom_errors.ErrForbiden
+		return models.User{}, "", types.ErrForbiden
 	}
 	if err := helpers.Validator.Validate(creds); err != nil {
 		return models.User{}, "", err
@@ -85,7 +88,7 @@ func (authService) RegisterUser(
 	}
 	roleString := string(role)
 	User.Role = &roleString
-	data, err := domains.RepoRegistry.UserRepo.RegisterUser(ctx, User)
+	data, err := providers.RepoProvider.UserRepo.RegisterUser(ctx, User)
 	if err != nil {
 		return models.User{}, "", err
 	}
@@ -100,6 +103,9 @@ func (authService) RegisterUser(
 		return models.User{}, "", err
 	}
 	go helpers.Mailer.SendEmail([]string{*data.Email}, "Verify your account", mail)
+	helpers.Logger.Info(
+		fmt.Sprintf("User %s is successfully registered", *data.Email),
+	)
 	return data, token, nil
 }
 func (authService) ForgotPassword(ctx context.Context, creds forms.ChangePasswordForm) error {
@@ -121,7 +127,7 @@ func (authService) ForgotPassword(ctx context.Context, creds forms.ChangePasswor
 		"token": token,
 	})
 	job := jobs.NewSendMailJob(mail, to)
-	jobs.JobManager.DispatchNow(job)
+	helpers.JobManager.DispatchNow(job)
 	return nil
 }
 func (authService) ResetPassword(ctx context.Context, creds forms.ResetPasswordForm) error {
@@ -133,18 +139,18 @@ func (authService) ResetPassword(ctx context.Context, creds forms.ResetPasswordF
 		return err
 	}
 	if claims.Subject != string(enums.ResetPasswordTokenType) {
-		return custom_errors.ErrForbiden
+		return types.ErrForbiden
 	}
 	if claims.Email != creds.Email {
-		return custom_errors.ErrForbiden
+		return types.ErrForbiden
 	}
 	id, _ := strconv.Atoi(claims.ID)
 	byteHashedNewPassword, _ := bcrypt.GenerateFromPassword([]byte(creds.NewPassword), 1)
 	hashedNewPassword := string(byteHashedNewPassword)
-	err = domains.RepoRegistry.BaseRepo.Update(
+	err = providers.RepoProvider.BaseRepo.Update(
 		ctx,
 		[]uint{uint(id)},
-		models.User{Password: &hashedNewPassword},
+		&models.User{Password: &hashedNewPassword},
 	)
 	return err
 }
@@ -153,10 +159,10 @@ func (authService) VerifyEmail(ctx context.Context, creds forms.VerifyUserForm) 
 		return err
 	}
 	now := time.Now()
-	err := domains.RepoRegistry.BaseRepo.Update(
+	err := providers.RepoProvider.BaseRepo.Update(
 		ctx,
 		[]uint{creds.UserID},
-		models.User{VerifiedAt: &now},
+		&models.User{VerifiedAt: &now},
 	)
 	return err
 }

@@ -2,17 +2,17 @@ package routes
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/salamanderman234/outsourcing-api/app/domains"
+	"github.com/salamanderman234/outsourcing-api/app/providers"
 )
 
 type authRoute struct{}
 
 func (authRoute) RegisterRoutes(router *echo.Echo) {
-	router.POST("/login/", domains.ViewRegistry.AuthView.Login)
-	router.POST("/:role/register/", domains.ViewRegistry.AuthView.Register)
-	router.POST("/forgot/", domains.ViewRegistry.AuthView.ChangePassword)
-	router.POST("/reset/", domains.ViewRegistry.AuthView.ResetPassword)
-	router.POST("/verify/", domains.ViewRegistry.AuthView.VerifyUser)
+	router.POST("/login/", providers.ViewProvider.AuthView.Login)
+	router.POST("/:role/register/", providers.ViewProvider.AuthView.Register)
+	router.POST("/forgot/", providers.ViewProvider.AuthView.ChangePassword)
+	router.POST("/reset/", providers.ViewProvider.AuthView.ResetPassword)
+	router.POST("/verify/", providers.ViewProvider.AuthView.VerifyUser)
 }
 
 func init() {

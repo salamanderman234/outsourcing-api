@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	auth_types "github.com/salamanderman234/outsourcing-api/app/domains/types/auth"
-	"github.com/salamanderman234/outsourcing-api/app/domains/types/enums"
 	"github.com/salamanderman234/outsourcing-api/app/models"
+	"github.com/salamanderman234/outsourcing-api/app/types"
+	"github.com/salamanderman234/outsourcing-api/app/types/enums"
 	"github.com/salamanderman234/outsourcing-api/configs"
 )
 
@@ -19,7 +19,7 @@ type jwtHelper struct {
 
 func (j jwtHelper) CreateToken(user models.User, subject enums.TokenType) (string, error) {
 	idStr := strconv.Itoa(int(user.ID))
-	claims := auth_types.JWTCLaims{
+	claims := types.JWTCLaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID:      idStr,
 			Issuer:  configs.AppConfig.Name,
@@ -39,7 +39,7 @@ func (j jwtHelper) CreateToken(user models.User, subject enums.TokenType) (strin
 	return token.SignedString([]byte(j.secret))
 }
 
-func (j jwtHelper) VerifyToken(token string) (auth_types.JWTCLaims, error) {
+func (j jwtHelper) VerifyToken(token string) (types.JWTCLaims, error) {
 	tkn, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		if method, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, jwt.ErrTokenSignatureInvalid
@@ -49,12 +49,12 @@ func (j jwtHelper) VerifyToken(token string) (auth_types.JWTCLaims, error) {
 		return []byte(j.secret), nil
 	})
 	if err != nil {
-		return auth_types.JWTCLaims{}, err
+		return types.JWTCLaims{}, err
 	}
 	if !tkn.Valid {
-		return auth_types.JWTCLaims{}, jwt.ErrTokenInvalidClaims
+		return types.JWTCLaims{}, jwt.ErrTokenInvalidClaims
 	}
-	claims, _ := tkn.Claims.(auth_types.JWTCLaims)
+	claims, _ := tkn.Claims.(types.JWTCLaims)
 	return claims, nil
 }
 
