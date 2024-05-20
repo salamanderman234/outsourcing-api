@@ -14,10 +14,12 @@ type ApplicationServiceServiceInterface interface {
 	Find(ctx context.Context, id uint) (models.Service, error)
 	Update(ctx context.Context, id uint, data forms.ServiceUpdateForm) (uint, models.Service, error)
 	Delete(ctx context.Context, id uint) (uint, error)
+	AddRequiredItems(ctx context.Context, form forms.RequiredItemAddForm) (models.RequiredItemService, error)
+	AddAdditionalItems(ctx context.Context, form forms.AdditionalItemServiceAddForm) (models.AdditionalItemService, error)
 }
 
 type ApplicationPackageInterface interface {
-	Create(ctx context.Context, data forms.PackageServiceCreateForm) (models.Package, error)
+	Create(ctx context.Context, data forms.PackageCreateForm) (models.Package, error)
 	Read(ctx context.Context, q string, page uint) ([]models.Package, *types.Pagination, error)
 	Find(ctx context.Context, id uint) (models.Package, error)
 	Update(ctx context.Context, id uint, data forms.PackageUpdateForm) (uint, models.Package, error)

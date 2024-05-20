@@ -18,7 +18,7 @@ type PackageCreateForm struct {
 	Description string                     `json:"description" valid:"required,stringlength(1|50000)"`
 	Includes    string                     `json:"includes" valid:"required,stringlength(1|50000)"`
 	MinContract uint                       `json:"min_contract" valid:"required"`
-	Discount    uint                       `json:"discount" valid:"required"`
+	Discount    uint                       `json:"discount" valid:"optional,int"`
 	Services    []PackageServiceCreateForm `json:"services" valid:"required"`
 }
 

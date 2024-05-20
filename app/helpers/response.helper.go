@@ -39,8 +39,10 @@ func (r responseHelper) CreateResponse(con types.ResponseParams) (int, types.Res
 		BaseResponse: types.BaseResponse{
 			Msg: con.Action.Msg,
 		},
-		Datas:      Struct.LoopGetVisibleStruct(con.Datas),
-		Data:       Struct.GetVisibleAttributes(con.Data),
+		// Datas:      Struct.LoopGetVisibleStruct(con.Datas),
+		// Data:       Struct.GetVisibleAttributes(con.Data),
+		Datas:      con.Datas,
+		Data:       con.Data,
 		Pagination: con.Pagination,
 	}
 	response = newResponse

@@ -29,18 +29,18 @@ func (s structHelper) GetVisibleAttributes(data any) any {
 				continue
 			}
 		}
-		if field.Type.Kind() == reflect.Struct && name == "" {
+		if field.Type.Kind() == reflect.Pointer {
+			result := s.GetVisibleAttributes(value)
+			if isVisible == "true" {
+				mappedData[name] = result
+			}
+		} else if field.Type.Kind() == reflect.Struct && name == "" {
 			result := s.GetVisibleAttributes(value)
 			mapResult, ok := result.(map[string]any)
 			if ok {
 				for y, h := range mapResult {
 					mappedData[y] = h
 				}
-			}
-		} else if field.Type.Kind() == reflect.Struct {
-			result := s.GetVisibleAttributes(value)
-			if isVisible == "true" {
-				mappedData[name] = result
 			}
 		} else if field.Type.Kind() == reflect.Array || field.Type.Kind() == reflect.Slice {
 			rt := reflect.ValueOf(value)

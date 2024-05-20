@@ -25,3 +25,4 @@ storage/*
 go.work
 # build
 outsourcing-api
+build/*

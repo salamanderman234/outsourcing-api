@@ -25,6 +25,7 @@ type PackageService struct {
 	TotalEmployee                 *uint                          `json:"total_employee,omitempty" visible:"true"`
 	EmployeePrice                 *uint                          `json:"employee_price,omitempty" visible:"true"`
 	ServicePrice                  *uint                          `json:"service_price,omitempty" visible:"true"`
+	EtcPrice                      *uint                          `json:"etc_price,omitempty" visible:"true"`
 	SubTotalPrice                 *uint                          `json:"sub_total_price,omitempty" visible:"true"`
 	AdditionalPackageServiceItems []PackageServiceAdditionalItem `json:"additional_package_service_items" visible:"true"`
 }

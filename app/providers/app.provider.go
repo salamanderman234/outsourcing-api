@@ -12,21 +12,23 @@ type repoProvider struct {
 }
 
 type serviceProvider struct {
-	AuthService           service_domains.AuthServiceInterface
-	UserService           service_domains.UserServiceInterface
-	MasterProvinceService service_domains.MasterProvinceServiceInterface
-	MasterRegencyService  service_domains.MasterRegencyServiceInterface
-	MasterCategoryService service_domains.MasterCategoryServiceInterface
-	AppServiceService     service_domains.ApplicationServiceServiceInterface
+	AuthService              service_domains.AuthServiceInterface
+	UserService              service_domains.UserServiceInterface
+	MasterProvinceService    service_domains.MasterProvinceServiceInterface
+	MasterRegencyService     service_domains.MasterRegencyServiceInterface
+	MasterCategoryService    service_domains.MasterCategoryServiceInterface
+	AppServiceService        service_domains.ApplicationServiceServiceInterface
+	AppPackageServiceService service_domains.ApplicationPackageInterface
 }
 
 type viewProvider struct {
-	AuthView               view_domains.AuthViewInterface
-	UserView               view_domains.UserViewInterface
-	MasterProvinceView     view_domains.MasterProvinceViewInterface
-	MasterRegencyView      view_domains.MasterRegencyViewInterface
-	MasterCategoryView     view_domains.MasterCategoryViewInterface
-	ApplicationServiceView view_domains.ApplicationServiceViewInterface
+	AuthView                      view_domains.AuthViewInterface
+	UserView                      view_domains.UserViewInterface
+	MasterProvinceView            view_domains.MasterProvinceViewInterface
+	MasterRegencyView             view_domains.MasterRegencyViewInterface
+	MasterCategoryView            view_domains.MasterCategoryViewInterface
+	ApplicationServiceView        view_domains.ApplicationServiceViewInterface
+	ApplicationPackageServiceView view_domains.ApplicationPackageServiceViewInterface
 }
 
 // entity

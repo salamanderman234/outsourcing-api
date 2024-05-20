@@ -44,6 +44,7 @@ func baseFindFunc(
 	policy policies.Policy,
 	id uint,
 	result domains.ModelInterface,
+	preloads ...string,
 ) error {
 	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
 	if !policy.Find(id, claims) {
@@ -52,7 +53,7 @@ func baseFindFunc(
 		)
 		return types.ErrForbiden
 	}
-	err := providers.RepoProvider.BaseRepo.Find(ctx, id, result)
+	err := providers.RepoProvider.BaseRepo.Find(ctx, id, result, preloads...)
 	if err != nil {
 		return err
 	}

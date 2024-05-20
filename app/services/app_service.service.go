@@ -21,6 +21,24 @@ func NewApplicationServiceService() service_domains.ApplicationServiceServiceInt
 	return &applicationServiceService{}
 }
 
+func (applicationServiceService) AddRequiredItems(
+	ctx context.Context,
+	form forms.RequiredItemAddForm,
+) (models.RequiredItemService, error) {
+	var requiredItem models.RequiredItemService
+	err := baseCreateFunc(ctx, &policies.MasterPolicy, &requiredItem, form)
+	return requiredItem, err
+}
+
+func (applicationServiceService) AddAdditionalItems(
+	ctx context.Context,
+	form forms.AdditionalItemServiceAddForm,
+) (models.AdditionalItemService, error) {
+	var additioanlItem models.AdditionalItemService
+	err := baseCreateFunc(ctx, &policies.MasterPolicy, &additioanlItem, form)
+	return additioanlItem, err
+}
+
 func (applicationServiceService) Create(ctx context.Context,
 	data forms.ServiceCreateForm) (models.Service, error) {
 
@@ -106,7 +124,7 @@ func (applicationServiceService) Read(
 }
 func (applicationServiceService) Find(ctx context.Context, id uint) (models.Service, error) {
 	var service models.Service
-	err := baseFindFunc(ctx, &policies.ServicePolicy, id, &service)
+	err := baseFindFunc(ctx, &policies.ServicePolicy, id, &service, "RequiredItems", "AdditionalItems")
 	return service, err
 }
 func (applicationServiceService) Update(
@@ -132,9 +150,81 @@ func NewApplicationPackageService() service_domains.ApplicationPackageInterface 
 	return &applicationPackageService{}
 }
 func (applicationPackageService) Create(ctx context.Context,
-	data forms.PackageServiceCreateForm) (models.Package, error) {
+	data forms.PackageCreateForm) (models.Package, error) {
+	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
+	if !policies.ServicePolicy.Create(claims) {
+		helpers.Logger.Warning(fmt.Sprintf("(Forbidden) User: %s", claims.Email))
+		return models.Package{}, types.ErrForbiden
+	}
+	if err := helpers.Validator.Validate(data); err != nil {
+		return models.Package{}, err
+	}
+	var service models.Package
+	if err := helpers.Translator.TranslateStruct(data, &service); err != nil {
+		return service, err
+	}
+	etcP := uint(0)
+	empP := uint(0)
+	servP := uint(0)
+	for index, item := range service.Services {
+		serviceID := item.ServiceID
+		var serv models.Service
+		err := providers.RepoProvider.BaseRepo.Find(ctx, *serviceID, &serv)
+		if err != nil {
+			return models.Package{}, err
+		}
+		service.Services[index].ServicePrice = serv.ServicePrice
+		empPrice := (*serv.EmployeePrice) * (*item.TotalEmployee)
+		service.Services[index].EmployeePrice = &empPrice
+		service.Services[index].ServicePrice = serv.ServicePrice
+		servP += (*serv.ServicePrice)
+		empP += empPrice
+		etcPrice := *(serv.EtcPrice)
 
-	return models.Package{}, nil
+		additionals := item.AdditionalPackageServiceItems
+
+		for y, additional := range additionals {
+			var add models.AdditionalItemService
+			err := providers.RepoProvider.BaseRepo.Find(ctx, *additional.AdditionalItemServiceID, &add)
+			if err != nil {
+				return models.Package{}, err
+			}
+			sub := (*additional.Quantity) * (*add.PricePerItem)
+			etcPrice += sub
+			service.Services[index].AdditionalPackageServiceItems[y].Price = add.PricePerItem
+			service.Services[index].AdditionalPackageServiceItems[y].SubTotalPrice = &sub
+		}
+		service.Services[index].EtcPrice = &etcPrice
+		etcP += etcPrice
+		sub := (*service.Services[index].EtcPrice) + (*service.Services[index].EmployeePrice) + (*service.Services[index].ServicePrice)
+		service.Services[index].SubTotalPrice = &sub
+
+	}
+	if service.EtcPrice == nil {
+		zero := uint(0)
+		service.EtcPrice = &zero
+	}
+	if service.Discount == nil {
+		zero := uint(0)
+		service.Discount = &zero
+	}
+	service.EtcPrice = &etcP
+	service.EmployeePrice = &empP
+	service.ServicePrice = &servP
+
+	totalPrice := (*service.EtcPrice) + (*service.EmployeePrice) + (*service.ServicePrice)
+	totalPrice -= (*service.Discount)
+	service.TotalPrice = &totalPrice
+
+	services := []models.Package{
+		service,
+	}
+	err := providers.RepoProvider.BaseRepo.Create(ctx, services)
+	if err != nil {
+		return service, err
+	}
+	service = services[0]
+	return service, nil
 }
 func (applicationPackageService) Read(ctx context.Context,
 	q string, page uint,

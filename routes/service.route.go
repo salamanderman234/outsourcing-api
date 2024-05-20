@@ -15,6 +15,15 @@ func (serviceRoute) RegisterRoutes(router *echo.Echo) {
 	serviceRoute.GET("/:id/", providers.ViewProvider.ApplicationServiceView.Find)
 	serviceRoute.PATCH("/:id/", providers.ViewProvider.ApplicationServiceView.Update)
 	serviceRoute.DELETE("/:id/", providers.ViewProvider.ApplicationServiceView.Delete)
+	serviceRoute.POST("/add-required-item/", providers.ViewProvider.ApplicationServiceView.AddRequiredItem)
+	serviceRoute.POST("/add-additional-item/", providers.ViewProvider.ApplicationServiceView.AddAdditionalItem)
+	// package
+	packageRoute := router.Group("/packages")
+	packageRoute.POST("/", providers.ViewProvider.ApplicationPackageServiceView.Create)
+	packageRoute.GET("/", providers.ViewProvider.ApplicationPackageServiceView.Read)
+	packageRoute.GET("/:id/", providers.ViewProvider.ApplicationPackageServiceView.Find)
+	packageRoute.PATCH("/:id/", providers.ViewProvider.ApplicationPackageServiceView.Update)
+	packageRoute.DELETE("/:id/", providers.ViewProvider.ApplicationPackageServiceView.Delete)
 }
 
 func init() {

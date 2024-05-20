@@ -10,4 +10,5 @@ func RegisterAllServices() {
 	providers.ServiceProvider.MasterRegencyService = NewRegencyMasterService()
 	providers.ServiceProvider.MasterCategoryService = NewCategoryMasterService()
 	providers.ServiceProvider.AppServiceService = NewApplicationServiceService()
+	providers.ServiceProvider.AppPackageServiceService = NewApplicationPackageService()
 }
