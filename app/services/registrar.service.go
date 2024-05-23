@@ -13,4 +13,5 @@ func RegisterAllServices() {
 	providers.ServiceProvider.AppPackageServiceService = NewApplicationPackageService()
 	providers.ServiceProvider.TransactionService = NewTransactionService()
 	providers.ServiceProvider.FileService = NewFileService()
+	providers.ServiceProvider.MidtransService = NewMidtransService()
 }

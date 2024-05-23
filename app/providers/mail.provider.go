@@ -4,12 +4,24 @@ import (
 	"reflect"
 
 	"github.com/salamanderman234/outsourcing-api/app/domains"
+	"github.com/salamanderman234/outsourcing-api/configs"
 )
 
 type createMailInstanceFunc func(data map[string]any) domains.MailInterface
 
 type mailProvider struct {
-	list map[string]createMailInstanceFunc
+	list     map[string]createMailInstanceFunc
+	Host     string
+	Port     int
+	Email    string
+	Password string
+}
+
+func (m *mailProvider) SetMailClient() {
+	m.Host = configs.MailerConfig.Host
+	m.Port = configs.MailerConfig.Port
+	m.Email = configs.MailerConfig.Email
+	m.Password = configs.MailerConfig.Password
 }
 
 func (m *mailProvider) RegisterMail(fun createMailInstanceFunc) {

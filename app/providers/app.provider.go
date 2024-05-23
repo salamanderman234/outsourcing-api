@@ -21,6 +21,7 @@ type serviceProvider struct {
 	AppPackageServiceService service_domains.ApplicationPackageInterface
 	TransactionService       service_domains.TransactionServiceInterface
 	FileService              service_domains.FileServiceInterface
+	MidtransService          service_domains.MidtransServiceInterface
 }
 
 type viewProvider struct {
@@ -32,6 +33,7 @@ type viewProvider struct {
 	ApplicationServiceView        view_domains.ApplicationServiceViewInterface
 	ApplicationPackageServiceView view_domains.ApplicationPackageServiceViewInterface
 	TransactionView               view_domains.TransactionViewInterface
+	PaymentView                   view_domains.PaymentViewInterface
 }
 
 // entity

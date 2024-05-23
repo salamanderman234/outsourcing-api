@@ -4,15 +4,15 @@ import (
 	"crypto/tls"
 	"fmt"
 
-	"github.com/salamanderman234/outsourcing-api/configs"
+	"github.com/salamanderman234/outsourcing-api/app/providers"
 	"gopkg.in/gomail.v2"
 )
 
 var dialer = gomail.NewDialer(
-	configs.MailerConfig.Host,
-	configs.MailerConfig.Port,
-	configs.MailerConfig.Email,
-	configs.MailerConfig.Password,
+	providers.MailProvider.Host,
+	providers.MailProvider.Port,
+	providers.MailProvider.Email,
+	providers.MailProvider.Password,
 )
 
 type mailerHelper struct{}

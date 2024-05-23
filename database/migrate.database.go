@@ -33,6 +33,8 @@ func main() {
 		models.Transaction{},
 		models.TransactionDetail{},
 		models.TransactionDetailEtc{},
+		// payments
+		models.Payment{},
 	}
 	connection, err := configs.DatabaseConfig.ConnectDatabase()
 	if err != nil {

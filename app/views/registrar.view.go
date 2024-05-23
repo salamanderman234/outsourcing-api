@@ -12,4 +12,5 @@ func RegisterAllViews() {
 	providers.ViewProvider.ApplicationServiceView = NewApplicationServiceView()
 	providers.ViewProvider.ApplicationPackageServiceView = NewApplicationPackageServiceView()
 	providers.ViewProvider.TransactionView = NewTransactionView()
+	providers.ViewProvider.PaymentView = NewPaymentView()
 }

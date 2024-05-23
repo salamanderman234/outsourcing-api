@@ -17,6 +17,8 @@ import (
 
 func init() {
 	configs.AppConfig.SetConfig("./.env")
+	providers.SetMidtransClient()
+	providers.MailProvider.SetMailClient()
 }
 
 func main() {

@@ -1,12 +1,15 @@
 package configs
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+)
 
 type appConfig struct {
 	Name              string
 	Url               string
 	IsDebug           bool
 	PaginationPerPage uint
+	Env               string
 }
 
 var AppConfig appConfig
@@ -26,6 +29,7 @@ func (a *appConfig) SetConfig(path string) {
 	a.Url = viper.GetString("APP_URL")
 	a.IsDebug = viper.GetBool("APP_DEBUG")
 	a.PaginationPerPage = 10
+	a.Env = viper.GetString("APP_ENV")
 	// database config
 	DatabaseConfig.setDatabaseConfig()
 	// jwt config
@@ -38,4 +42,7 @@ func (a *appConfig) SetConfig(path string) {
 	VarConfig.setVarConfig()
 	// set resource config
 	ResourceConfig.setResourceConfig()
+	// midtrans
+	MidtransConfig.setMidtransConfig()
+
 }
