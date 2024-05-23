@@ -11,4 +11,5 @@ func RegisterAllViews() {
 	providers.ViewProvider.MasterCategoryView = NewCategoryMasterView()
 	providers.ViewProvider.ApplicationServiceView = NewApplicationServiceView()
 	providers.ViewProvider.ApplicationPackageServiceView = NewApplicationPackageServiceView()
+	providers.ViewProvider.TransactionView = NewTransactionView()
 }

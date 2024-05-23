@@ -11,4 +11,6 @@ func RegisterAllServices() {
 	providers.ServiceProvider.MasterCategoryService = NewCategoryMasterService()
 	providers.ServiceProvider.AppServiceService = NewApplicationServiceService()
 	providers.ServiceProvider.AppPackageServiceService = NewApplicationPackageService()
+	providers.ServiceProvider.TransactionService = NewTransactionService()
+	providers.ServiceProvider.FileService = NewFileService()
 }

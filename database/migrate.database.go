@@ -29,6 +29,10 @@ func main() {
 		models.Package{},
 		models.PackageService{},
 		models.PackageServiceAdditionalItem{},
+		// transaction
+		models.Transaction{},
+		models.TransactionDetail{},
+		models.TransactionDetailEtc{},
 	}
 	connection, err := configs.DatabaseConfig.ConnectDatabase()
 	if err != nil {

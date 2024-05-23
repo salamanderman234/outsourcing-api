@@ -12,11 +12,14 @@ import (
 	"github.com/salamanderman234/outsourcing-api/configs"
 )
 
+type beforeFunc func() error
+
 func baseCreateFunc(
 	ctx context.Context,
 	policy policies.Policy,
 	data domains.ModelInterface,
 	form any,
+	beforeCreate ...beforeFunc,
 ) error {
 	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
 	if !policy.Create(claims) {
@@ -25,6 +28,7 @@ func baseCreateFunc(
 		)
 		return types.ErrForbiden
 	}
+	data.SetUpdatedEmail(claims.Email)
 	if err := helpers.Validator.Validate(form); err != nil {
 		return err
 	}
@@ -32,6 +36,12 @@ func baseCreateFunc(
 		return err
 	}
 	data.SetUpdatedEmail(claims.Email)
+	for _, fun := range beforeCreate {
+		err := fun()
+		if err != nil {
+			return err
+		}
+	}
 	err := providers.RepoProvider.BaseRepo.Create(ctx, data)
 	if err != nil {
 		return err
@@ -47,13 +57,13 @@ func baseFindFunc(
 	preloads ...string,
 ) error {
 	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
-	if !policy.Find(id, claims) {
+	err := providers.RepoProvider.BaseRepo.Find(ctx, id, result, preloads...)
+	if !policy.Find(result, claims) {
 		helpers.Logger.Warning(
 			fmt.Sprintf("(Forbidden) User: %s", claims.Email),
 		)
 		return types.ErrForbiden
 	}
-	err := providers.RepoProvider.BaseRepo.Find(ctx, id, result, preloads...)
 	if err != nil {
 		return err
 	}
@@ -90,15 +100,26 @@ func baseDeleteFunc(
 	policy policies.Policy,
 	id uint,
 	model domains.ModelInterface,
+	beforeDelete ...beforeFunc,
 ) error {
 	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
-	if !policies.MasterPolicy.Delete(id, claims) {
+	err := providers.RepoProvider.BaseRepo.Find(ctx, id, model)
+	if err != nil {
+		return err
+	}
+	if !policies.MasterPolicy.Delete(model, claims) {
 		helpers.Logger.Warning(
 			fmt.Sprintf("(Forbidden) User: %s", claims.Email),
 		)
 		return types.ErrForbiden
 	}
-	err := providers.RepoProvider.BaseRepo.Delete(ctx, []uint{id}, model)
+	for _, fun := range beforeDelete {
+		err := fun()
+		if err != nil {
+			return err
+		}
+	}
+	err = providers.RepoProvider.BaseRepo.Delete(ctx, []uint{id}, model)
 	if err != nil {
 		return err
 	}
@@ -111,21 +132,33 @@ func baseUpdateFunc(
 	id uint,
 	data domains.ModelInterface,
 	form any,
+	beforeUpdate ...beforeFunc,
 ) error {
 	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
-	if !policy.Update(id, claims) {
+	err := providers.RepoProvider.BaseRepo.Find(ctx, id, data)
+	if err != nil {
+		return err
+	}
+	if !policy.Update(data, claims) {
 		helpers.Logger.Warning(
 			fmt.Sprintf("(Forbidden) User: %s", claims.Email),
 		)
 		return types.ErrForbiden
 	}
+	data.SetUpdatedEmail(claims.Email)
 	if err := helpers.Validator.Validate(form); err != nil {
 		return err
 	}
 	if err := helpers.Translator.TranslateStruct(form, data); err != nil {
 		return err
 	}
-	err := providers.RepoProvider.BaseRepo.Update(ctx, []uint{id}, data)
+	for _, fun := range beforeUpdate {
+		err := fun()
+		if err != nil {
+			return err
+		}
+	}
+	err = providers.RepoProvider.BaseRepo.Update(ctx, []uint{id}, data)
 	if err != nil {
 		return err
 	}

@@ -19,6 +19,8 @@ type serviceProvider struct {
 	MasterCategoryService    service_domains.MasterCategoryServiceInterface
 	AppServiceService        service_domains.ApplicationServiceServiceInterface
 	AppPackageServiceService service_domains.ApplicationPackageInterface
+	TransactionService       service_domains.TransactionServiceInterface
+	FileService              service_domains.FileServiceInterface
 }
 
 type viewProvider struct {
@@ -29,6 +31,7 @@ type viewProvider struct {
 	MasterCategoryView            view_domains.MasterCategoryViewInterface
 	ApplicationServiceView        view_domains.ApplicationServiceViewInterface
 	ApplicationPackageServiceView view_domains.ApplicationPackageServiceViewInterface
+	TransactionView               view_domains.TransactionViewInterface
 }
 
 // entity

@@ -103,4 +103,10 @@ var (
 		Status:         http.StatusBadRequest,
 		GeneralMessage: "Validation Error",
 	}
+	ErrUnprocessableEntity = GeneralError{
+		Name:           "Unprocessable Entity",
+		Msg:            "server cant process your request",
+		Status:         http.StatusUnprocessableEntity,
+		GeneralMessage: "Request Error",
+	}
 )

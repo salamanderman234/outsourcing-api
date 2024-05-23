@@ -124,7 +124,7 @@ func (applicationServiceService) Read(
 }
 func (applicationServiceService) Find(ctx context.Context, id uint) (models.Service, error) {
 	var service models.Service
-	err := baseFindFunc(ctx, &policies.ServicePolicy, id, &service, "RequiredItems", "AdditionalItems")
+	err := baseFindFunc(ctx, &policies.ServicePolicy, id, &service, "RequiredItems", "AdditionalItems", "Category")
 	return service, err
 }
 func (applicationServiceService) Update(
@@ -151,80 +151,65 @@ func NewApplicationPackageService() service_domains.ApplicationPackageInterface 
 }
 func (applicationPackageService) Create(ctx context.Context,
 	data forms.PackageCreateForm) (models.Package, error) {
-	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
-	if !policies.ServicePolicy.Create(claims) {
-		helpers.Logger.Warning(fmt.Sprintf("(Forbidden) User: %s", claims.Email))
-		return models.Package{}, types.ErrForbiden
-	}
-	if err := helpers.Validator.Validate(data); err != nil {
-		return models.Package{}, err
-	}
+
 	var service models.Package
-	if err := helpers.Translator.TranslateStruct(data, &service); err != nil {
-		return service, err
-	}
-	etcP := uint(0)
-	empP := uint(0)
-	servP := uint(0)
-	for index, item := range service.Services {
-		serviceID := item.ServiceID
-		var serv models.Service
-		err := providers.RepoProvider.BaseRepo.Find(ctx, *serviceID, &serv)
-		if err != nil {
-			return models.Package{}, err
-		}
-		service.Services[index].ServicePrice = serv.ServicePrice
-		empPrice := (*serv.EmployeePrice) * (*item.TotalEmployee)
-		service.Services[index].EmployeePrice = &empPrice
-		service.Services[index].ServicePrice = serv.ServicePrice
-		servP += (*serv.ServicePrice)
-		empP += empPrice
-		etcPrice := *(serv.EtcPrice)
-
-		additionals := item.AdditionalPackageServiceItems
-
-		for y, additional := range additionals {
-			var add models.AdditionalItemService
-			err := providers.RepoProvider.BaseRepo.Find(ctx, *additional.AdditionalItemServiceID, &add)
+	before := func() error {
+		etcP := uint(0)
+		empP := uint(0)
+		servP := uint(0)
+		for index, item := range service.Services {
+			serviceID := item.ServiceID
+			var serv models.Service
+			err := providers.RepoProvider.BaseRepo.Find(ctx, *serviceID, &serv, "RequiredItems", "AdditionalItems", "Category")
 			if err != nil {
-				return models.Package{}, err
+				return err
 			}
-			sub := (*additional.Quantity) * (*add.PricePerItem)
-			etcPrice += sub
-			service.Services[index].AdditionalPackageServiceItems[y].Price = add.PricePerItem
-			service.Services[index].AdditionalPackageServiceItems[y].SubTotalPrice = &sub
+			service.Services[index].ServicePrice = serv.ServicePrice
+			empPrice := (*serv.EmployeePrice) * (*item.TotalEmployee)
+			service.Services[index].EmployeePrice = &empPrice
+			service.Services[index].ServicePrice = serv.ServicePrice
+			servP += (*serv.ServicePrice)
+			empP += empPrice
+			etcPrice := *(serv.EtcPrice)
+
+			additionals := item.AdditionalPackageServiceItems
+
+			for y, additional := range additionals {
+				var add models.AdditionalItemService
+				err := providers.RepoProvider.BaseRepo.Find(ctx, *additional.AdditionalItemServiceID, &add)
+				if err != nil {
+					return err
+				}
+				sub := (*additional.Quantity) * (*add.PricePerItem)
+				etcPrice += sub
+				service.Services[index].AdditionalPackageServiceItems[y].Price = add.PricePerItem
+				service.Services[index].AdditionalPackageServiceItems[y].SubTotalPrice = &sub
+			}
+			service.Services[index].EtcPrice = &etcPrice
+			etcP += etcPrice
+			sub := (*service.Services[index].EtcPrice) + (*service.Services[index].EmployeePrice) + (*service.Services[index].ServicePrice)
+			service.Services[index].SubTotalPrice = &sub
+
 		}
-		service.Services[index].EtcPrice = &etcPrice
-		etcP += etcPrice
-		sub := (*service.Services[index].EtcPrice) + (*service.Services[index].EmployeePrice) + (*service.Services[index].ServicePrice)
-		service.Services[index].SubTotalPrice = &sub
+		if service.EtcPrice == nil {
+			zero := uint(0)
+			service.EtcPrice = &zero
+		}
+		if service.Discount == nil {
+			zero := uint(0)
+			service.Discount = &zero
+		}
+		service.EtcPrice = &etcP
+		service.EmployeePrice = &empP
+		service.ServicePrice = &servP
 
+		totalPrice := (*service.EtcPrice) + (*service.EmployeePrice) + (*service.ServicePrice)
+		totalPrice -= (*service.Discount)
+		service.TotalPrice = &totalPrice
+		return nil
 	}
-	if service.EtcPrice == nil {
-		zero := uint(0)
-		service.EtcPrice = &zero
-	}
-	if service.Discount == nil {
-		zero := uint(0)
-		service.Discount = &zero
-	}
-	service.EtcPrice = &etcP
-	service.EmployeePrice = &empP
-	service.ServicePrice = &servP
-
-	totalPrice := (*service.EtcPrice) + (*service.EmployeePrice) + (*service.ServicePrice)
-	totalPrice -= (*service.Discount)
-	service.TotalPrice = &totalPrice
-
-	services := []models.Package{
-		service,
-	}
-	err := providers.RepoProvider.BaseRepo.Create(ctx, services)
-	if err != nil {
-		return service, err
-	}
-	service = services[0]
-	return service, nil
+	err := baseCreateFunc(ctx, &policies.MasterPolicy, &service, data, before)
+	return service, err
 }
 func (applicationPackageService) Read(ctx context.Context,
 	q string, page uint,
@@ -239,9 +224,14 @@ func (applicationPackageService) Read(ctx context.Context,
 			{Field: "description", Operator: "LIKE", Str: q},
 			{Field: "includes", Operator: "LIKE", Str: q},
 		},
-		Query:    q,
-		Model:    &models.Package{},
-		Preloads: []string{"Services"},
+		Query: q,
+		Model: &models.Package{},
+		Preloads: []string{
+			"Services",
+			"Services.AdditionalPackageServiceItems",
+			"Services.Service",
+			"Services.AdditionalPackageServiceItems.AdditionalItemService",
+		},
 	}
 
 	pagination, err := baseReadFunc(
@@ -254,7 +244,12 @@ func (applicationPackageService) Read(ctx context.Context,
 }
 func (applicationPackageService) Find(ctx context.Context, id uint) (models.Package, error) {
 	var pack models.Package
-	err := baseFindFunc(ctx, &policies.ServicePolicy, id, &pack)
+	err := baseFindFunc(ctx, &policies.ServicePolicy, id, &pack,
+		"Services",
+		"Services.AdditionalPackageServiceItems",
+		"Services.Service",
+		"Services.AdditionalPackageServiceItems.AdditionalItemService",
+	)
 	return pack, err
 }
 func (applicationPackageService) Update(

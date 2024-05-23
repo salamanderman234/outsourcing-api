@@ -30,6 +30,10 @@ func (r *resourceConfig) setResourceConfig() {
 			Config: imageConfig,
 			Path:   "/category",
 		},
+		"transaction.mou": {
+			Config: imageConfig,
+			Path:   "/transaction/mou",
+		},
 	}
 }
 
