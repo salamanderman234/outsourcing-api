@@ -148,7 +148,7 @@ func (midtransService) AfterPaymentAction(ctx context.Context, form forms.Paymen
 		enums.CaptureMidtranstatus,
 	}, enums.MidtransStatusEnum(status)) {
 		paymentStatus := string(enums.SuccessPayment)
-		transactionStatus := string(enums.Ongoing)
+		transactionStatus := string(enums.Confirmed)
 
 		payment.Status = &paymentStatus
 		payment.Transaction.Status = &transactionStatus

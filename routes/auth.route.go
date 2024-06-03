@@ -8,11 +8,16 @@ import (
 type authRoute struct{}
 
 func (authRoute) RegisterRoutes(router *echo.Echo) {
-	router.POST("/login/", providers.ViewProvider.AuthView.Login)
-	router.POST("/:role/register/", providers.ViewProvider.AuthView.Register)
-	router.POST("/forgot/", providers.ViewProvider.AuthView.ChangePassword)
-	router.POST("/reset/", providers.ViewProvider.AuthView.ResetPassword)
-	router.POST("/verify/", providers.ViewProvider.AuthView.VerifyUser)
+	login := router.POST("/login/", providers.ViewProvider.AuthView.Login)
+	login.Name = "auth.login"
+	register := router.POST("/:role/register/", providers.ViewProvider.AuthView.Register)
+	register.Name = "auth.register"
+	changePass := router.POST("/forgot/", providers.ViewProvider.AuthView.ChangePassword)
+	changePass.Name = "auth.change-password"
+	resetPass := router.POST("/reset/", providers.ViewProvider.AuthView.ResetPassword)
+	resetPass.Name = "auth.reset-password"
+	verifyUser := router.POST("/verify/", providers.ViewProvider.AuthView.VerifyUser)
+	verifyUser.Name = "auth.verify"
 }
 
 func init() {

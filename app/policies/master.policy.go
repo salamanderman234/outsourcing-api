@@ -1,7 +1,5 @@
 package policies
 
-type masterPolicy struct {
+type MasterPolicy struct {
 	baseAdminOnlyPolicy
 }
-
-var MasterPolicy = masterPolicy{}

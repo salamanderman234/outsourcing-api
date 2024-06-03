@@ -1,53 +1,43 @@
 package configs
 
-type fileConfig struct {
-	MaxSize       uint
-	BasePath      string
-	AcceptedMimes []string
-}
-
-type Resource struct {
-	Config fileConfig
-	Path   string
-}
+import "github.com/salamanderman234/outsourcing-api/app/types"
 
 type resourceConfig struct {
-	resourcesConfig map[string]Resource
+	FileConfigs map[types.FileConfigKey]types.FileConfig
+	BasePath    string
 }
-
-var ResourceConfig resourceConfig
 
 func (r *resourceConfig) setResourceConfig() {
 	// file configs
-	imageConfig := fileConfig{
+	imageConfig := types.FileConfig{
 		MaxSize:       2000,
 		BasePath:      "/images",
-		AcceptedMimes: []string{"jpg", "png", "jpeg", "webp"},
+		AcceptedMimes: []string{"image/jpg", "image/png", "image/jpeg", "image/webp"},
 	}
 
-	r.resourcesConfig = map[string]Resource{
-		"category.icon": {
-			Config: imageConfig,
-			Path:   "/category",
-		},
-		"transaction.mou": {
-			Config: imageConfig,
-			Path:   "/transaction/mou",
-		},
+	pdfConfig := types.FileConfig{
+		MaxSize:       20000,
+		BasePath:      "/documents",
+		AcceptedMimes: []string{"application/pdf"},
 	}
+
+	r.FileConfigs[types.ImageConfig] = imageConfig
+	r.FileConfigs[types.PDFConfig] = pdfConfig
 }
 
-func (r *resourceConfig) GetResourceConfig(key string) Resource {
-	resource, ok := r.resourcesConfig[key]
+func (r *resourceConfig) GetFileConfig(key types.FileConfigKey) types.FileConfig {
+	fileConfig, ok := r.FileConfigs[key]
 	if !ok {
-		return Resource{
-			Config: fileConfig{
-				MaxSize:       5000,
-				BasePath:      "/etc",
-				AcceptedMimes: []string{"*"},
-			},
-			Path: "",
+		return types.FileConfig{
+			MaxSize:       5000,
+			BasePath:      "/etc",
+			AcceptedMimes: []string{},
 		}
 	}
-	return resource
+	return fileConfig
+}
+
+var ResourceConfig = resourceConfig{
+	BasePath:    "./storage",
+	FileConfigs: map[types.FileConfigKey]types.FileConfig{},
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/salamanderman234/outsourcing-api/app/providers"
 	"github.com/salamanderman234/outsourcing-api/app/types"
 	"github.com/salamanderman234/outsourcing-api/app/types/enums"
+	"github.com/salamanderman234/outsourcing-api/configs"
 )
 
 type authView struct{}
@@ -124,4 +125,22 @@ func (authView) VerifyUser(c echo.Context) error {
 		Error:  err,
 	})
 	return c.JSON(status, resp)
+}
+
+func (authView) RouteList(c echo.Context) error {
+	routes := c.Echo().Routes()
+	claims, _ := c.Get(string(configs.VarConfig.UserContextName)).(types.JWTCLaims)
+	if claims.Role != string(enums.AdminUserRole) && claims.Role != string(enums.SuperAdminRole) {
+		err := types.ErrForbiden
+		status, resp := helpers.Response.CreateResponse(types.ResponseParams{
+			Error: err,
+		})
+		return c.JSON(status, resp)
+	}
+	status, resp := helpers.Response.CreateResponse(types.ResponseParams{
+		Action: enums.ReadAction,
+		Datas:  routes,
+	})
+	return c.JSON(status, resp)
+
 }

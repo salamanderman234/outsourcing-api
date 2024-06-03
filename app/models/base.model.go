@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type Model struct {
 	ID              uint       `json:"id" visible:"true"`

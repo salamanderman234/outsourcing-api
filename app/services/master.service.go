@@ -21,7 +21,7 @@ func (masterProvinceService) Create(ctx context.Context,
 	data forms.MasterProviceCreateForm,
 ) (models.Province, error) {
 	var province models.Province
-	err := baseCreateFunc(ctx, &policies.MasterPolicy, &province, data)
+	err := baseCreateFunc(ctx, policies.MasterPolicy{}, &province, data)
 	return province, err
 }
 func (masterProvinceService) Read(ctx context.Context,
@@ -40,7 +40,7 @@ func (masterProvinceService) Read(ctx context.Context,
 
 	pagination, err := baseReadFunc(
 		ctx,
-		policies.MasterPolicy,
+		policies.MasterPolicy{},
 		params,
 		&results,
 	)
@@ -48,18 +48,18 @@ func (masterProvinceService) Read(ctx context.Context,
 }
 func (masterProvinceService) Find(ctx context.Context, id uint) (models.Province, error) {
 	var province models.Province
-	err := baseFindFunc(ctx, &policies.MasterPolicy, id, &province)
+	err := baseFindFunc(ctx, policies.MasterPolicy{}, id, &province)
 	return province, err
 }
 func (masterProvinceService) Update(ctx context.Context,
 	id uint, data forms.MasterProviceUpdateForm,
 ) (uint, models.Province, error) {
 	var province models.Province
-	err := baseUpdateFunc(ctx, &policies.MasterPolicy, id, &province, data)
+	err := baseUpdateFunc(ctx, policies.MasterPolicy{}, id, &province, data)
 	return id, province, err
 }
 func (masterProvinceService) Delete(ctx context.Context, id uint) (uint, error) {
-	err := baseDeleteFunc(ctx, policies.MasterPolicy, id, &models.Province{})
+	err := baseDeleteFunc(ctx, policies.MasterPolicy{}, id, &models.Province{})
 	return id, err
 }
 
@@ -76,7 +76,7 @@ func (regencyMasterService) Create(
 	data forms.MasterRegencyCreateForm,
 ) (models.Regency, error) {
 	var regency models.Regency
-	err := baseCreateFunc(ctx, &policies.MasterPolicy, &regency, data)
+	err := baseCreateFunc(ctx, policies.MasterPolicy{}, &regency, data)
 	return regency, err
 }
 func (regencyMasterService) Read(ctx context.Context,
@@ -96,7 +96,7 @@ func (regencyMasterService) Read(ctx context.Context,
 
 	pagination, err := baseReadFunc(
 		ctx,
-		policies.MasterPolicy,
+		policies.MasterPolicy{},
 		params,
 		&results,
 	)
@@ -104,7 +104,7 @@ func (regencyMasterService) Read(ctx context.Context,
 }
 func (regencyMasterService) Find(ctx context.Context, id uint) (models.Regency, error) {
 	var regency models.Regency
-	err := baseFindFunc(ctx, &policies.MasterPolicy, id, &regency)
+	err := baseFindFunc(ctx, policies.MasterPolicy{}, id, &regency)
 	return regency, err
 }
 func (regencyMasterService) Update(ctx context.Context,
@@ -112,11 +112,11 @@ func (regencyMasterService) Update(ctx context.Context,
 	data forms.MasterRegencyUpdateForm,
 ) (uint, models.Regency, error) {
 	var regency models.Regency
-	err := baseUpdateFunc(ctx, &policies.MasterPolicy, id, &regency, data)
+	err := baseUpdateFunc(ctx, policies.MasterPolicy{}, id, &regency, data)
 	return id, regency, err
 }
 func (regencyMasterService) Delete(ctx context.Context, id uint) (uint, error) {
-	err := baseDeleteFunc(ctx, policies.MasterPolicy, id, &models.Regency{})
+	err := baseDeleteFunc(ctx, policies.MasterPolicy{}, id, &models.Regency{})
 	return id, err
 }
 
@@ -134,7 +134,7 @@ func (categoryMasterService) Create(
 ) (models.Category, error) {
 
 	var category models.Category
-	err := baseCreateFunc(ctx, &policies.MasterPolicy, &category, data)
+	err := baseCreateFunc(ctx, policies.MasterPolicy{}, &category, data)
 	return category, err
 }
 func (categoryMasterService) Read(ctx context.Context, q string, page uint) ([]models.Category, *types.Pagination, error) {
@@ -152,7 +152,7 @@ func (categoryMasterService) Read(ctx context.Context, q string, page uint) ([]m
 
 	pagination, err := baseReadFunc(
 		ctx,
-		policies.MasterPolicy,
+		policies.MasterPolicy{},
 		params,
 		&results,
 	)
@@ -160,16 +160,16 @@ func (categoryMasterService) Read(ctx context.Context, q string, page uint) ([]m
 }
 func (categoryMasterService) Find(ctx context.Context, id uint) (models.Category, error) {
 	var category models.Category
-	err := baseFindFunc(ctx, &policies.MasterPolicy, id, &category)
+	err := baseFindFunc(ctx, policies.MasterPolicy{}, id, &category)
 	return category, err
 }
 func (categoryMasterService) Update(ctx context.Context, id uint, data forms.MasterCategoryUpdateForm) (uint, models.Category, error) {
 	var category models.Category
-	err := baseUpdateFunc(ctx, &policies.MasterPolicy, id, &category, data)
+	err := baseUpdateFunc(ctx, policies.MasterPolicy{}, id, &category, data)
 	return id, category, err
 }
 func (categoryMasterService) Delete(ctx context.Context, id uint) (uint, error) {
-	err := baseDeleteFunc(ctx, policies.MasterPolicy, id, &models.Category{})
+	err := baseDeleteFunc(ctx, policies.MasterPolicy{}, id, &models.Category{})
 	return id, err
 }
 

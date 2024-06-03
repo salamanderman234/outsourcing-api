@@ -10,6 +10,11 @@ type FieldError struct {
 	Error string `json:"error"`
 }
 
+type ErrorWrapper struct {
+	Error error
+	Cust  []string
+}
+
 type GeneralError struct {
 	Name             string
 	Msg              string

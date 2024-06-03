@@ -24,6 +24,7 @@ type Transaction struct {
 	NextPaymentDeadline *time.Time          `json:"next_payment_deadline" visible:"true"`
 	Details             []TransactionDetail `json:"details,omitempty" visible:"true"`
 	MOU                 *string             `json:"mou,omitempty"`
+	Placements          []Placement         `json:"placements,omitempty" visible:"true"`
 }
 
 type TransactionDetail struct {

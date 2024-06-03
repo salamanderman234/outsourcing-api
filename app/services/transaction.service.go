@@ -133,6 +133,9 @@ func (transactionService) Read(ctx context.Context, q string, page uint) ([]mode
 		WithPagination: page > 0,
 		Query:          q,
 		Model:          &models.Transaction{},
+		Params: []types.WhereQuery{
+			{Field: "status", Operator: "LIKE", Str: q},
+		},
 		Preloads: []string{
 			"Details",
 			"ServiceUser",
@@ -190,12 +193,14 @@ func (transactionService) UploadMOU(ctx context.Context, id uint, file string) e
 	if (*transaction.Status) != string(enums.WaitingForMOU) {
 		return types.ErrUnprocessableEntity
 	}
-	resource := configs.ResourceConfig.GetResourceConfig("transaction.mou")
-	result, err := providers.ServiceProvider.FileService.UploadFile(ctx, file, resource.Path)
+	resource, err := providers.ResourceProvider.CreateResource("transaction.mou")
 	if err != nil {
 		return err
 	}
-
+	result, err := providers.ServiceProvider.FileService.UploadFile(ctx, file, resource)
+	if err != nil {
+		return err
+	}
 	status := string(enums.WaitingForMOUConfirmation)
 	transaction.MOU = &result
 	transaction.Status = &status

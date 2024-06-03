@@ -107,7 +107,7 @@ func baseDeleteFunc(
 	if err != nil {
 		return err
 	}
-	if !policies.MasterPolicy.Delete(model, claims) {
+	if !policy.Delete(model, claims) {
 		helpers.Logger.Warning(
 			fmt.Sprintf("(Forbidden) User: %s", claims.Email),
 		)

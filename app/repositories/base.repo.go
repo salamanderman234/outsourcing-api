@@ -35,6 +35,10 @@ func (baseRepo) ReadAll(
 	db := providers.GetConnection().WithContext(ctx).Model(config.Model)
 	paginateQuery := *providers.GetConnection().WithContext(ctx)
 	var pagination *types.Pagination
+	for _, join := range config.Joins {
+		db = db.Joins(join)
+		paginateQuery = *paginateQuery.Joins(join)
+	}
 	for _, param := range config.Params {
 		val := param.Str
 		if param.Operator == "LIKE" {

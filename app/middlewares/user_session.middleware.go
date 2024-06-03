@@ -3,24 +3,21 @@ package custom_middlewares
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/salamanderman234/outsourcing-api/app/helpers"
 	"github.com/salamanderman234/outsourcing-api/app/types"
+	"github.com/salamanderman234/outsourcing-api/app/types/enums"
 	"github.com/salamanderman234/outsourcing-api/configs"
 )
 
 func RetrieveUserSession(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		token := c.Request().Header.Get("Authorization")
-		if token == "" {
+		cookie, err := c.Cookie(configs.VarConfig.AuthCookieName)
+		if err != nil {
 			return next(c)
 		}
-		token = strings.ReplaceAll(c.Request().Header.Get("Authorization"), "Bearer ", "")
-		if token == "" {
-			return next(c)
-		}
+		token := cookie.Value
 		payload, err := helpers.JWT.VerifyToken(token)
 		if err != nil {
 			status, resp := helpers.Response.CreateResponse(types.ResponseParams{
@@ -29,10 +26,15 @@ func RetrieveUserSession(next echo.HandlerFunc) echo.HandlerFunc {
 			return c.JSON(status, resp)
 		}
 		email := payload.Email
+		role := payload.Role
+		tokenType := payload.Subject
+		if tokenType != string(enums.AuthenticationTokenType) {
+			return next(c)
+		}
 		if email != "" {
 			uri := c.Request().RequestURI
 			helpers.Logger.Info(
-				fmt.Sprintf("User %s is attempting to access %s", email, uri),
+				fmt.Sprintf("(Session) User (%s) %s is attempting to access %s", role, email, uri),
 			)
 		}
 		c.Set(string(configs.VarConfig.UserContextName), payload)

@@ -1,50 +1,93 @@
 package helpers
 
-// import (
-// 	"encoding/base64"
-// 	"fmt"
-// 	"mime"
-// 	"os"
+import (
+	"encoding/base64"
+	"errors"
+	"fmt"
+	"net/http"
+	"os"
 
-// 	"github.com/salamanderman234/outsourcing-api/configs"
-// )
+	"github.com/gabriel-vasile/mimetype"
+	"github.com/salamanderman234/outsourcing-api/app/domains"
+	"github.com/salamanderman234/outsourcing-api/app/types"
+)
 
-// type fileHelper struct{}
+type fileHelper struct{}
 
-// func (fileHelper) ConvertBase64ToFile(str string) ([]byte, error) {
-// 	return base64.StdEncoding.DecodeString(str)
-// }
+func (fileHelper) ConvertBase64ToFile(str string) ([]byte, error) {
+	return base64.StdEncoding.DecodeString(str)
+}
 
-// // path relative to storage directory
-// func (fileHelper) SaveFile(file []byte, mime string, resource configs.Resource) (string, error) {
-// 	name := String.GenerateRandomString(7)
-// 	dirPath := fmt.Sprintf("%s%s", resource.Config.BasePath, resource.Path)
-// 	fullpath := fmt.Sprintf("%s/%s.%s", dirPath, name, mime)
-// 	f, err := os.Create(fullpath)
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	defer f.Close()
-// 	if _, err := f.Write(file); err != nil {
-// 		return "", err
-// 	}
-// 	if err := f.Sync(); err != nil {
-// 		return "", err
-// 	}
-// 	return fullpath, nil
-// }
+// path relative to storage directory
+func (fi fileHelper) SaveFile(file []byte, resource domains.ResourceInterface) (string, error) {
+	ext, err := fi.CheckMimeCompability(file, resource)
+	if err != nil {
+		return "", err
+	}
+	name := String.GenerateRandomString(10)
+	dirPath := resource.GetFullPath()
+	if _, err := os.Stat(dirPath); errors.Is(err, os.ErrNotExist) {
+		err := os.MkdirAll(dirPath, os.ModePerm)
+		if err != nil {
+			return "", err
+		}
+	}
 
-// func (f fileHelper) SaveFromBase64(base64 string, resource configs.Resource) (string, error) {
+	fullpath := fmt.Sprintf("%s/%s%s", dirPath, name, ext)
+	f, err := os.Create(fullpath)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	if _, err := f.Write(file); err != nil {
+		return "", err
+	}
+	if err := f.Sync(); err != nil {
+		return "", err
+	}
+	return fullpath, nil
+}
 
-// 	file, err := f.ConvertBase64ToFile(base64)
-// 	if err != nil {
-// 		return "", err
-// 	}
+func (f fileHelper) SaveFromBase64(base64 string, resource domains.ResourceInterface) (string, error) {
+	file, err := f.ConvertBase64ToFile(base64)
+	if err != nil {
+		return "", err
+	}
+	return f.SaveFile(file, resource)
+}
 
-// }
+func (f fileHelper) CheckMimeCompability(file []byte, resource domains.ResourceInterface) (string, error) {
+	fileConfig, ok := resource.GetFileConfig().(types.FileConfig)
+	if !ok {
+		return "", types.ErrInternalServer
+	}
+	acceptedMimes := fileConfig.AcceptedMimes
+	mime := mimetype.Detect(file)
 
-// func (f fileHelper) CheckMimeCompability(file string, resource configs.Resource) error {
-// 	acceptedMimes := resource.Config.AcceptedMimes
-// 	mime.ExtensionsByType()
-// }
-// var File = fileHelper{}
+	fmt.Println(acceptedMimes, mime.String())
+	if !mimetype.EqualsAny(mime.String(), acceptedMimes...) {
+		return "", types.ErrBadRequest
+	}
+
+	extension := mime.Extension()
+	return extension, nil
+}
+
+func (f fileHelper) DeleteFile(path string) error {
+	err := os.Remove(path)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (f fileHelper) GetFile(path string) ([]byte, string, error) {
+	file, err := os.ReadFile(path)
+	if err != nil {
+		return nil, "", err
+	}
+	mime := http.DetectContentType(file)
+	return file, mime, nil
+}
+
+var File = fileHelper{}

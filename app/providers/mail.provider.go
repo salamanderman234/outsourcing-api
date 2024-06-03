@@ -5,23 +5,23 @@ import (
 
 	"github.com/salamanderman234/outsourcing-api/app/domains"
 	"github.com/salamanderman234/outsourcing-api/configs"
+	"gopkg.in/gomail.v2"
 )
 
 type createMailInstanceFunc func(data map[string]any) domains.MailInterface
 
 type mailProvider struct {
-	list     map[string]createMailInstanceFunc
-	Host     string
-	Port     int
-	Email    string
-	Password string
+	list   map[string]createMailInstanceFunc
+	Dialer *gomail.Dialer
 }
 
 func (m *mailProvider) SetMailClient() {
-	m.Host = configs.MailerConfig.Host
-	m.Port = configs.MailerConfig.Port
-	m.Email = configs.MailerConfig.Email
-	m.Password = configs.MailerConfig.Password
+	m.Dialer = gomail.NewDialer(
+		configs.MailerConfig.Host,
+		configs.MailerConfig.Port,
+		configs.MailerConfig.Email,
+		configs.MailerConfig.Password,
+	)
 }
 
 func (m *mailProvider) RegisterMail(fun createMailInstanceFunc) {

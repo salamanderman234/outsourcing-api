@@ -10,9 +10,7 @@ import (
 )
 
 type UserServiceInterface interface {
-	GetUsers(ctx context.Context, q string)
-	Read(ctx context.Context, q string, role enums.UserRolesEnum, page uint) ([]models.User, *types.Pagination, error)
+	Read(ctx context.Context, q string, regencyID uint, role enums.UserRolesEnum, page uint) ([]models.User, *types.Pagination, error)
 	Find(ctx context.Context, id uint) (models.User, error)
-	Update(ctx context.Context, id uint, data forms.MasterProviceUpdateForm) (uint, models.User, error)
-	Delete(ctx context.Context, id uint) (uint, error)
+	Update(ctx context.Context, id uint, data forms.UserUpdateForm) (uint, models.User, error)
 }

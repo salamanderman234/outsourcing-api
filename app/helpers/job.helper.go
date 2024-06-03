@@ -18,8 +18,8 @@ type jobManager struct{}
 func (jobManager) DispatchNow(job domains.JobInterface) error {
 	errs := make(chan error)
 	go job.Handle(errs)
-	err := <-errs
-	return err
+	// err := <-errs
+	return nil
 }
 func (jobManager) DispacthLater(job domains.JobInterface, date time.Time) error {
 	ctx := context.Background()

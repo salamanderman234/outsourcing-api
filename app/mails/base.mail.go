@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"html/template"
 	"path"
+
+	"github.com/salamanderman234/outsourcing-api/configs"
 )
 
 type baseMail struct {
@@ -27,7 +29,10 @@ func (m baseMail) GetTemplate() (string, error) {
 		return "", err
 	}
 	var tpl bytes.Buffer
-	if err := tmpl.Execute(&tpl, m.Data); err != nil {
+	data := m.Data
+	data["app_base_url"] = configs.AppConfig.Url
+	data["app_name"] = configs.AppConfig.Name
+	if err := tmpl.Execute(&tpl, data); err != nil {
 		return "", err
 	}
 	return tpl.String(), nil

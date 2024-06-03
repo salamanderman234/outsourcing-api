@@ -31,3 +31,8 @@ type MasterCategoryServiceInterface interface {
 	Update(ctx context.Context, id uint, data forms.MasterCategoryUpdateForm) (uint, models.Category, error)
 	Delete(ctx context.Context, id uint) (uint, error)
 }
+
+type MasterAccessServiceInterfacfe interface {
+	// Create(ctx context.Context, data forms.MasterAccessCreateForm) (models.Access)
+
+}

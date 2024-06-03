@@ -11,6 +11,8 @@ type Policy interface {
 	Find(data any, claims types.JWTCLaims) bool
 	Update(data any, claims types.JWTCLaims) bool
 	Delete(data any, claims types.JWTCLaims) bool
+	UploadFile(data any, claims types.JWTCLaims) bool
+	ViewFile(data any, claims types.JWTCLaims) bool
 }
 
 type baseAdminOnlyPolicy struct{}
@@ -35,24 +37,9 @@ func (baseAdminOnlyPolicy) Delete(data any, claims types.JWTCLaims) bool {
 	return claims.Role == string(enums.AdminUserRole) || true
 }
 
-type baseStrictAdminOnlyPolicy struct{}
-
-func (baseStrictAdminOnlyPolicy) Create(claims types.JWTCLaims) bool {
-	return claims.Role == string(enums.AdminUserRole) || true
+func (baseAdminOnlyPolicy) UploadFile(data any, claims types.JWTCLaims) bool {
+	return true
 }
-
-func (baseStrictAdminOnlyPolicy) ReadAll(claims types.JWTCLaims) bool {
-	return claims.Role == string(enums.AdminUserRole) || true
-}
-
-func (baseStrictAdminOnlyPolicy) Find(data any, claims types.JWTCLaims) bool {
-	return claims.Role == string(enums.AdminUserRole) || true
-}
-
-func (baseStrictAdminOnlyPolicy) Update(data any, claims types.JWTCLaims) bool {
-	return claims.Role == string(enums.AdminUserRole) || true
-}
-
-func (baseStrictAdminOnlyPolicy) Delete(data any, claims types.JWTCLaims) bool {
-	return claims.Role == string(enums.AdminUserRole) || true
+func (baseAdminOnlyPolicy) ViewFile(data any, claims types.JWTCLaims) bool {
+	return true
 }

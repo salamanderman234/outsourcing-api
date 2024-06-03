@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"encoding/json"
+	"os"
 	"strings"
 
 	"github.com/asaskevich/govalidator"
@@ -19,6 +20,7 @@ var errorMap = map[error]types.GeneralError{
 	jwt.ErrTokenExpired:                 types.ErrTokenExpired,
 	jwt.ErrTokenSignatureInvalid:        types.ErrInvalidToken,
 	gorm.ErrDuplicatedKey:               types.ErrDuplicateEntries,
+	os.ErrNotExist:                      types.ErrRecordNotFound,
 }
 
 type translateHelper struct{}

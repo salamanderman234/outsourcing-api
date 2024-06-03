@@ -19,4 +19,5 @@ type DBSearchParams struct {
 	Preloads       []string
 	Model          domains.ModelInterface
 	Limit          int
+	Joins          []string
 }

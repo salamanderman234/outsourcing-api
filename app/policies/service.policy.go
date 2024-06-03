@@ -1,12 +1,9 @@
 package policies
 
-type servicePolicy struct {
+type ServicePolicy struct {
 	baseAdminOnlyPolicy
 }
 
-type packagePolicy struct {
+type PackagePolicy struct {
 	baseAdminOnlyPolicy
 }
-
-var ServicePolicy = servicePolicy{}
-var PackagePolicy = packagePolicy{}

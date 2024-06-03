@@ -27,3 +27,10 @@ func (PaymentPolicy) Update(data any, claims types.JWTCLaims) bool {
 func (PaymentPolicy) Delete(data any, claims types.JWTCLaims) bool {
 	return claims.Role == string(enums.AdminUserRole) || true
 }
+
+func (PaymentPolicy) UploadFile(data any, claims types.JWTCLaims) bool {
+	return true
+}
+func (PaymentPolicy) ViewFile(data any, claims types.JWTCLaims) bool {
+	return true
+}

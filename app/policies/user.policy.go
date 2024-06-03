@@ -1,20 +1,53 @@
 package policies
 
-import "github.com/salamanderman234/outsourcing-api/app/types"
+import (
+	"strconv"
 
-type userPolicy struct{}
+	"github.com/salamanderman234/outsourcing-api/app/models"
+	"github.com/salamanderman234/outsourcing-api/app/types"
+	"github.com/salamanderman234/outsourcing-api/app/types/enums"
+)
 
-func (userPolicy) RegisterUser(role string, claims types.JWTCLaims) bool {
-	// if role == string(enums.AdminUserRole) ||
-	// 	role == string(enums.EmployeeUserRole) ||
-	// 	role == string(enums.SupervisorUserRole) {
+type UserPolicy struct {
+}
 
-	// 	return claims.Role == string(enums.AdminUserRole)
-	// } else if role == string(enums.ServiceUserRole) {
-	// 	return true
-	// }
-	// return false
+func (UserPolicy) Create(claims types.JWTCLaims) bool {
 	return true
 }
 
-var UserPolicy = userPolicy{}
+func (UserPolicy) ReadAll(claims types.JWTCLaims) bool {
+	role := claims.Role
+	return (role == string(enums.AdminUserRole) || role == string(enums.SuperAdminRole))
+}
+
+func (UserPolicy) Find(data any, claims types.JWTCLaims) bool {
+	user, ok := data.(models.User)
+	if !ok {
+		return false
+	}
+	role := *user.Role
+	id, _ := strconv.Atoi(claims.ID)
+	return (role == string(enums.AdminUserRole) || role == string(enums.SuperAdminRole)) || user.ID == uint(id)
+}
+
+func (UserPolicy) Update(data any, claims types.JWTCLaims) bool {
+	user, ok := data.(models.User)
+	if !ok {
+		return false
+	}
+	role := *user.Role
+	id, _ := strconv.Atoi(claims.ID)
+	return (role == string(enums.AdminUserRole) || role == string(enums.SuperAdminRole)) || user.ID == uint(id)
+}
+
+func (UserPolicy) Delete(data any, claims types.JWTCLaims) bool {
+	role := claims.Role
+	return (role == string(enums.AdminUserRole) || role == string(enums.SuperAdminRole))
+}
+
+func (UserPolicy) UploadFile(data any, claims types.JWTCLaims) bool {
+	return true
+}
+func (UserPolicy) ViewFile(data any, claims types.JWTCLaims) bool {
+	return true
+}

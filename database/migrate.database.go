@@ -22,6 +22,7 @@ func main() {
 		models.Employee{},
 		models.ServiceUser{},
 		models.Job{},
+		models.SuperAdmin{},
 		// service
 		models.Service{},
 		models.RequiredItemService{},

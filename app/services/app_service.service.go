@@ -26,7 +26,7 @@ func (applicationServiceService) AddRequiredItems(
 	form forms.RequiredItemAddForm,
 ) (models.RequiredItemService, error) {
 	var requiredItem models.RequiredItemService
-	err := baseCreateFunc(ctx, &policies.MasterPolicy, &requiredItem, form)
+	err := baseCreateFunc(ctx, policies.MasterPolicy{}, &requiredItem, form)
 	return requiredItem, err
 }
 
@@ -35,7 +35,7 @@ func (applicationServiceService) AddAdditionalItems(
 	form forms.AdditionalItemServiceAddForm,
 ) (models.AdditionalItemService, error) {
 	var additioanlItem models.AdditionalItemService
-	err := baseCreateFunc(ctx, &policies.MasterPolicy, &additioanlItem, form)
+	err := baseCreateFunc(ctx, policies.MasterPolicy{}, &additioanlItem, form)
 	return additioanlItem, err
 }
 
@@ -43,7 +43,8 @@ func (applicationServiceService) Create(ctx context.Context,
 	data forms.ServiceCreateForm) (models.Service, error) {
 
 	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
-	if !policies.ServicePolicy.Create(claims) {
+	policy := policies.ServicePolicy{}.Create(claims)
+	if !policy {
 		helpers.Logger.Warning(fmt.Sprintf("(Forbidden) User: %s", claims.Email))
 		return models.Service{}, types.ErrForbiden
 	}
@@ -116,7 +117,7 @@ func (applicationServiceService) Read(
 
 	pagination, err := baseReadFunc(
 		ctx,
-		policies.ServicePolicy,
+		policies.ServicePolicy{},
 		params,
 		&results,
 	)
@@ -124,7 +125,7 @@ func (applicationServiceService) Read(
 }
 func (applicationServiceService) Find(ctx context.Context, id uint) (models.Service, error) {
 	var service models.Service
-	err := baseFindFunc(ctx, &policies.ServicePolicy, id, &service, "RequiredItems", "AdditionalItems", "Category")
+	err := baseFindFunc(ctx, policies.ServicePolicy{}, id, &service, "RequiredItems", "AdditionalItems", "Category")
 	return service, err
 }
 func (applicationServiceService) Update(
@@ -134,11 +135,11 @@ func (applicationServiceService) Update(
 ) (uint, models.Service, error) {
 
 	var service models.Service
-	err := baseUpdateFunc(ctx, &policies.ServicePolicy, id, &service, data)
+	err := baseUpdateFunc(ctx, policies.ServicePolicy{}, id, &service, data)
 	return id, service, err
 }
 func (applicationServiceService) Delete(ctx context.Context, id uint) (uint, error) {
-	err := baseDeleteFunc(ctx, policies.ServicePolicy, id, &models.Service{})
+	err := baseDeleteFunc(ctx, policies.ServicePolicy{}, id, &models.Service{})
 	return id, err
 }
 
@@ -208,7 +209,7 @@ func (applicationPackageService) Create(ctx context.Context,
 		service.TotalPrice = &totalPrice
 		return nil
 	}
-	err := baseCreateFunc(ctx, &policies.MasterPolicy, &service, data, before)
+	err := baseCreateFunc(ctx, policies.MasterPolicy{}, &service, data, before)
 	return service, err
 }
 func (applicationPackageService) Read(ctx context.Context,
@@ -236,7 +237,7 @@ func (applicationPackageService) Read(ctx context.Context,
 
 	pagination, err := baseReadFunc(
 		ctx,
-		policies.ServicePolicy,
+		policies.ServicePolicy{},
 		params,
 		&results,
 	)
@@ -244,7 +245,7 @@ func (applicationPackageService) Read(ctx context.Context,
 }
 func (applicationPackageService) Find(ctx context.Context, id uint) (models.Package, error) {
 	var pack models.Package
-	err := baseFindFunc(ctx, &policies.ServicePolicy, id, &pack,
+	err := baseFindFunc(ctx, &policies.ServicePolicy{}, id, &pack,
 		"Services",
 		"Services.AdditionalPackageServiceItems",
 		"Services.Service",
@@ -258,11 +259,11 @@ func (applicationPackageService) Update(
 	data forms.PackageUpdateForm,
 ) (uint, models.Package, error) {
 	var pack models.Package
-	err := baseUpdateFunc(ctx, &policies.ServicePolicy, id, &pack, data)
+	err := baseUpdateFunc(ctx, &policies.ServicePolicy{}, id, &pack, data)
 	return id, pack, err
 }
 func (applicationPackageService) Delete(ctx context.Context, id uint) (uint, error) {
-	err := baseDeleteFunc(ctx, policies.ServicePolicy, id, &models.Package{})
+	err := baseDeleteFunc(ctx, policies.ServicePolicy{}, id, &models.Package{})
 	return id, err
 }
 

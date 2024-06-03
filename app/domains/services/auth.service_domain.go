@@ -14,6 +14,7 @@ type AuthServiceInterface interface {
 		creds forms.UserRegisterForm,
 		role enums.UserRolesEnum,
 	) (models.User, string, error)
+	SendVerifyEmail(ctx context.Context, id uint) error
 	ForgotPassword(ctx context.Context, forgotForm forms.ChangePasswordForm) error
 	ResetPassword(ctx context.Context, resetForm forms.ResetPasswordForm) error
 	VerifyEmail(ctx context.Context, verifyForm forms.VerifyUserForm) error

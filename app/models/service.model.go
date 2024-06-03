@@ -7,6 +7,7 @@ type Service struct {
 	RequiredItems   []RequiredItemService   `json:"required_items,omitempty" visible:"true"`
 	AdditionalItems []AdditionalItemService `json:"additional_items,omitempty" visible:"true"`
 	ServiceName     *string                 `json:"service_name,omitempty" visible:"true"`
+	Icon            *string                 `json:"icon,omitempty" visible:"true"`
 	MainImage       *string                 `json:"main_image,omitempty" visible:"true"`
 	Description     *string                 `json:"description,omitempty" visible:"true"`
 	Includes        *string                 `json:"includes,omitempty" visible:"true"`

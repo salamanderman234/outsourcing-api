@@ -61,7 +61,7 @@ func (authService) Login(ctx context.Context, creds forms.LoginForm) (models.Use
 		return models.User{}, "", err
 	}
 	helpers.Logger.Info(
-		fmt.Sprintf("User %s is logged in", *user.Email),
+		fmt.Sprintf("(Auth) User %s is logged in", *user.Email),
 	)
 	return user, tkn, nil
 }
@@ -71,9 +71,21 @@ func (authService) RegisterUser(
 	role enums.UserRolesEnum,
 ) (models.User, string, error) {
 	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
-	if !policies.UserPolicy.RegisterUser(string(role), claims) {
+	policy := policies.UserPolicy{}.Create(claims)
+	if !policy {
 		return models.User{}, "", types.ErrForbiden
 	}
+
+	if role == enums.SuperAdminUserRole && (claims.Role != string(enums.SuperAdminRole)) {
+		return models.User{}, "", types.ErrForbiden
+	} else if role == enums.AdminUserRole && (claims.Role != string(enums.SuperAdminRole)) {
+		return models.User{}, "", types.ErrForbiden
+	} else if (role == enums.EmployeeUserRole || role == enums.SupervisorUserRole) && ((claims.Role != string(enums.SuperAdminRole)) && (claims.Role != string(enums.AdminUserRole))) {
+		return models.User{}, "", types.ErrForbiden
+	} else if role == enums.ApplicationUserRole && (claims.Role != string(enums.SuperAdminRole)) {
+		return models.User{}, "", types.ErrForbiden
+	}
+
 	if err := helpers.Validator.Validate(creds); err != nil {
 		return models.User{}, "", err
 	}
@@ -96,15 +108,16 @@ func (authService) RegisterUser(
 	if err != nil {
 		return models.User{}, "", err
 	}
-	mail, err := mails.NewVerifyAccountMail(map[string]any{
+	mail := mails.NewVerifyAccountMail(map[string]any{
 		"id": data.ID,
-	}).GetTemplate()
+	})
+	job := jobs.NewSendMailJob(mail, []string{*data.Email})
+	err = helpers.JobManager.DispatchNow(job)
 	if err != nil {
 		return models.User{}, "", err
 	}
-	go helpers.Mailer.SendEmail([]string{*data.Email}, "Verify your account", mail)
 	helpers.Logger.Info(
-		fmt.Sprintf("User %s is successfully registered", *data.Email),
+		fmt.Sprintf("(Auth) User %s is successfully registered", *data.Email),
 	)
 	return data, token, nil
 }
@@ -147,22 +160,37 @@ func (authService) ResetPassword(ctx context.Context, creds forms.ResetPasswordF
 	id, _ := strconv.Atoi(claims.ID)
 	byteHashedNewPassword, _ := bcrypt.GenerateFromPassword([]byte(creds.NewPassword), 1)
 	hashedNewPassword := string(byteHashedNewPassword)
-	err = providers.RepoProvider.BaseRepo.Update(
+	providers.RepoProvider.BaseRepo.Update(
 		ctx,
 		[]uint{uint(id)},
 		&models.User{Password: &hashedNewPassword},
 	)
-	return err
+	return nil
 }
 func (authService) VerifyEmail(ctx context.Context, creds forms.VerifyUserForm) error {
 	if err := helpers.Validator.Validate(creds); err != nil {
 		return err
 	}
 	now := time.Now()
-	err := providers.RepoProvider.BaseRepo.Update(
+	providers.RepoProvider.BaseRepo.Update(
 		ctx,
 		[]uint{creds.UserID},
 		&models.User{VerifiedAt: &now},
 	)
-	return err
+	return nil
+}
+
+func (authService) SendVerifyEmail(ctx context.Context, id uint) error {
+	var user models.User
+	err := providers.RepoProvider.BaseRepo.Find(ctx, id, &user)
+	if err != nil {
+		return nil
+	}
+	email := *user.Email
+	mail := mails.NewVerifyAccountMail(map[string]any{
+		"id": user.ID,
+	})
+	job := jobs.NewSendMailJob(mail, []string{email})
+	helpers.JobManager.DispatchNow(job)
+	return nil
 }

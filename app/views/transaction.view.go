@@ -2,12 +2,15 @@ package views
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	view_domains "github.com/salamanderman234/outsourcing-api/app/domains/views"
 	"github.com/salamanderman234/outsourcing-api/app/forms"
+	"github.com/salamanderman234/outsourcing-api/app/helpers"
 	"github.com/salamanderman234/outsourcing-api/app/providers"
 	"github.com/salamanderman234/outsourcing-api/app/types"
+	"github.com/salamanderman234/outsourcing-api/app/types/enums"
 )
 
 type transactionView struct{}
@@ -50,5 +53,33 @@ func (transactionView) Delete(c echo.Context) error {
 }
 
 func (transactionView) UploadMOU(c echo.Context) error {
-	return nil
+	var form forms.FileUploadForm
+	idParam := c.Param("id")
+	id, _ := strconv.Atoi(idParam)
+	ctx := c.Request().Context()
+	if err := c.Bind(&form); err != nil {
+		status, resp := helpers.Response.CreateResponse(types.ResponseParams{
+			Error: err,
+		})
+		return c.JSON(status, resp)
+	}
+	if err := helpers.Validator.Validate(form); err != nil {
+		status, resp := helpers.Response.CreateResponse(types.ResponseParams{
+			Error: err,
+		})
+		return c.JSON(status, resp)
+	}
+	file := form.File
+	err := providers.ServiceProvider.TransactionService.UploadMOU(ctx, uint(id), file)
+	if err != nil {
+		status, resp := helpers.Response.CreateResponse(types.ResponseParams{
+			Error: err,
+		})
+		return c.JSON(status, resp)
+	}
+	status, resp := helpers.Response.CreateResponse(types.ResponseParams{
+		Action: enums.UpdateAction,
+		Error:  err,
+	})
+	return c.JSON(status, resp)
 }

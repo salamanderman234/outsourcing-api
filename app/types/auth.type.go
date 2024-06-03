@@ -11,5 +11,6 @@ type JWTCLaims struct {
 type AuthSessionKey string
 
 var (
-	UserContextKey AuthSessionKey = "user"
+	UserContextKey   AuthSessionKey = "user"
+	AccessContextKey AuthSessionKey = "access"
 )

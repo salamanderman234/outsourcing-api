@@ -8,22 +8,17 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-var dialer = gomail.NewDialer(
-	providers.MailProvider.Host,
-	providers.MailProvider.Port,
-	providers.MailProvider.Email,
-	providers.MailProvider.Password,
-)
-
 type mailerHelper struct{}
 
 func (mailerHelper) SendEmail(to []string, subject string, msg string) error {
 	Logger.Info(
 		fmt.Sprintf("(Mail) Sending a new mail (to: %s, subject: %s)", to, subject),
 	)
+	dialer := providers.MailProvider.Dialer
 	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	mail := gomail.NewMessage()
-	mail.SetHeader("From", "TEST")
+	fmt.Println(to)
+	mail.SetHeader("From", "outsourcingapp@gmail.com")
 	mail.SetHeader("To", to...)
 	mail.SetHeader("Subject", subject)
 	mail.SetBody("text/html", msg)
