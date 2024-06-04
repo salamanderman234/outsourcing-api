@@ -93,6 +93,7 @@ func (applicationServiceService) Create(ctx context.Context,
 		if err != nil {
 			return service, err
 		}
+		res.SetData(&service)
 		result, err := providers.ServiceProvider.FileService.UploadFile(ctx, mainImage, res)
 		if err != nil {
 			return service, err
@@ -105,6 +106,7 @@ func (applicationServiceService) Create(ctx context.Context,
 		if err != nil {
 			return service, err
 		}
+		res.SetData(&service)
 		result, err := providers.ServiceProvider.FileService.UploadFile(ctx, icon, res)
 		if err != nil {
 			return service, err
@@ -161,11 +163,71 @@ func (applicationServiceService) Update(
 ) (uint, models.Service, error) {
 
 	var service models.Service
-	err := baseUpdateFunc(ctx, policies.ServicePolicy{}, id, &service, data)
+	before := func() error {
+		mainImage := data.MainImage
+		icon := data.Icon
+		var temp models.Service
+		if mainImage != nil || icon != nil {
+			err := providers.RepoProvider.BaseRepo.Find(ctx, id, &temp)
+			if err != nil {
+				return nil
+			}
+		}
+		if mainImage != nil {
+			res, err := providers.ResourceProvider.CreateResource("services.main_image")
+			if err != nil {
+				return err
+			}
+			res.SetData(&service)
+			old := temp.MainImage
+			result, err := providers.ServiceProvider.FileService.UploadFile(ctx, *mainImage, res)
+			if err != nil {
+				return err
+			}
+			if old != nil {
+				go providers.ServiceProvider.FileService.DeleteFile(ctx, *old)
+			}
+			service.MainImage = &result
+		}
+		if icon != nil {
+			res, err := providers.ResourceProvider.CreateResource("services.icon")
+			if err != nil {
+				return err
+			}
+			res.SetData(&service)
+			old := temp.Icon
+			result, err := providers.ServiceProvider.FileService.UploadFile(ctx, *icon, res)
+			if err != nil {
+				return err
+			}
+			if old != nil {
+				go providers.ServiceProvider.FileService.DeleteFile(ctx, *old)
+			}
+			service.Icon = &result
+		}
+		return nil
+	}
+	err := baseUpdateFunc(ctx, policies.ServicePolicy{}, id, &service, data, before)
 	return id, service, err
 }
 func (applicationServiceService) Delete(ctx context.Context, id uint) (uint, error) {
-	err := baseDeleteFunc(ctx, policies.ServicePolicy{}, id, &models.Service{})
+	before := func() error {
+		var temp models.Service
+		err := providers.RepoProvider.BaseRepo.Find(ctx, id, &temp)
+		if err != nil {
+			return nil
+		}
+		mainImage := temp.MainImage
+		icon := temp.Icon
+		if mainImage != nil {
+			go providers.ServiceProvider.FileService.DeleteFile(ctx, *temp.MainImage)
+		}
+		if icon != nil {
+			go providers.ServiceProvider.FileService.DeleteFile(ctx, *temp.Icon)
+		}
+		return nil
+	}
+	err := baseDeleteFunc(ctx, policies.ServicePolicy{}, id, &models.Service{}, before)
 	return id, err
 }
 
@@ -233,6 +295,21 @@ func (applicationPackageService) Create(ctx context.Context,
 		totalPrice := (*service.EtcPrice) + (*service.EmployeePrice) + (*service.ServicePrice)
 		totalPrice -= (*service.Discount)
 		service.TotalPrice = &totalPrice
+
+		mainImage := data.MainImage
+		if mainImage != "" {
+			res, err := providers.ResourceProvider.CreateResource("packages.main_image")
+			if err != nil {
+				return err
+			}
+			res.SetData(&service)
+			result, err := providers.ServiceProvider.FileService.UploadFile(ctx, mainImage, res)
+			if err != nil {
+				return err
+			}
+			service.MainImage = &result
+		}
+
 		return nil
 	}
 	err := baseCreateFunc(ctx, policies.MasterPolicy{}, &service, data, before)
@@ -285,11 +362,47 @@ func (applicationPackageService) Update(
 	data forms.PackageUpdateForm,
 ) (uint, models.Package, error) {
 	var pack models.Package
-	err := baseUpdateFunc(ctx, &policies.ServicePolicy{}, id, &pack, data)
+	before := func() error {
+		mainImage := data.MainImage
+		if mainImage != nil {
+			var temp models.Package
+			err := providers.RepoProvider.BaseRepo.Find(ctx, id, &temp)
+			if err != nil {
+				return err
+			}
+			res, err := providers.ResourceProvider.CreateResource("packages.main_image")
+			if err != nil {
+				return err
+			}
+			result, err := providers.ServiceProvider.FileService.UploadFile(ctx, *mainImage, res)
+			if err != nil {
+				return err
+			}
+			old := temp.MainImage
+			if old != nil {
+				go providers.ServiceProvider.FileService.DeleteFile(ctx, *old)
+			}
+			pack.MainImage = &result
+		}
+		return nil
+	}
+	err := baseUpdateFunc(ctx, &policies.ServicePolicy{}, id, &pack, data, before)
 	return id, pack, err
 }
 func (applicationPackageService) Delete(ctx context.Context, id uint) (uint, error) {
-	err := baseDeleteFunc(ctx, policies.ServicePolicy{}, id, &models.Package{})
+	before := func() error {
+		var temp models.Package
+		err := providers.RepoProvider.BaseRepo.Find(ctx, id, &temp)
+		if err != nil {
+			return err
+		}
+		mainImage := temp.MainImage
+		if mainImage != nil {
+			go providers.ServiceProvider.FileService.DeleteFile(ctx, *mainImage)
+		}
+		return nil
+	}
+	err := baseDeleteFunc(ctx, policies.ServicePolicy{}, id, &models.Package{}, before)
 	return id, err
 }
 

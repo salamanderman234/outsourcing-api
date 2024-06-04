@@ -77,6 +77,7 @@ type ServiceUserProfileRegisterForm struct {
 
 // update profile form
 type UserUpdateForm struct {
+	ProfilePic               *string                       `json:"profile_pic"`
 	Password                 *string                       `json:"password" valid:"optional,stringlength(8|32)"`
 	AdminUpdateProfile       *AdminUpdateProfileForm       `json:"admin_profile"`
 	EmployeeUpdateProfile    *EmployeeUpdateProfileForm    `json:"employee_profile"`

@@ -14,4 +14,5 @@ func RegisterAllViews() {
 	providers.ViewProvider.TransactionView = NewTransactionView()
 	providers.ViewProvider.PaymentView = NewPaymentView()
 	providers.ViewProvider.FileView = NewFileView()
+	providers.ViewProvider.UserView = NewUserView()
 }

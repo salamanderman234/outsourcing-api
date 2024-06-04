@@ -50,7 +50,7 @@ func (j jobManager) ExecuteQueue() {
 
 func (j jobManager) fetchJob(n int, jobs chan<- models.Job) {
 	ctx := context.Background()
-	Logger.Info("(Queue) Fetching a new job list...")
+	// Logger.Info("(Queue) Fetching a new job list...")
 	cont := []models.Job{}
 	if providers.RepoProvider.BaseRepo != nil {
 		providers.RepoProvider.BaseRepo.ReadAll(ctx, &cont, types.DBSearchParams{

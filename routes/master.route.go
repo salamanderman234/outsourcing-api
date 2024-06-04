@@ -29,6 +29,11 @@ func (masterRoute) RegisterRoutes(router *echo.Echo) {
 	categoryRoute.GET("/:id/", providers.ViewProvider.MasterCategoryView.Find)
 	categoryRoute.PATCH("/:id/", providers.ViewProvider.MasterCategoryView.Update)
 	categoryRoute.DELETE("/:id/", providers.ViewProvider.MasterCategoryView.Delete)
+	// user
+	userRoute := router.Group("/users")
+	userRoute.GET("/:role/", providers.ViewProvider.UserView.Read)
+	userRoute.GET("/:id/", providers.ViewProvider.UserView.Find)
+	userRoute.PATCH("/:id/", providers.ViewProvider.UserView.Update)
 }
 
 func init() {

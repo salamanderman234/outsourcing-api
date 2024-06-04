@@ -70,6 +70,7 @@ type ServiceUpdateForm struct {
 	AdditionalItems *[]AdditionalItemServiceUpdateForm `json:"additional_items" valid:"optional"`
 	ServiceName     *string                            `json:"service_name" valid:"optional,stringlength(1|255)"`
 	MainImage       *string                            `json:"main_image"`
+	Icon            *string                            `json:"icon"`
 	Description     *string                            `json:"description" valid:"optional,stringlength(1|30000)"`
 	Includes        *string                            `json:"includes" valid:"optional,stringlength(1|30000)"`
 	EmployeePrice   *uint                              `json:"employee_price" valid:"optional,int"`

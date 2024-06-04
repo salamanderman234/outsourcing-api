@@ -8,4 +8,5 @@ import (
 
 type UserRepositoryInterface interface {
 	RegisterUser(ctx context.Context, data models.User) (models.User, error)
+	UpdateUser(ctx context.Context, id uint, data models.User) (models.User, error)
 }

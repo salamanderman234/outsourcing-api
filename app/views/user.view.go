@@ -28,7 +28,7 @@ func (userView) Create(c echo.Context) error {
 	return c.JSON(status, resp)
 }
 func (userView) Read(c echo.Context) error {
-	regencyParam := c.Param("regency_id")
+	regencyParam := c.QueryParam("regency_id")
 	regency, _ := strconv.Atoi(regencyParam)
 	role := enums.UserRolesEnum(c.Param("role"))
 	switch string(role) {

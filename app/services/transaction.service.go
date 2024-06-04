@@ -197,6 +197,7 @@ func (transactionService) UploadMOU(ctx context.Context, id uint, file string) e
 	if err != nil {
 		return err
 	}
+	resource.SetData(&transaction)
 	result, err := providers.ServiceProvider.FileService.UploadFile(ctx, file, resource)
 	if err != nil {
 		return err
