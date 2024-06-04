@@ -64,7 +64,6 @@ func (f fileHelper) CheckMimeCompability(file []byte, resource domains.ResourceI
 	acceptedMimes := fileConfig.AcceptedMimes
 	mime := mimetype.Detect(file)
 
-	fmt.Println(acceptedMimes, mime.String())
 	if !mimetype.EqualsAny(mime.String(), acceptedMimes...) {
 		return "", types.ErrBadRequest
 	}

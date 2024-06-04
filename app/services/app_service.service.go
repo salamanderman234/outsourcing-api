@@ -86,6 +86,32 @@ func (applicationServiceService) Create(ctx context.Context,
 	totalPrice -= (*service.Discount)
 	service.TotalPrice = &totalPrice
 
+	// file
+	mainImage := data.MainImage
+	if mainImage != "" {
+		res, err := providers.ResourceProvider.CreateResource("services.main_image")
+		if err != nil {
+			return service, err
+		}
+		result, err := providers.ServiceProvider.FileService.UploadFile(ctx, mainImage, res)
+		if err != nil {
+			return service, err
+		}
+		service.MainImage = &result
+	}
+	icon := data.Icon
+	if icon != "" {
+		res, err := providers.ResourceProvider.CreateResource("services.icon")
+		if err != nil {
+			return service, err
+		}
+		result, err := providers.ServiceProvider.FileService.UploadFile(ctx, icon, res)
+		if err != nil {
+			return service, err
+		}
+		service.Icon = &result
+	}
+
 	services := []models.Service{
 		service,
 	}
