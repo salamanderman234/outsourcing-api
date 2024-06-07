@@ -14,5 +14,7 @@ type TransactionServiceInterface interface {
 	Read(ctx context.Context, q string, page uint) ([]models.Transaction, *types.Pagination, error)
 	Find(ctx context.Context, id uint) (models.Transaction, error)
 	UploadMOU(ctx context.Context, id uint, file string) error
+	ConfirmTransaction(ctx context.Context, id uint) error
+	AskForMOU(ctx context.Context, id uint) error
 	Delete(ctx context.Context, id uint) (uint, error)
 }

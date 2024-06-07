@@ -36,6 +36,10 @@ func main() {
 		models.TransactionDetailEtc{},
 		// payments
 		models.Payment{},
+		// placement
+		models.Placement{},
+		models.PlacementDetail{},
+		models.PlacementDetailEmployee{},
 	}
 	connection, err := configs.DatabaseConfig.ConnectDatabase()
 	if err != nil {

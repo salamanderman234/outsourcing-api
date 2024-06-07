@@ -193,7 +193,7 @@ func (transactionService) UploadMOU(ctx context.Context, id uint, file string) e
 	if (*transaction.Status) != string(enums.WaitingForMOU) {
 		return types.ErrUnprocessableEntity
 	}
-	resource, err := providers.ResourceProvider.CreateResource("transaction.mou")
+	resource, err := providers.ResourceProvider.CreateResource("transactions.mou")
 	if err != nil {
 		return err
 	}
@@ -211,4 +211,50 @@ func (transactionService) UploadMOU(ctx context.Context, id uint, file string) e
 func (transactionService) Delete(ctx context.Context, id uint) (uint, error) {
 	err := baseDeleteFunc(ctx, policies.TransactionPolicy{}, id, &models.Transaction{})
 	return id, err
+}
+
+func (transactionService) AskForMOU(ctx context.Context, id uint) error {
+	data := struct {
+		Status string `json:"status"`
+	}{Status: string(enums.WaitingForMOU)}
+	var transaction models.Transaction
+	before := func() error {
+		var temp models.Transaction
+		err := providers.RepoProvider.BaseRepo.Find(ctx, id, &temp)
+		if err != nil {
+			return err
+		}
+		status := temp.Status
+		if status != nil {
+			if *status != string(enums.WaitingForConfirmationStatus) {
+				return types.ErrUnprocessableEntity
+			}
+		}
+		return nil
+	}
+	err := baseUpdateFunc(ctx, policies.MasterPolicy{}, id, &transaction, data, before)
+	return err
+}
+
+func (transactionService) ConfirmTransaction(ctx context.Context, id uint) error {
+	data := struct {
+		Status string `json:"status"`
+	}{Status: string(enums.WaitingForInitialPayment)}
+	var transaction models.Transaction
+	before := func() error {
+		var temp models.Transaction
+		err := providers.RepoProvider.BaseRepo.Find(ctx, id, &temp)
+		if err != nil {
+			return err
+		}
+		status := temp.Status
+		if status != nil {
+			if *status != string(enums.WaitingForConfirmationStatus) && *status != string(enums.WaitingForMOUConfirmation) {
+				return types.ErrUnprocessableEntity
+			}
+		}
+		return nil
+	}
+	err := baseUpdateFunc(ctx, policies.MasterPolicy{}, id, &transaction, data, before)
+	return err
 }

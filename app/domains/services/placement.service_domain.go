@@ -13,8 +13,11 @@ type PlacementServiceInterface interface {
 	GetPlacementOrder(ctx context.Context, id uint) (models.Placement, error)
 	Find(ctx context.Context, id uint) (models.Placement, error)
 	Read(ctx context.Context, q string, page uint) ([]models.Placement, *types.Pagination, error)
+	Update(ctx context.Context, id uint, data forms.PlacementUpdateForm) (uint, models.Placement, error)
+	Delete(ctx context.Context, id uint) (uint, error)
+	PlacementDetails(ctx context.Context, id uint) ([]models.PlacementDetail, error)
 	PlaceNewEmployee(ctx context.Context, data forms.PlacementDetailEmployeeCreateForm) (models.PlacementDetailEmployee, error)
+	EmployeePlacementDetail(ctx context.Context, id uint) (models.PlacementDetailEmployee, error)
 	CutoffEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint, data forms.PlacementDetailEmployeeUpdateForm) (uint, error)
 	RemoveEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint) (uint, error)
-	Delete(ctx context.Context, id uint) (uint, error)
 }

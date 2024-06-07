@@ -76,15 +76,15 @@ func (authService) RegisterUser(
 		return models.User{}, "", types.ErrForbiden
 	}
 
-	if role == enums.SuperAdminUserRole && (claims.Role != string(enums.SuperAdminRole)) {
-		return models.User{}, "", types.ErrForbiden
-	} else if role == enums.AdminUserRole && (claims.Role != string(enums.SuperAdminRole)) {
-		return models.User{}, "", types.ErrForbiden
-	} else if (role == enums.EmployeeUserRole || role == enums.SupervisorUserRole) && ((claims.Role != string(enums.SuperAdminRole)) && (claims.Role != string(enums.AdminUserRole))) {
-		return models.User{}, "", types.ErrForbiden
-	} else if role == enums.ApplicationUserRole && (claims.Role != string(enums.SuperAdminRole)) {
-		return models.User{}, "", types.ErrForbiden
-	}
+	// if role == enums.SuperAdminUserRole && (claims.Role != string(enums.SuperAdminRole)) {
+	// 	return models.User{}, "", types.ErrForbiden
+	// } else if role == enums.AdminUserRole && (claims.Role != string(enums.SuperAdminRole)) {
+	// 	return models.User{}, "", types.ErrForbiden
+	// } else if (role == enums.EmployeeUserRole || role == enums.SupervisorUserRole) && ((claims.Role != string(enums.SuperAdminRole)) && (claims.Role != string(enums.AdminUserRole))) {
+	// 	return models.User{}, "", types.ErrForbiden
+	// } else if role == enums.ApplicationUserRole && (claims.Role != string(enums.SuperAdminRole)) {
+	// 	return models.User{}, "", types.ErrForbiden
+	// }
 
 	if err := helpers.Validator.Validate(creds); err != nil {
 		return models.User{}, "", err
@@ -100,6 +100,48 @@ func (authService) RegisterUser(
 	}
 	roleString := string(role)
 	User.Role = &roleString
+	switch roleString {
+	case string(enums.AdminUserRole):
+		if User.AdminProfile == nil {
+			return User, "", types.ErrBadRequest
+		}
+		User.SuperAdminProfile = nil
+		User.EmployeeProfile = nil
+		User.ServiceUserProfile = nil
+		User.SupervisorProfile = nil
+	case string(enums.EmployeeUserRole):
+		if User.EmployeeProfile == nil {
+			return User, "", types.ErrBadRequest
+		}
+		User.AdminProfile = nil
+		User.SuperAdminProfile = nil
+		User.ServiceUserProfile = nil
+		User.SupervisorProfile = nil
+	case string(enums.SupervisorUserRole):
+		if User.SupervisorProfile == nil {
+			return User, "", types.ErrBadRequest
+		}
+		User.AdminProfile = nil
+		User.SuperAdminProfile = nil
+		User.EmployeeProfile = nil
+		User.ServiceUserProfile = nil
+	case string(enums.ServiceUserRole):
+		if User.ServiceUserProfile == nil {
+			return User, "", types.ErrBadRequest
+		}
+		User.AdminProfile = nil
+		User.SuperAdminProfile = nil
+		User.EmployeeProfile = nil
+		User.SupervisorProfile = nil
+	case string(enums.SuperAdminUserRole):
+		if User.SuperAdminProfile == nil {
+			return User, "", types.ErrBadRequest
+		}
+		User.AdminProfile = nil
+		User.EmployeeProfile = nil
+		User.ServiceUserProfile = nil
+		User.SupervisorProfile = nil
+	}
 	data, err := providers.RepoProvider.UserRepo.RegisterUser(ctx, User)
 	if err != nil {
 		return models.User{}, "", err

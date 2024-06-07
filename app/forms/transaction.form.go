@@ -25,7 +25,7 @@ type TransactionCreateForm struct {
 	BillingAddress   string                        `json:"billing_address" valid:"required,stringlength(1|3000)"`
 	PaymentMethod    string                        `json:"payment_method" valid:"required,in(full|dp|3_termin)"`
 	Details          []TransactionDetailCreateForm `json:"details"`
-	MOU              string                        `json:"mou"`
+	// UsingMOU         bool                          `json:"using_mou"`
 }
 
 type TransactionUpdateForm struct {

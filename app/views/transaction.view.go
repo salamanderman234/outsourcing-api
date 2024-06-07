@@ -83,3 +83,31 @@ func (transactionView) UploadMOU(c echo.Context) error {
 	})
 	return c.JSON(status, resp)
 }
+
+func (transactionView) ConfirmTransaction(c echo.Context) error {
+	ctx := c.Request().Context()
+	idParam := c.Param("id")
+	id, _ := strconv.Atoi(idParam)
+
+	err := providers.ServiceProvider.TransactionService.ConfirmTransaction(ctx, uint(id))
+
+	status, resp := helpers.Response.CreateResponse(types.ResponseParams{
+		Action: enums.UpdateAction,
+		Error:  err,
+	})
+	return c.JSON(status, resp)
+}
+
+func (transactionView) AskForMOU(c echo.Context) error {
+	ctx := c.Request().Context()
+	idParam := c.Param("id")
+	id, _ := strconv.Atoi(idParam)
+
+	err := providers.ServiceProvider.TransactionService.AskForMOU(ctx, uint(id))
+
+	status, resp := helpers.Response.CreateResponse(types.ResponseParams{
+		Action: enums.UpdateAction,
+		Error:  err,
+	})
+	return c.JSON(status, resp)
+}

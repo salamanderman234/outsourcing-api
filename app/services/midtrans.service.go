@@ -147,15 +147,23 @@ func (midtransService) AfterPaymentAction(ctx context.Context, form forms.Paymen
 		enums.SettlementMidtransStatus,
 		enums.CaptureMidtranstatus,
 	}, enums.MidtransStatusEnum(status)) {
-		paymentStatus := string(enums.SuccessPayment)
-		transactionStatus := string(enums.Confirmed)
-
-		payment.Status = &paymentStatus
-		payment.Transaction.Status = &transactionStatus
 
 		totalPaid := *payment.Transaction.TotalPaid
 		totalPaid += uint64(*payment.TotalAmount)
 		payment.Transaction.TotalPaid = &totalPaid
+
+		paymentStatus := string(enums.SuccessPayment)
+		transactionStatus := string(enums.WaitingForPlacement)
+		tranStatus := payment.Transaction.Status
+		if tranStatus != nil {
+			if *tranStatus == string(enums.WaitingForFurtherPayments) {
+				transactionStatus = string(enums.Ongoing)
+			}
+		}
+
+		payment.Status = &paymentStatus
+		payment.Transaction.Status = &transactionStatus
+
 		transaction = payment.Transaction
 	} else if enums.MidtransStatusEnum(status) == enums.PendingMidtransStatus {
 		paymentStatus := string(enums.PendingMidtransStatus)

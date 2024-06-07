@@ -15,6 +15,8 @@ func (transactionRoute) RegisterRoutes(router *echo.Echo) {
 	transRoute.PATCH("/:id/", providers.ViewProvider.TransactionView.Update)
 	transRoute.DELETE("/:id/", providers.ViewProvider.TransactionView.Delete)
 	transRoute.POST("/:id/upload-mou/", providers.ViewProvider.TransactionView.UploadMOU)
+	transRoute.PATCH("/:id/confirm/", providers.ViewProvider.TransactionView.ConfirmTransaction)
+	transRoute.PATCH("/:id/ask_mou/", providers.ViewProvider.TransactionView.AskForMOU)
 }
 
 func init() {

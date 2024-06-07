@@ -37,6 +37,7 @@ type viewProvider struct {
 	TransactionView               view_domains.TransactionViewInterface
 	PaymentView                   view_domains.PaymentViewInterface
 	FileView                      view_domains.FileViewInterface
+	PlacementView                 view_domains.PlacementViewInterface
 }
 
 // entity

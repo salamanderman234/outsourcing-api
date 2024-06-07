@@ -61,7 +61,7 @@ type SupervisorProfileRegisterForm struct {
 	Phone          string    `json:"phone" valid:"required,stringlength(12|13)"`
 	NIK            string    `json:"nik,omitempty" valid:"required,stringlength(1|255)"`
 	NPWP           string    `json:"npwp,omitempty" valid:"required,stringlength(1|255)"`
-	Gender         string    `json:"gender,omitempty" valid:"required,in(l,p)"`
+	Gender         string    `json:"gender,omitempty" valid:"required,in(l|p)"`
 	MarriageStatus bool      `json:"marriage_status,omitempty"`
 }
 type ServiceUserProfileRegisterForm struct {
@@ -72,7 +72,7 @@ type ServiceUserProfileRegisterForm struct {
 	BirthDate   time.Time `json:"birth_date" valid:"required"`
 	Phone       string    `json:"phone" valid:"required,stringlength(12|13)"`
 	NIK         string    `json:"nik,omitempty" valid:"required,stringlength(1|255)"`
-	Gender      string    `json:"gender,omitempty" valid:"required,in(l,p)"`
+	Gender      string    `json:"gender,omitempty" valid:"required,in(l|p)"`
 }
 
 // update profile form
@@ -104,7 +104,7 @@ type EmployeeUpdateProfileForm struct {
 	Phone          *string    `json:"phone" valid:"optional,stringlength(12|13)"`
 	NIK            *string    `json:"nik,omitempty" valid:"optional"`
 	NPWP           *string    `json:"npwp,omitempty" valid:"optional"`
-	Gender         *string    `json:"gender,omitempty" valid:"optional,in(l,p)"`
+	Gender         *string    `json:"gender,omitempty" valid:"optional,in(l|p)"`
 	MarriageStatus *bool      `json:"marriage_status,omitempty"`
 	LastEducation  *string    `json:"last_education,omitempty" valid:"optional,in(sd,smp,sma,s1)"`
 }
@@ -117,7 +117,7 @@ type SupervisorUpdateProfileForm struct {
 	Phone          *string    `json:"phone" valid:"optional,stringlength(12|13)"`
 	NIK            *string    `json:"nik,omitempty" valid:"optional"`
 	NPWP           *string    `json:"npwp,omitempty" valid:"optional"`
-	Gender         *string    `json:"gender,omitempty" valid:"optional,in(l,p)"`
+	Gender         *string    `json:"gender,omitempty" valid:"optional,in(l|p)"`
 	MarriageStatus *bool      `json:"marriage_status,omitempty"`
 }
 type ServiceUserUpdateProfileForm struct {
@@ -128,5 +128,5 @@ type ServiceUserUpdateProfileForm struct {
 	BirthDate   *time.Time `json:"birth_date" valid:"optional"`
 	Phone       *string    `json:"phone" valid:"optional,stringlength(12|13)"`
 	NIK         *string    `json:"nik,omitempty" valid:"optional"`
-	Gender      *string    `json:"gender,omitempty" valid:"optional,in(l,p)"`
+	Gender      *string    `json:"gender,omitempty" valid:"optional,in(l|p)"`
 }
