@@ -6,6 +6,7 @@ import (
 	"github.com/salamanderman234/outsourcing-api/app/domains"
 	"github.com/salamanderman234/outsourcing-api/app/helpers"
 	"github.com/salamanderman234/outsourcing-api/app/providers"
+	"github.com/salamanderman234/outsourcing-api/app/types"
 )
 
 type sendMailJob struct {
@@ -15,7 +16,7 @@ type sendMailJob struct {
 }
 
 func NewSendMailJob(mail domains.MailInterface, to []string) domains.JobInterface {
-	mailName := reflect.TypeOf(mail).Name()
+	mailName := reflect.TypeOf(mail).String()
 	data := mail.GetData()
 
 	return &sendMailJob{
@@ -27,6 +28,9 @@ func NewSendMailJob(mail domains.MailInterface, to []string) domains.JobInterfac
 
 func (s sendMailJob) Handle(err chan<- error) {
 	mail := providers.MailProvider.NewMailInstance(s.MailName, s.Data)
+	if mail == nil {
+		err <- types.ErrInternalServer
+	}
 	tmpl, errs := mail.GetTemplate()
 	if errs != nil {
 		err <- errs

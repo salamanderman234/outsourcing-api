@@ -1,16 +1,6 @@
 package models
 
-type Feedback struct {
-	Model
-	ServiceUserID *uint        `json:"service_user_id"`
-	ServiceUser   *ServiceUser `json:"service_user,omitempty"`
-	TransactionID *uint        `json:"transaction_id"`
-	Transaction   *Transaction `json:"transaction,omitempty"`
-	Review        *float64     `json:"review"`
-	Comment       *string      `json:"comment"`
-}
-
-type EmployeePerformance struct {
+type Complaint struct {
 	Model
 	ServiceUserID             *uint                    `json:"service_user_id"`
 	ServiceUser               *ServiceUser             `json:"service_user,omitempty"`
@@ -18,4 +8,15 @@ type EmployeePerformance struct {
 	PlacementDetailEmployee   *PlacementDetailEmployee `json:"placement_employee,omitempty"`
 	EmployeeID                *uint                    `json:"employee_id"`
 	Employee                  *Employee                `json:"employee,omitempty"`
+	Comment                   *string                  `json:"comment"`
+	Replies                   []ComplaintReply         `json:"replies"`
+}
+
+type ComplaintReply struct {
+	Model
+	SupervisorID *uint       `json:"supervisor_id"`
+	Supervisor   *Supervisor `json:"supervisor,omitempty"`
+	ComplaintID  *uint       `json:"complaint_id"`
+	Complaint    *Complaint  `json:"complaint,omitempty"`
+	Reply        *string     `json:"reply"`
 }

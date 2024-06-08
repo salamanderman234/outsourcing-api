@@ -17,7 +17,6 @@ func (mailerHelper) SendEmail(to []string, subject string, msg string) error {
 	dialer := providers.MailProvider.Dialer
 	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	mail := gomail.NewMessage()
-	fmt.Println(to)
 	mail.SetHeader("From", "outsourcingapp@gmail.com")
 	mail.SetHeader("To", to...)
 	mail.SetHeader("Subject", subject)

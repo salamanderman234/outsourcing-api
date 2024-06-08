@@ -341,7 +341,12 @@ func (placementService) Update(ctx context.Context, id uint, data forms.Placemen
 
 func (placementService) EmployeePlacementDetail(ctx context.Context, id uint) (models.PlacementDetailEmployee, error) {
 	var placementEmployee models.PlacementDetailEmployee
-	err := baseFindFunc(ctx, policies.PlacementPolicy{}, id, &placementEmployee)
+	err := baseFindFunc(ctx, policies.PlacementPolicy{}, id, &placementEmployee,
+		"Employee",
+		"PlacementDetail",
+		"Complaints",
+		"Complaints.Replies",
+	)
 	return placementEmployee, err
 }
 

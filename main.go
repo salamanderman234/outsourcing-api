@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/salamanderman234/outsourcing-api/app/helpers"
+	"github.com/salamanderman234/outsourcing-api/app/jobs"
 	custom_middlewares "github.com/salamanderman234/outsourcing-api/app/middlewares"
 	"github.com/salamanderman234/outsourcing-api/app/providers"
 	"github.com/salamanderman234/outsourcing-api/app/repositories"
@@ -41,10 +42,10 @@ func main() {
 	}))
 	// server.Use(middleware.Logger())
 	server.Use(custom_middlewares.RetrieveUserSession)
-	// server.Use(middleware.BodyLimit(configs.RouterConfig.MaxBodyLength))
+	server.Use(middleware.BodyLimit(configs.RouterConfig.MaxBodyLength))
 	// server.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
 	// 	Skipper:      middleware.DefaultSkipper,
-	// 	ErrorMessage: custom_errors.ErrTimeOut.Msg,
+	// 	ErrorMessage: types.ErrTimeOut.Msg,
 	// 	Timeout:      time.Duration(configs.RouterConfig.MaxTimeOut) * time.Second,
 	// }))
 
@@ -65,9 +66,7 @@ func main() {
 	routes.RegisterAllRoutes(server)
 
 	// scheduler
-	helpers.Cron.SetupCron()
-	helpers.Cron.AddDurationJob(300, helpers.JobManager.ExecuteQueue)
-	helpers.Cron.StartCron()
+	jobs.RunCron()
 
 	// start
 	helpers.Logger.Info("(Server) Starting the server...")

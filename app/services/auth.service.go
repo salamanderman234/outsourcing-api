@@ -168,18 +168,18 @@ func (authService) ForgotPassword(ctx context.Context, creds forms.ChangePasswor
 		return err
 	}
 	to := []string{creds.Email}
-	token, err := helpers.JWT.CreateToken(models.User{
-		Model: models.Model{
-			ID: 0,
-		},
-		Email: &creds.Email,
-	}, enums.ResetPasswordTokenType)
+	var user models.User
+	providers.RepoProvider.BaseRepo.FindWhere(ctx, map[string]any{
+		"email": creds.Email,
+	}, &user)
+	id := user.ID
+	token, err := helpers.JWT.CreateToken(user, enums.ResetPasswordTokenType, 12)
 	if err != nil {
 		return err
 	}
 	mail := mails.NewResetPasswordMail(map[string]any{
-		"email": creds.Email,
-		"token": token,
+		"user_id": id,
+		"token":   token,
 	})
 	job := jobs.NewSendMailJob(mail, to)
 	helpers.JobManager.DispatchNow(job)
@@ -193,21 +193,23 @@ func (authService) ResetPassword(ctx context.Context, creds forms.ResetPasswordF
 	if err != nil {
 		return err
 	}
+	// error contol
 	if claims.Subject != string(enums.ResetPasswordTokenType) {
 		return types.ErrForbiden
 	}
-	if claims.Email != creds.Email {
+	usrIDStr := strconv.Itoa(int(creds.UserID))
+	if claims.ID != usrIDStr {
 		return types.ErrForbiden
 	}
 	id, _ := strconv.Atoi(claims.ID)
 	byteHashedNewPassword, _ := bcrypt.GenerateFromPassword([]byte(creds.NewPassword), 1)
 	hashedNewPassword := string(byteHashedNewPassword)
-	providers.RepoProvider.BaseRepo.Update(
+	err = providers.RepoProvider.BaseRepo.Update(
 		ctx,
 		[]uint{uint(id)},
 		&models.User{Password: &hashedNewPassword},
 	)
-	return nil
+	return err
 }
 func (authService) VerifyEmail(ctx context.Context, creds forms.VerifyUserForm) error {
 	if err := helpers.Validator.Validate(creds); err != nil {

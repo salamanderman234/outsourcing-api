@@ -14,7 +14,7 @@ type TransactionDetailCreateForm struct {
 }
 
 type TransactionCreateForm struct {
-	ServiceUserID    uint                          `json:"service_user_id" valid:"required,int"`
+	// ServiceUserID    uint                          `json:"service_user_id" valid:"required,int"`
 	PackageID        uint                          `json:"package_id" valid:"optional,int"`
 	ContractDuration uint                          `json:"contract_duration" valid:"required,int"`
 	StartDate        time.Time                     `json:"start_date" valid:"required"`

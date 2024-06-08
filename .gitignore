@@ -11,6 +11,7 @@
 fly.toml
 .dockerignore
 storage/*
+!storage/mails
 
 # Test binary, built with `go test -c`
 *.test

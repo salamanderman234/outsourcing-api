@@ -1,6 +1,8 @@
 package views
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	view_domains "github.com/salamanderman234/outsourcing-api/app/domains/views"
 	"github.com/salamanderman234/outsourcing-api/app/forms"
@@ -35,6 +37,14 @@ func (authView) Login(c echo.Context) error {
 		},
 		Error: err,
 	})
+	if err == nil {
+		cookie := new(http.Cookie)
+		cookie.Name = configs.VarConfig.AuthCookieName
+		cookie.Value = token
+		cookie.HttpOnly = true
+		cookie.Path = "/"
+		c.SetCookie(cookie)
+	}
 	return c.JSON(status, resp)
 }
 func (authView) Register(c echo.Context) error {
@@ -76,6 +86,14 @@ func (authView) Register(c echo.Context) error {
 		},
 		Error: err,
 	})
+	if err == nil {
+		cookie := new(http.Cookie)
+		cookie.Name = configs.VarConfig.AuthCookieName
+		cookie.Value = token
+		cookie.HttpOnly = true
+		cookie.Path = "/"
+		c.SetCookie(cookie)
+	}
 	return c.JSON(status, resp)
 }
 func (authView) ChangePassword(c echo.Context) error {

@@ -8,12 +8,12 @@ type LoginForm struct {
 }
 
 type ChangePasswordForm struct {
-	Email string `json:"email"`
+	Email string `json:"email" valid:"required"`
 }
 type ResetPasswordForm struct {
-	Email       string `json:"email" valid:"required"`
-	NewPassword string `json:"new_password" valid:"required,stringlength(8|32)"`
-	ResetToken  string `json:"reset_token" valid:"required"`
+	UserID      uint   `json:"user_id" form:"user_id"  valid:"required"`
+	NewPassword string `json:"new_password" form:"new_password" valid:"required,stringlength(8|32)"`
+	ResetToken  string `json:"reset_token" form:"reset_token" valid:"required"`
 }
 type VerifyUserForm struct {
 	UserID uint `json:"user_id" form:"user_id" valid:"required"`

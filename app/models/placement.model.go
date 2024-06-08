@@ -49,4 +49,5 @@ type PlacementDetailEmployee struct {
 	ExpectedSalary      *uint            `json:"expected_salary,omitempty"`
 	ExpectedSalaryTotal *uint            `json:"expected_salary_total,omitempty"`
 	ActualSalary        *uint            `json:"actual_salary,omitempty"`
+	Complaints          []Complaint      `json:"complaints"`
 }

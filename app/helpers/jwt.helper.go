@@ -12,12 +12,18 @@ import (
 )
 
 type jwtHelper struct {
-	secret     string
-	exp        int
-	signMethod jwt.SigningMethod
 }
 
-func (j jwtHelper) CreateToken(user models.User, subject enums.TokenType) (string, error) {
+func (j jwtHelper) CreateToken(user models.User, subject enums.TokenType, exp ...int) (string, error) {
+	email := ""
+	role := ""
+
+	if user.Email != nil {
+		email = *user.Email
+	}
+	if user.Role != nil {
+		role = *user.Role
+	}
 	idStr := strconv.Itoa(int(user.ID))
 	claims := types.JWTCLaims{
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -25,28 +31,32 @@ func (j jwtHelper) CreateToken(user models.User, subject enums.TokenType) (strin
 			Issuer:  configs.AppConfig.Name,
 			Subject: string(subject),
 		},
-		Email: *user.Email,
-		Role:  *user.Role,
+		Email: email,
+		Role:  role,
 	}
-	if j.exp > 1 {
-		exp := jwt.NewNumericDate(time.Now().Add(time.Duration(j.exp) * time.Hour))
+	dur := configs.JWTConfig.GetDefaultEXP()
+	if len(exp) == 1 {
+		dur = exp[0]
+	}
+	if dur > 1 {
+		exp := jwt.NewNumericDate(time.Now().Add(time.Duration(dur) * time.Hour))
 		claims.RegisteredClaims.ExpiresAt = exp
 	}
 	token := jwt.NewWithClaims(
 		configs.JWTConfig.SigningMethod,
 		claims,
 	)
-	return token.SignedString([]byte(j.secret))
+	return token.SignedString([]byte(configs.JWTConfig.GetSecret()))
 }
 
 func (j jwtHelper) VerifyToken(token string) (types.JWTCLaims, error) {
+	configs.JWTConfig.GetSigningMethod()
 	tkn, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
-		if method, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, jwt.ErrTokenSignatureInvalid
-		} else if method != j.signMethod {
+		method := t.Method
+		if method != configs.JWTConfig.GetSigningMethod() {
 			return nil, jwt.ErrTokenSignatureInvalid
 		}
-		return []byte(j.secret), nil
+		return []byte(configs.JWTConfig.GetSecret()), nil
 	})
 	if err != nil {
 		return types.JWTCLaims{}, err
@@ -54,12 +64,13 @@ func (j jwtHelper) VerifyToken(token string) (types.JWTCLaims, error) {
 	if !tkn.Valid {
 		return types.JWTCLaims{}, jwt.ErrTokenInvalidClaims
 	}
-	claims, _ := tkn.Claims.(types.JWTCLaims)
-	return claims, nil
+	var result types.JWTCLaims
+	claims, _ := tkn.Claims.(jwt.MapClaims)
+	err = Translator.TranslateStruct(claims, &result)
+	if err != nil {
+		return result, err
+	}
+	return result, nil
 }
 
-var JWT = jwtHelper{
-	secret:     configs.JWTConfig.Secret,
-	exp:        configs.JWTConfig.Exp,
-	signMethod: configs.JWTConfig.SigningMethod,
-}
+var JWT = jwtHelper{}

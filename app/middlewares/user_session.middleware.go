@@ -14,6 +14,7 @@ import (
 func RetrieveUserSession(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		cookie, err := c.Cookie(configs.VarConfig.AuthCookieName)
+		fmt.Println(cookie, configs.VarConfig.AuthCookieName)
 		if err != nil {
 			return next(c)
 		}

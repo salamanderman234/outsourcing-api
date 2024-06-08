@@ -40,6 +40,10 @@ func main() {
 		models.Placement{},
 		models.PlacementDetail{},
 		models.PlacementDetailEmployee{},
+		// feedback
+		models.Feedback{},
+		models.Complaint{},
+		models.ComplaintReply{},
 	}
 	connection, err := configs.DatabaseConfig.ConnectDatabase()
 	if err != nil {

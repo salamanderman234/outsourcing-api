@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	service_domains "github.com/salamanderman234/outsourcing-api/app/domains/services"
@@ -32,6 +33,16 @@ func (transactionService) Create(ctx context.Context, data forms.TransactionCrea
 		etcPrice := uint64(0)
 		employeePrice := uint64(0)
 		servicePrice := uint64(0)
+
+		claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
+		var user models.User
+		userID, _ := strconv.Atoi(claims.ID)
+		err := providers.RepoProvider.BaseRepo.Find(ctx, uint(userID), &user, "ServiceUserProfile")
+		if err != nil || user.ServiceUserProfile == nil {
+			return types.ErrForbiden
+		}
+
+		transaction.ServiceUserID = &user.ServiceUserProfile.ID
 
 		if transaction.PackageID != nil {
 			if *transaction.PackageID != 0 {

@@ -16,4 +16,6 @@ func RegisterAllServices() {
 	providers.ServiceProvider.MidtransService = NewMidtransService()
 	providers.ServiceProvider.PlacementService = NewPlacementService()
 	providers.ServiceProvider.UserService = NewUserService()
+	providers.ServiceProvider.FeedbackService = NewFeedbackService()
+	providers.ServiceProvider.ComplaintService = NewComplaintService()
 }

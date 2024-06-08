@@ -24,6 +24,8 @@ type serviceProvider struct {
 	MidtransService          service_domains.MidtransServiceInterface
 	PlacementService         service_domains.PlacementServiceInterface
 	FeedbackService          service_domains.FeedbackServiceInterface
+	ComplaintService         service_domains.ComplaintServiceInterface
+	PerformanceService       service_domains.PerformanceServiceInterface
 }
 
 type viewProvider struct {
@@ -38,6 +40,9 @@ type viewProvider struct {
 	PaymentView                   view_domains.PaymentViewInterface
 	FileView                      view_domains.FileViewInterface
 	PlacementView                 view_domains.PlacementViewInterface
+	FeedbackView                  view_domains.FeedbackViewInterface
+	ComplaintView                 view_domains.ComplaintViewInterface
+	PerformanceView               view_domains.EmployeePerformanceInterface
 }
 
 // entity

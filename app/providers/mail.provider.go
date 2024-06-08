@@ -25,7 +25,7 @@ func (m *mailProvider) SetMailClient() {
 }
 
 func (m *mailProvider) RegisterMail(fun createMailInstanceFunc) {
-	mailName := reflect.TypeOf(fun(map[string]any{})).Name()
+	mailName := reflect.TypeOf(fun(map[string]any{})).String()
 	m.list[mailName] = fun
 }
 
