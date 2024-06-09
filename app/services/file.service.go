@@ -7,7 +7,6 @@ import (
 	"github.com/salamanderman234/outsourcing-api/app/domains"
 	service_domains "github.com/salamanderman234/outsourcing-api/app/domains/services"
 	"github.com/salamanderman234/outsourcing-api/app/helpers"
-	"github.com/salamanderman234/outsourcing-api/app/policies"
 	"github.com/salamanderman234/outsourcing-api/app/providers"
 	"github.com/salamanderman234/outsourcing-api/app/types"
 	"github.com/salamanderman234/outsourcing-api/configs"
@@ -24,10 +23,7 @@ func (fileService) UploadFile(
 	file string,
 	resource domains.ResourceInterface,
 ) (string, error) {
-	pol, ok := resource.GetPolicy().(policies.Policy)
-	if !ok {
-		return "", types.ErrForbiden
-	}
+	pol := resource.GetPolicy()
 	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
 	if !pol.UploadFile(resource.GetData(), claims) {
 		helpers.Logger.Warning(
@@ -49,12 +45,9 @@ func (fileService) GetFile(
 	if err != nil {
 		return nil, "", err
 	}
-	pol, ok := resource.GetPolicy().(policies.Policy)
-	if !ok {
-		return nil, "", types.ErrForbiden
-	}
+	pol := resource.GetPolicy()
 	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
-	if !pol.UploadFile(resource.GetData(), claims) {
+	if !pol.ViewFile(resource.GetData(), claims) {
 		helpers.Logger.Warning(
 			fmt.Sprintf("(Forbidden) User: %s", claims.Email),
 		)
@@ -62,7 +55,9 @@ func (fileService) GetFile(
 	}
 	path := resource.GetFieldValue()
 	if path == "" {
-		return nil, "", types.ErrRecordNotFound
+		return nil, "", types.ErrRecordNotFound.SetCustomMsg(
+			"file not found",
+		)
 	}
 	return helpers.File.GetFile(path)
 }

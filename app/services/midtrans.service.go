@@ -42,7 +42,7 @@ func (midtransService) CreatePaymentFromTransaction(ctx context.Context, orderID
 		return "", "", err
 	}
 	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
-	polResult := policies.PaymentPolicy{}.Update(&order, claims)
+	polResult := policies.TransactionPolicy{}.Update(&order, claims)
 	if !polResult {
 		helpers.Logger.Warning(
 			fmt.Sprintf("(Forbidden) User: %s", claims.Email),
@@ -53,7 +53,9 @@ func (midtransService) CreatePaymentFromTransaction(ctx context.Context, orderID
 	if !slices.Contains([]string{
 		string(enums.WaitingForInitialPayment), string(enums.WaitingForFurtherPayments),
 	}, status) {
-		return "", "", types.ErrForbiden
+		return "", "", types.ErrUnprocessableEntity.SetCustomMsg(
+			"the transaction does not meet the criteria for using this service",
+		)
 	}
 	items := order.Details
 	if order.TotalPrice == nil {

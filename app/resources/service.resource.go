@@ -35,7 +35,7 @@ func NewServiceMainImageResource() domains.ResourceInterface {
 			model:      &models.Service{},
 			fileConfig: configs.ResourceConfig.GetFileConfig(types.ImageConfig),
 			field:      "MainImage",
-			policy:     &policies.ServicePolicy{},
+			policy:     &policies.PackagePolicy{},
 		},
 	}
 }

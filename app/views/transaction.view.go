@@ -111,3 +111,12 @@ func (transactionView) AskForMOU(c echo.Context) error {
 	})
 	return c.JSON(status, resp)
 }
+
+func (transactionView) SetStatus(c echo.Context) error {
+	var form forms.TransactionStatusUpdateForm
+	callback := func(ctx context.Context, id uint) (uint, any, error) {
+		err := providers.ServiceProvider.TransactionService.SetStatus(ctx, id, form)
+		return 0, form, err
+	}
+	return baseUpdateFunc(c, &form, callback)
+}

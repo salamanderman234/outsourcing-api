@@ -51,10 +51,6 @@ func (authService) Login(ctx context.Context, creds forms.LoginForm) (models.Use
 	if err != nil {
 		return models.User{}, "", err
 	}
-	// check verification status
-	if user.VerifiedAt == nil {
-		return models.User{}, "", types.ErrNotVerifiedUser
-	}
 	// create auth token
 	tkn, err := helpers.JWT.CreateToken(user, enums.AuthenticationTokenType)
 	if err != nil {
@@ -76,15 +72,15 @@ func (authService) RegisterUser(
 		return models.User{}, "", types.ErrForbiden
 	}
 
-	// if role == enums.SuperAdminUserRole && (claims.Role != string(enums.SuperAdminRole)) {
-	// 	return models.User{}, "", types.ErrForbiden
-	// } else if role == enums.AdminUserRole && (claims.Role != string(enums.SuperAdminRole)) {
-	// 	return models.User{}, "", types.ErrForbiden
-	// } else if (role == enums.EmployeeUserRole || role == enums.SupervisorUserRole) && ((claims.Role != string(enums.SuperAdminRole)) && (claims.Role != string(enums.AdminUserRole))) {
-	// 	return models.User{}, "", types.ErrForbiden
-	// } else if role == enums.ApplicationUserRole && (claims.Role != string(enums.SuperAdminRole)) {
-	// 	return models.User{}, "", types.ErrForbiden
-	// }
+	if role == enums.SuperAdminUserRole && (claims.Role != string(enums.SuperAdminRole)) {
+		return models.User{}, "", types.ErrForbiden
+	} else if role == enums.AdminUserRole && (claims.Role != string(enums.SuperAdminRole)) {
+		return models.User{}, "", types.ErrForbiden
+	} else if (role == enums.EmployeeUserRole || role == enums.SupervisorUserRole) && ((claims.Role != string(enums.SuperAdminRole)) && (claims.Role != string(enums.AdminUserRole))) {
+		return models.User{}, "", types.ErrForbiden
+	} else if role == enums.ApplicationUserRole && (claims.Role != string(enums.SuperAdminRole)) {
+		return models.User{}, "", types.ErrForbiden
+	}
 
 	if err := helpers.Validator.Validate(creds); err != nil {
 		return models.User{}, "", err
@@ -111,7 +107,9 @@ func (authService) RegisterUser(
 		User.SupervisorProfile = nil
 	case string(enums.EmployeeUserRole):
 		if User.EmployeeProfile == nil {
-			return User, "", types.ErrBadRequest
+			return User, "", types.ErrBadRequest.SetCustomMsg(
+				"missing employee_profile field",
+			)
 		}
 		User.AdminProfile = nil
 		User.SuperAdminProfile = nil
@@ -119,7 +117,9 @@ func (authService) RegisterUser(
 		User.SupervisorProfile = nil
 	case string(enums.SupervisorUserRole):
 		if User.SupervisorProfile == nil {
-			return User, "", types.ErrBadRequest
+			return User, "", types.ErrBadRequest.SetCustomMsg(
+				"missing supervisor_profile field",
+			)
 		}
 		User.AdminProfile = nil
 		User.SuperAdminProfile = nil
@@ -127,7 +127,9 @@ func (authService) RegisterUser(
 		User.ServiceUserProfile = nil
 	case string(enums.ServiceUserRole):
 		if User.ServiceUserProfile == nil {
-			return User, "", types.ErrBadRequest
+			return User, "", types.ErrBadRequest.SetCustomMsg(
+				"missing service_user_profile field",
+			)
 		}
 		User.AdminProfile = nil
 		User.SuperAdminProfile = nil
@@ -135,7 +137,9 @@ func (authService) RegisterUser(
 		User.SupervisorProfile = nil
 	case string(enums.SuperAdminUserRole):
 		if User.SuperAdminProfile == nil {
-			return User, "", types.ErrBadRequest
+			return User, "", types.ErrBadRequest.SetCustomMsg(
+				"missing super_admin_profile field",
+			)
 		}
 		User.AdminProfile = nil
 		User.EmployeeProfile = nil
@@ -169,9 +173,17 @@ func (authService) ForgotPassword(ctx context.Context, creds forms.ChangePasswor
 	}
 	to := []string{creds.Email}
 	var user models.User
-	providers.RepoProvider.BaseRepo.FindWhere(ctx, map[string]any{
-		"email": creds.Email,
-	}, &user)
+	providers.RepoProvider.BaseRepo.FindWhere(
+		ctx,
+		map[string]any{
+			"email": creds.Email,
+		},
+		&user,
+		"AdminProfile",
+		"SupervisorProfile",
+		"EmployeeProfile",
+		"ServiceUserProfile",
+	)
 	id := user.ID
 	token, err := helpers.JWT.CreateToken(user, enums.ResetPasswordTokenType, 12)
 	if err != nil {
@@ -193,13 +205,16 @@ func (authService) ResetPassword(ctx context.Context, creds forms.ResetPasswordF
 	if err != nil {
 		return err
 	}
-	// error contol
 	if claims.Subject != string(enums.ResetPasswordTokenType) {
-		return types.ErrForbiden
+		return types.ErrForbiden.SetCustomMsg(
+			"invalid reset token",
+		)
 	}
 	usrIDStr := strconv.Itoa(int(creds.UserID))
 	if claims.ID != usrIDStr {
-		return types.ErrForbiden
+		return types.ErrForbiden.SetCustomMsg(
+			"invalid reset token",
+		)
 	}
 	id, _ := strconv.Atoi(claims.ID)
 	byteHashedNewPassword, _ := bcrypt.GenerateFromPassword([]byte(creds.NewPassword), 1)

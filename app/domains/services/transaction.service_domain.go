@@ -16,5 +16,6 @@ type TransactionServiceInterface interface {
 	UploadMOU(ctx context.Context, id uint, file string) error
 	ConfirmTransaction(ctx context.Context, id uint) error
 	AskForMOU(ctx context.Context, id uint) error
+	SetStatus(ctx context.Context, id uint, data forms.TransactionStatusUpdateForm) error
 	Delete(ctx context.Context, id uint) (uint, error)
 }

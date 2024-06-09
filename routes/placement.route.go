@@ -2,13 +2,14 @@ package routes
 
 import (
 	"github.com/labstack/echo/v4"
+	custom_middlewares "github.com/salamanderman234/outsourcing-api/app/middlewares"
 	"github.com/salamanderman234/outsourcing-api/app/providers"
 )
 
 type placementRoute struct{}
 
 func (placementRoute) RegisterRoutes(router *echo.Echo) {
-	placementR := router.Group("/placements")
+	placementR := router.Group("/placements", custom_middlewares.MustVerifyUser)
 	placementR.POST("/", providers.ViewProvider.PlacementView.Create)
 	router.GET("/transactions/:id/placement/", providers.ViewProvider.PlacementView.GetPlacementOrder)
 	placementR.GET("/:id/", providers.ViewProvider.PlacementView.Find)

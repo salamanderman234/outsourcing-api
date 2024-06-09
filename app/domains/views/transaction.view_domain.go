@@ -7,4 +7,5 @@ type TransactionViewInterface interface {
 	UploadMOU(c echo.Context) error
 	ConfirmTransaction(c echo.Context) error
 	AskForMOU(c echo.Context) error
+	SetStatus(c echo.Context) error
 }

@@ -24,6 +24,9 @@ func (r responseHelper) CreateResponse(con types.ResponseParams) (int, types.Res
 
 		err := Translator.TranslateError(con.Error)
 		generalMsg, msg, details := r.ExtractError(err)
+		if err.CustomMsg != nil {
+			msg = *err.CustomMsg
+		}
 
 		newResponse.Msg = generalMsg
 		newResponse.Detail = msg

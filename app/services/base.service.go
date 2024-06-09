@@ -6,7 +6,6 @@ import (
 
 	"github.com/salamanderman234/outsourcing-api/app/domains"
 	"github.com/salamanderman234/outsourcing-api/app/helpers"
-	"github.com/salamanderman234/outsourcing-api/app/policies"
 	"github.com/salamanderman234/outsourcing-api/app/providers"
 	"github.com/salamanderman234/outsourcing-api/app/types"
 	"github.com/salamanderman234/outsourcing-api/configs"
@@ -16,7 +15,7 @@ type beforeFunc func() error
 
 func baseCreateFunc(
 	ctx context.Context,
-	policy policies.Policy,
+	policy domains.Policy,
 	data domains.ModelInterface,
 	form any,
 	beforeCreate ...beforeFunc,
@@ -51,7 +50,7 @@ func baseCreateFunc(
 
 func baseFindFunc(
 	ctx context.Context,
-	policy policies.Policy,
+	policy domains.Policy,
 	id uint,
 	result domains.ModelInterface,
 	preloads ...string,
@@ -72,7 +71,7 @@ func baseFindFunc(
 
 func baseReadFunc(
 	ctx context.Context,
-	policy policies.Policy,
+	policy domains.Policy,
 	params types.DBSearchParams,
 	results any,
 ) (*types.Pagination, error) {
@@ -97,7 +96,7 @@ func baseReadFunc(
 
 func baseDeleteFunc(
 	ctx context.Context,
-	policy policies.Policy,
+	policy domains.Policy,
 	id uint,
 	model domains.ModelInterface,
 	beforeDelete ...beforeFunc,
@@ -128,7 +127,7 @@ func baseDeleteFunc(
 
 func baseUpdateFunc(
 	ctx context.Context,
-	policy policies.Policy,
+	policy domains.Policy,
 	id uint,
 	data domains.ModelInterface,
 	form any,

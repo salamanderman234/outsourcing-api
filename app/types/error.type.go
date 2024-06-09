@@ -22,10 +22,17 @@ type GeneralError struct {
 	GeneralMessage   string
 	ValidationErrors []FieldError
 	DatabaseError    error
+	CustomMsg        *string
 }
 
 func (a GeneralError) Error() string {
 	return a.Msg
+}
+
+func (a GeneralError) SetCustomMsg(msg string) error {
+	duplicate := a
+	duplicate.CustomMsg = &msg
+	return duplicate
 }
 
 var (

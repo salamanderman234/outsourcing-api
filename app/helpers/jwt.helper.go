@@ -17,12 +17,30 @@ type jwtHelper struct {
 func (j jwtHelper) CreateToken(user models.User, subject enums.TokenType, exp ...int) (string, error) {
 	email := ""
 	role := ""
+	v := ""
 
 	if user.Email != nil {
 		email = *user.Email
 	}
 	if user.Role != nil {
 		role = *user.Role
+	}
+	if user.VerifiedAt != nil {
+		v = user.VerifiedAt.String()
+	}
+
+	idRole := uint(0)
+
+	if role == string(enums.SuperAdminUserRole) && user.SuperAdminProfile != nil {
+		idRole = user.SuperAdminProfile.ID
+	} else if role == string(enums.AdminUserRole) && user.AdminProfile != nil {
+		idRole = user.AdminProfile.ID
+	} else if role == string(enums.ServiceUserRole) && user.ServiceUserProfile != nil {
+		idRole = user.ServiceUserProfile.ID
+	} else if role == string(enums.EmployeeUserRole) && user.EmployeeProfile != nil {
+		idRole = user.EmployeeProfile.ID
+	} else if role == string(enums.SupervisorUserRole) && user.SupervisorProfile != nil {
+		idRole = user.SuperAdminProfile.ID
 	}
 	idStr := strconv.Itoa(int(user.ID))
 	claims := types.JWTCLaims{
@@ -31,8 +49,10 @@ func (j jwtHelper) CreateToken(user models.User, subject enums.TokenType, exp ..
 			Issuer:  configs.AppConfig.Name,
 			Subject: string(subject),
 		},
-		Email: email,
-		Role:  role,
+		Email:     email,
+		Role:      role,
+		ProfileID: idRole,
+		V:         v,
 	}
 	dur := configs.JWTConfig.GetDefaultEXP()
 	if len(exp) == 1 {

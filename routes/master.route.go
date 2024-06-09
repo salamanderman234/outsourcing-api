@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/labstack/echo/v4"
+	custom_middlewares "github.com/salamanderman234/outsourcing-api/app/middlewares"
 	"github.com/salamanderman234/outsourcing-api/app/providers"
 )
 
@@ -33,7 +34,7 @@ func (masterRoute) RegisterRoutes(router *echo.Echo) {
 	userRoute := router.Group("/users")
 	userRoute.GET("/:role/", providers.ViewProvider.UserView.Read)
 	userRoute.GET("/:id/", providers.ViewProvider.UserView.Find)
-	userRoute.PATCH("/:id/", providers.ViewProvider.UserView.Update)
+	userRoute.PATCH("/:id/", providers.ViewProvider.UserView.Update, custom_middlewares.MustVerifyUser)
 }
 
 func init() {

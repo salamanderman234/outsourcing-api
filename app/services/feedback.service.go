@@ -32,13 +32,19 @@ func (feedbackService) Create(ctx context.Context, data forms.FeedbackCreateForm
 		if existsUser.ServiceUserProfile == nil {
 			return types.ErrForbiden
 		}
-		var exists models.Feedback
-		err = providers.RepoProvider.BaseRepo.FindWhere(ctx, map[string]any{
-			"transaction_id":  data.TransactionID,
-			"service_user_id": existsUser.ID,
-		}, &exists)
-		if err == nil {
-			return types.ErrUnprocessableEntity
+		var exists []models.Feedback
+		serviceUserIDStr := strconv.Itoa(int(existsUser.ServiceUserProfile.ID))
+		transIDStr := strconv.Itoa(int(data.TransactionID))
+		providers.RepoProvider.BaseRepo.ReadAll(ctx, &exists, types.DBSearchParams{
+			Params: []types.WhereQuery{
+				{Field: "transaction_id", Operator: "=", Str: transIDStr},
+				{Field: "service_user_id", Operator: "=", Str: serviceUserIDStr},
+			},
+		})
+		if len(exists) > 0 {
+			return types.ErrDuplicateEntries.SetCustomMsg(
+				"you have provided feedback on this transaction",
+			)
 		}
 		feedback.ServiceUserID = &existsUser.ServiceUserProfile.ID
 		return nil

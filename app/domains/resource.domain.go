@@ -6,7 +6,7 @@ type ResourceInterface interface {
 	GetFieldName() string
 	GetFieldValue() string
 	GetFileConfig() any
-	GetPolicy() any
+	GetPolicy() Policy
 	GetData() ModelInterface
 	SetData(data ModelInterface)
 }

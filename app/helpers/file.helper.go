@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/salamanderman234/outsourcing-api/app/domains"
@@ -65,7 +66,9 @@ func (f fileHelper) CheckMimeCompability(file []byte, resource domains.ResourceI
 	mime := mimetype.Detect(file)
 
 	if !mimetype.EqualsAny(mime.String(), acceptedMimes...) {
-		return "", types.ErrBadRequest
+		return "", types.ErrBadRequest.SetCustomMsg(
+			fmt.Sprintf("invalid file format, accepted format : %s", strings.Join(acceptedMimes, ", ")),
+		)
 	}
 
 	extension := mime.Extension()

@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/salamanderman234/outsourcing-api/app/domains"
-	"github.com/salamanderman234/outsourcing-api/app/policies"
 	"github.com/salamanderman234/outsourcing-api/app/types"
 	"github.com/salamanderman234/outsourcing-api/configs"
 	"gorm.io/gorm/schema"
@@ -17,7 +16,7 @@ type Resource struct {
 	model      domains.ModelInterface
 	fileConfig types.FileConfig
 	field      string
-	policy     policies.Policy
+	policy     domains.Policy
 }
 
 func (r Resource) GetFullPath() string {
@@ -34,7 +33,10 @@ func (r Resource) GetFieldValue() string {
 		return ""
 	}
 	strVal := val.(*string)
-	return *strVal
+	if strVal != nil {
+		return *strVal
+	}
+	return ""
 }
 
 func (r Resource) GetName() (string, error) {
@@ -49,7 +51,7 @@ func (r Resource) GetFileConfig() any {
 	return r.fileConfig
 }
 
-func (r Resource) GetPolicy() any {
+func (r Resource) GetPolicy() domains.Policy {
 	return r.policy
 }
 

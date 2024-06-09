@@ -2,13 +2,14 @@ package routes
 
 import (
 	"github.com/labstack/echo/v4"
+	custom_middlewares "github.com/salamanderman234/outsourcing-api/app/middlewares"
 	"github.com/salamanderman234/outsourcing-api/app/providers"
 )
 
 type complaintRoute struct{}
 
 func (complaintRoute) RegisterRoutes(router *echo.Echo) {
-	r := router.Group("/complaints")
+	r := router.Group("/complaints", custom_middlewares.MustVerifyUser)
 	r.POST("/", providers.ViewProvider.ComplaintView.Create)
 	r.GET("/:id/", providers.ViewProvider.ComplaintView.Find)
 	r.GET("/", providers.ViewProvider.ComplaintView.Read)

@@ -65,7 +65,7 @@ func (complaintService) Read(ctx context.Context, q string, page uint) ([]models
 		WithPagination: page > 0,
 		Params:         []types.WhereQuery{},
 		Query:          q,
-		Model:          &models.Feedback{},
+		Model:          &models.Complaint{},
 		Preloads: []string{
 			"ServiceUser",
 			"PlacementDetailEmployee",

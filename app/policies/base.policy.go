@@ -1,45 +1,48 @@
 package policies
 
 import (
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/salamanderman234/outsourcing-api/app/types"
 	"github.com/salamanderman234/outsourcing-api/app/types/enums"
 )
 
-type Policy interface {
-	Create(claims types.JWTCLaims) bool
-	ReadAll(claims types.JWTCLaims) bool
-	Find(data any, claims types.JWTCLaims) bool
-	Update(data any, claims types.JWTCLaims) bool
-	Delete(data any, claims types.JWTCLaims) bool
-	UploadFile(data any, claims types.JWTCLaims) bool
-	ViewFile(data any, claims types.JWTCLaims) bool
-}
-
 type baseAdminOnlyPolicy struct{}
 
-func (baseAdminOnlyPolicy) Create(claims types.JWTCLaims) bool {
-	return claims.Role == string(enums.AdminUserRole) || true
+func (baseAdminOnlyPolicy) Create(claims jwt.Claims) bool {
+	c, ok := claims.(types.JWTCLaims)
+	if !ok {
+		return false
+	}
+	return c.Role == string(enums.AdminUserRole) || c.Role == string(enums.SuperAdminRole)
 }
 
-func (baseAdminOnlyPolicy) ReadAll(claims types.JWTCLaims) bool {
+func (baseAdminOnlyPolicy) ReadAll(claims jwt.Claims) bool {
 	return true
 }
 
-func (baseAdminOnlyPolicy) Find(data any, claims types.JWTCLaims) bool {
+func (baseAdminOnlyPolicy) Find(data any, claims jwt.Claims) bool {
 	return true
 }
 
-func (baseAdminOnlyPolicy) Update(data any, claims types.JWTCLaims) bool {
-	return claims.Role == string(enums.AdminUserRole) || true
+func (baseAdminOnlyPolicy) Update(data any, claims jwt.Claims) bool {
+	c, ok := claims.(types.JWTCLaims)
+	if !ok {
+		return false
+	}
+	return c.Role == string(enums.AdminUserRole) || c.Role == string(enums.SuperAdminRole)
 }
 
-func (baseAdminOnlyPolicy) Delete(data any, claims types.JWTCLaims) bool {
-	return claims.Role == string(enums.AdminUserRole) || true
+func (baseAdminOnlyPolicy) Delete(data any, claims jwt.Claims) bool {
+	c, ok := claims.(types.JWTCLaims)
+	if !ok {
+		return false
+	}
+	return c.Role == string(enums.AdminUserRole) || c.Role == string(enums.SuperAdminRole)
 }
 
-func (baseAdminOnlyPolicy) UploadFile(data any, claims types.JWTCLaims) bool {
+func (baseAdminOnlyPolicy) UploadFile(data any, claims jwt.Claims) bool {
 	return true
 }
-func (baseAdminOnlyPolicy) ViewFile(data any, claims types.JWTCLaims) bool {
+func (baseAdminOnlyPolicy) ViewFile(data any, claims jwt.Claims) bool {
 	return true
 }

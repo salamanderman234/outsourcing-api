@@ -1,11 +1,15 @@
 package types
 
-import "github.com/golang-jwt/jwt/v5"
+import (
+	"github.com/golang-jwt/jwt/v5"
+)
 
 type JWTCLaims struct {
 	jwt.RegisteredClaims
-	Email string
-	Role  string
+	ProfileID uint
+	Email     string
+	Role      string
+	V         string
 }
 
 type AuthSessionKey string

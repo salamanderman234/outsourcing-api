@@ -157,7 +157,7 @@ func (transactionService) Read(ctx context.Context, q string, page uint) ([]mode
 	}
 	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
 	if claims.Role == string(enums.ServiceUserRole) {
-		idStr := claims.ID
+		idStr := strconv.Itoa(int(claims.ProfileID))
 		params.Params = []types.WhereQuery{
 			{Field: "service_user_id", Operator: "=", Str: idStr},
 		}
@@ -193,7 +193,7 @@ func (transactionService) UploadMOU(ctx context.Context, id uint, file string) e
 		return err
 	}
 
-	policyResult := policies.TransactionPolicy{}.Update(transaction, claims)
+	policyResult := policies.TransactionPolicy{}.Update(&transaction, claims)
 	if !policyResult {
 		helpers.Logger.Warning(
 			fmt.Sprintf("(Forbidden) User: %s", claims.Email),
@@ -202,7 +202,9 @@ func (transactionService) UploadMOU(ctx context.Context, id uint, file string) e
 	}
 
 	if (*transaction.Status) != string(enums.WaitingForMOU) {
-		return types.ErrUnprocessableEntity
+		return types.ErrUnprocessableEntity.SetCustomMsg(
+			"transaction status does not meet the criteria for using this service",
+		)
 	}
 	resource, err := providers.ResourceProvider.CreateResource("transactions.mou")
 	if err != nil {
@@ -238,7 +240,9 @@ func (transactionService) AskForMOU(ctx context.Context, id uint) error {
 		status := temp.Status
 		if status != nil {
 			if *status != string(enums.WaitingForConfirmationStatus) {
-				return types.ErrUnprocessableEntity
+				return types.ErrUnprocessableEntity.SetCustomMsg(
+					"transaction status does not meet the criteria for using this service",
+				)
 			}
 		}
 		return nil
@@ -261,11 +265,19 @@ func (transactionService) ConfirmTransaction(ctx context.Context, id uint) error
 		status := temp.Status
 		if status != nil {
 			if *status != string(enums.WaitingForConfirmationStatus) && *status != string(enums.WaitingForMOUConfirmation) {
-				return types.ErrUnprocessableEntity
+				return types.ErrUnprocessableEntity.SetCustomMsg(
+					"transaction status does not meet the criteria for using this service",
+				)
 			}
 		}
 		return nil
 	}
-	err := baseUpdateFunc(ctx, policies.MasterPolicy{}, id, &transaction, data, before)
+	err := baseUpdateFunc(ctx, policies.TransactionPolicy{}, id, &transaction, data, before)
+	return err
+}
+
+func (transactionService) SetStatus(ctx context.Context, id uint, data forms.TransactionStatusUpdateForm) error {
+	var transaction models.Transaction
+	err := baseUpdateFunc(ctx, policies.MasterPolicy{}, id, &transaction, data)
 	return err
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/salamanderman234/outsourcing-api/app/providers"
 	"github.com/salamanderman234/outsourcing-api/app/types"
 	"github.com/salamanderman234/outsourcing-api/app/types/enums"
+	"github.com/salamanderman234/outsourcing-api/configs"
 )
 
 type placementService struct{}
@@ -26,14 +27,31 @@ func (placementService) CreatePlacement(ctx context.Context, data forms.Placemen
 	before := func() error {
 		var transaction models.Transaction
 		err := providers.RepoProvider.BaseRepo.Find(ctx, *placement.TransactionID, &transaction,
-			"Placements", "Details", "ServiceUser", "Details.Service",
+			"Details", "ServiceUser", "Details.Service",
 		)
 		if err != nil {
 			return err
 		}
 		tranStatus := transaction.Status
-		if len(transaction.Placements) >= 1 || *tranStatus != string(enums.WaitingForPlacement) {
-			return types.ErrUnprocessableEntity
+		if *tranStatus != string(enums.WaitingForPlacement) {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"transaction status does not meet the criteria for using this service or transaction ",
+			)
+		}
+		ongoingPlacements := []models.Placement{}
+		transID := strconv.Itoa(int(transaction.ID))
+		providers.RepoProvider.BaseRepo.ReadAll(ctx, &ongoingPlacements, types.DBSearchParams{
+			Model: &models.Placement{},
+			Params: []types.WhereQuery{
+				{Field: "transaction_id", Operator: "=", Str: transID},
+				{Field: "status", Operator: "=", Str: string(enums.PlacementOngoingStatus)},
+			},
+		})
+
+		if len(ongoingPlacements) > 0 {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"this transaction already has an active placement",
+			)
 		}
 
 		var supervisor models.Supervisor
@@ -43,7 +61,9 @@ func (placementService) CreatePlacement(ctx context.Context, data forms.Placemen
 		}
 
 		if *supervisor.RegencyID != *transaction.RegencyID {
-			return types.ErrUnprocessableEntity
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"supervisor does not meet the criteria to be placed on this placement (regency)",
+			)
 		}
 
 		details := transaction.Details
@@ -91,7 +111,19 @@ func (placementService) CreatePlacement(ctx context.Context, data forms.Placemen
 }
 func (placementService) GetPlacementOrder(ctx context.Context, id uint) (models.Placement, error) {
 	var results []models.Placement
+	var trans models.Transaction
 	transactionID := strconv.Itoa(int(id))
+	err := providers.RepoProvider.BaseRepo.Find(ctx, id, &trans, "ServiceUser")
+	if err != nil {
+		return models.Placement{}, err
+	}
+	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
+	if trans.ServiceUserID == nil {
+		return models.Placement{}, types.ErrForbiden
+	}
+	if *trans.ServiceUserID != claims.ProfileID {
+		return models.Placement{}, types.ErrForbiden
+	}
 	params := types.DBSearchParams{
 		Params: []types.WhereQuery{
 			{Field: "transaction_id", Operator: "=", Str: transactionID},
@@ -107,7 +139,7 @@ func (placementService) GetPlacementOrder(ctx context.Context, id uint) (models.
 		},
 	}
 
-	_, err := baseReadFunc(
+	_, err = baseReadFunc(
 		ctx,
 		policies.PlacementPolicy{},
 		params,
@@ -151,6 +183,23 @@ func (placementService) Read(ctx context.Context, q string, page uint) ([]models
 			"Details.Employees.Employee",
 		},
 	}
+	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
+	if claims.Role == string(enums.SupervisorUserRole) {
+		supervisorID := strconv.Itoa(int(claims.ProfileID))
+		params.Params = append(params.Params, types.WhereQuery{
+			Field: "supervisor_id", Operator: "=", Str: supervisorID,
+		})
+	}
+	if claims.Role == string(enums.EmployeeUserRole) {
+		employeeID := strconv.Itoa(int(claims.ProfileID))
+		params.Params = append(params.Params, []types.WhereQuery{
+			{Field: "placement_detail_employees.employee_id", Operator: "=", Str: employeeID},
+		}...)
+		params.Joins = append(params.Joins, []string{
+			"JOIN placement_details ON placement_details.placement_id = placements.id",
+			"JOIN placement_detail_employees ON placement_detail_employees.placement_detail_id = placement_details.id",
+		}...)
+	}
 
 	pagination, err := baseReadFunc(
 		ctx,
@@ -167,16 +216,23 @@ func (placementService) PlaceNewEmployee(ctx context.Context, data forms.Placeme
 		var employee models.Employee
 		placementDetailID := data.PlacementDetailID
 
-		var exists models.PlacementDetailEmployee
-		err := providers.RepoProvider.BaseRepo.FindWhere(ctx, map[string]any{
-			"employee_id":         data.EmployeeID,
-			"placement_detail_id": data.PlacementDetailID,
-		}, &exists)
+		var exists []models.PlacementDetailEmployee
+		employeeIDStr := strconv.Itoa(int(data.EmployeeID))
+		placementDetailIDStr := strconv.Itoa(int(data.PlacementDetailID))
+		providers.RepoProvider.BaseRepo.ReadAll(ctx, &exists, types.DBSearchParams{
+			Params: []types.WhereQuery{
+				{Field: "employee_id", Operator: "=", Str: employeeIDStr},
+				{Field: "placement_detail_id", Operator: "=", Str: placementDetailIDStr},
+				{Field: "status", Operator: "=", Str: enums.PlacementEmployeeOngoingStatus},
+			},
+		})
 
-		if err == nil {
-			return types.ErrDuplicateEntries
+		if len(exists) > 0 {
+			return types.ErrDuplicateEntries.SetCustomMsg(
+				"this employee has already been assigned to this placement",
+			)
 		}
-		err = providers.RepoProvider.BaseRepo.Find(ctx, placementDetailID, &detail, "Placement")
+		err := providers.RepoProvider.BaseRepo.Find(ctx, placementDetailID, &detail, "Placement")
 		if err != nil {
 			return err
 		}
@@ -189,13 +245,17 @@ func (placementService) PlaceNewEmployee(ctx context.Context, data forms.Placeme
 		max := *detail.TotalEmployee
 
 		if fill == max {
-			return types.ErrUnprocessableEntity
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"this placement has been fulfilled",
+			)
 		}
 
 		employeeRegency := *employee.RegencyID
 		placementRegency := *detail.Placement.RegencyID
 		if employeeRegency != placementRegency {
-			return types.ErrUnprocessableEntity
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"employees cannot be placed on this placement (regency)",
+			)
 		}
 		ongoing := string(enums.PlacementEmployeeOngoingStatus)
 		placementDetailEmployee.Status = &ongoing
@@ -211,7 +271,9 @@ func (placementService) PlaceNewEmployee(ctx context.Context, data forms.Placeme
 			placementDetailEmployee.StartDate = tranStartDate
 		}
 		if tranEndDate.Compare(*placementDetailEmployee.PlacementDate) < 0 {
-			return types.ErrUnprocessableEntity
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"placement is over",
+			)
 		}
 		placementDetailEmployee.ExpectedSalary = detail.Salary
 		if detail.Placement != nil {
@@ -224,7 +286,9 @@ func (placementService) PlaceNewEmployee(ctx context.Context, data forms.Placeme
 			fmt.Println(expectedWorkDay, *placementDetailEmployee.ExpectedSalary, expectedTotalSalary)
 			placementDetailEmployee.ExpectedSalaryTotal = &expectedTotalSalary
 		} else {
-			return types.ErrUnprocessableEntity
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"placement not found",
+			)
 		}
 		filled := *detail.Filled + 1
 		detail.Filled = &filled
@@ -247,7 +311,9 @@ func (placementService) CutoffEmployeePlacement(ctx context.Context, placementDe
 			return err
 		}
 		if *pl.Status != string(enums.PlacementEmployeeSuspendStatus) && *pl.Status != string(enums.PlacementEmployeeOngoingStatus) {
-			return types.ErrUnprocessableEntity
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"employee placement status does not meet the requirements to use this service",
+			)
 		}
 		if placement.ExitDate == nil {
 			now := time.Now()
@@ -309,6 +375,7 @@ func (placementService) RemoveEmployeePlacement(ctx context.Context, placementDe
 		}
 		return nil
 	}
+	// using master to admin only
 	err := baseDeleteFunc(ctx, policies.PlacementPolicy{}, placementDetailEmployeeID, &models.PlacementDetailEmployee{}, before)
 	return placementDetailEmployeeID, err
 }
@@ -330,7 +397,9 @@ func (placementService) Update(ctx context.Context, id uint, data forms.Placemen
 			}
 
 			if *supervisor.RegencyID != *placement.RegencyID {
-				return types.ErrUnprocessableEntity
+				return types.ErrUnprocessableEntity.SetCustomMsg(
+					"supervisor does not meet the criteria to be placed on this placement (regency)",
+				)
 			}
 		}
 		return nil

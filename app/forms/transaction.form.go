@@ -36,3 +36,7 @@ type TransactionUpdateForm struct {
 	BillingName    *string    `json:"billing_name" valid:"optional,stringlength(1|3000)"`
 	BillingAddress *string    `json:"billing_address" valid:"optional,stringlength(1|3000)"`
 }
+
+type TransactionStatusUpdateForm struct {
+	Status string `json:"status" valid:"required,in(suspended|ongoing|done)"`
+}

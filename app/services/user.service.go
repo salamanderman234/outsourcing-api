@@ -122,7 +122,7 @@ func (userService) Update(ctx context.Context,
 		return id, user, err
 	}
 	policy := policies.UserPolicy{}
-	if !policy.Update(user, claims) {
+	if !policy.Update(&user, claims) {
 		helpers.Logger.Warning(
 			fmt.Sprintf("(Forbidden) User: %s", claims.Email),
 		)
