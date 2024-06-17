@@ -8,7 +8,7 @@ import (
 
 type complaintRoute struct{}
 
-func (complaintRoute) RegisterRoutes(router *echo.Echo) {
+func (complaintRoute) RegisterRoutes(router *echo.Group) {
 	r := router.Group("/complaints", custom_middlewares.MustVerifyUser)
 	r.POST("/", providers.ViewProvider.ComplaintView.Create)
 	r.GET("/:id/", providers.ViewProvider.ComplaintView.Find)
@@ -22,5 +22,5 @@ func (complaintRoute) RegisterRoutes(router *echo.Echo) {
 }
 
 func init() {
-	addRoute(complaintRoute{})
+	addAPIRoute(complaintRoute{})
 }

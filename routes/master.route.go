@@ -8,7 +8,7 @@ import (
 
 type masterRoute struct{}
 
-func (masterRoute) RegisterRoutes(router *echo.Echo) {
+func (masterRoute) RegisterRoutes(router *echo.Group) {
 	// province
 	provinceRoute := router.Group("/provinces")
 	provinceRoute.POST("/", providers.ViewProvider.MasterProvinceView.Create)
@@ -38,5 +38,5 @@ func (masterRoute) RegisterRoutes(router *echo.Echo) {
 }
 
 func init() {
-	addRoute(masterRoute{})
+	addAPIRoute(masterRoute{})
 }

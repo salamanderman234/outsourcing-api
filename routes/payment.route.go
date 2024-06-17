@@ -8,7 +8,7 @@ import (
 
 type paymentRoute struct{}
 
-func (paymentRoute) RegisterRoutes(router *echo.Echo) {
+func (paymentRoute) RegisterRoutes(router *echo.Group) {
 	// province
 	// provinceRoute := router.Group("/payments")
 	router.POST("/transactions/:id/pay/", providers.ViewProvider.PaymentView.Pay, custom_middlewares.MustVerifyUser)
@@ -16,5 +16,5 @@ func (paymentRoute) RegisterRoutes(router *echo.Echo) {
 }
 
 func init() {
-	addRoute(paymentRoute{})
+	addAPIRoute(paymentRoute{})
 }

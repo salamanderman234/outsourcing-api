@@ -8,7 +8,7 @@ import (
 
 type feedbackRoute struct{}
 
-func (feedbackRoute) RegisterRoutes(router *echo.Echo) {
+func (feedbackRoute) RegisterRoutes(router *echo.Group) {
 	r := router.Group("/feedbacks", custom_middlewares.MustVerifyUser)
 	r.POST("/", providers.ViewProvider.FeedbackView.Create)
 	r.GET("/:id/", providers.ViewProvider.FeedbackView.Find)
@@ -18,5 +18,5 @@ func (feedbackRoute) RegisterRoutes(router *echo.Echo) {
 }
 
 func init() {
-	addRoute(feedbackRoute{})
+	addAPIRoute(feedbackRoute{})
 }

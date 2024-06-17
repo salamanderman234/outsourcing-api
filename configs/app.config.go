@@ -10,6 +10,7 @@ type appConfig struct {
 	IsDebug           bool
 	PaginationPerPage uint
 	Env               string
+	ApiVersion        string
 }
 
 var AppConfig appConfig
@@ -30,6 +31,7 @@ func (a *appConfig) SetConfig(path string) {
 	a.IsDebug = viper.GetBool("APP_DEBUG")
 	a.PaginationPerPage = 10
 	a.Env = viper.GetString("APP_ENV")
+	a.ApiVersion = viper.GetString("APP_API_VERSION")
 	// database config
 	DatabaseConfig.setDatabaseConfig()
 	// jwt config

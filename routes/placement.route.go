@@ -8,7 +8,7 @@ import (
 
 type placementRoute struct{}
 
-func (placementRoute) RegisterRoutes(router *echo.Echo) {
+func (placementRoute) RegisterRoutes(router *echo.Group) {
 	placementR := router.Group("/placements", custom_middlewares.MustVerifyUser)
 	placementR.POST("/", providers.ViewProvider.PlacementView.Create)
 	router.GET("/transactions/:id/placement/", providers.ViewProvider.PlacementView.GetPlacementOrder)
@@ -24,5 +24,5 @@ func (placementRoute) RegisterRoutes(router *echo.Echo) {
 }
 
 func init() {
-	addRoute(placementRoute{})
+	addAPIRoute(placementRoute{})
 }

@@ -7,7 +7,7 @@ import (
 
 type serviceRoute struct{}
 
-func (serviceRoute) RegisterRoutes(router *echo.Echo) {
+func (serviceRoute) RegisterRoutes(router *echo.Group) {
 	// service
 	serviceRoute := router.Group("/services")
 	serviceRoute.POST("/", providers.ViewProvider.ApplicationServiceView.Create)
@@ -27,5 +27,5 @@ func (serviceRoute) RegisterRoutes(router *echo.Echo) {
 }
 
 func init() {
-	addRoute(serviceRoute{})
+	addAPIRoute(serviceRoute{})
 }

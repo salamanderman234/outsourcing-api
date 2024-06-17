@@ -43,6 +43,7 @@ type viewProvider struct {
 	FeedbackView                  view_domains.FeedbackViewInterface
 	ComplaintView                 view_domains.ComplaintViewInterface
 	PerformanceView               view_domains.EmployeePerformanceInterface
+	UIView                        view_domains.UIViewInterface
 }
 
 // entity

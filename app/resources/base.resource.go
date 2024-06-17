@@ -26,6 +26,7 @@ func (r Resource) GetFullPath() string {
 func (r Resource) GetFieldValue() string {
 	v := reflect.ValueOf(r.model)
 	val := reflect.Indirect(v).FieldByName(r.field).Interface()
+
 	if val == nil {
 		return ""
 	}

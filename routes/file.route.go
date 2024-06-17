@@ -7,9 +7,9 @@ import (
 
 type fileRoute struct{}
 
-func (fileRoute) RegisterRoutes(router *echo.Echo) {
+func (fileRoute) RegisterRoutes(router *echo.Group) {
 	router.GET("/resource/:model/:id/:field/", providers.ViewProvider.FileView.GetFile)
 }
 func init() {
-	addRoute(fileRoute{})
+	addAPIRoute(fileRoute{})
 }

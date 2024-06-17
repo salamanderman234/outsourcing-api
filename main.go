@@ -14,6 +14,7 @@ import (
 	"github.com/salamanderman234/outsourcing-api/app/views"
 	"github.com/salamanderman234/outsourcing-api/configs"
 	"github.com/salamanderman234/outsourcing-api/routes"
+	templates "github.com/salamanderman234/outsourcing-api/views"
 )
 
 func init() {
@@ -24,6 +25,8 @@ func init() {
 
 func main() {
 	server := echo.New()
+	server.Static("/public", "./views/public")
+	server.Renderer = &templates.DefaultTemplate
 	// set up middleware
 	server.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogStatus:    true,
@@ -63,6 +66,8 @@ func main() {
 	repositories.RegisterAllRepos()
 	services.RegisterAllServices()
 	views.RegisterAllViews()
+	apiRoute := server.Group(fmt.Sprintf("/api/v%s", configs.AppConfig.ApiVersion))
+	routes.RegisterAllApiRoutes(apiRoute)
 	routes.RegisterAllRoutes(server)
 
 	// scheduler

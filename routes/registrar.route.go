@@ -6,6 +6,7 @@ import (
 )
 
 var routes = []domains.RouteInterface{}
+var apiRoutes = []domains.APIRouteInterface{}
 
 func RegisterAllRoutes(router *echo.Echo) {
 	for _, route := range routes {
@@ -13,6 +14,15 @@ func RegisterAllRoutes(router *echo.Echo) {
 	}
 }
 
+func RegisterAllApiRoutes(group *echo.Group) {
+	for _, route := range apiRoutes {
+		route.RegisterRoutes(group)
+	}
+}
+
 func addRoute(route domains.RouteInterface) {
 	routes = append(routes, route)
+}
+func addAPIRoute(route domains.APIRouteInterface) {
+	apiRoutes = append(apiRoutes, route)
 }

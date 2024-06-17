@@ -28,5 +28,6 @@ var ResourceProvider = resourceProvider{
 		"services.icon":       resources.NewServiceIconResource,
 		"transactions.mou":    resources.NewTransactionMouResource,
 		"users.profile":       resources.NewUserProfileResource,
+		"categories.icon":     resources.NewIconCategoryResource,
 	},
 }

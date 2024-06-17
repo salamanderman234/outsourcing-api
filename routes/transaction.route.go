@@ -8,7 +8,7 @@ import (
 
 type transactionRoute struct{}
 
-func (transactionRoute) RegisterRoutes(router *echo.Echo) {
+func (transactionRoute) RegisterRoutes(router *echo.Group) {
 	transRoute := router.Group("/transactions", custom_middlewares.MustVerifyUser)
 	transRoute.POST("/", providers.ViewProvider.TransactionView.Create)
 	transRoute.GET("/", providers.ViewProvider.TransactionView.Read)
@@ -22,5 +22,5 @@ func (transactionRoute) RegisterRoutes(router *echo.Echo) {
 }
 
 func init() {
-	addRoute(transactionRoute{})
+	addAPIRoute(transactionRoute{})
 }

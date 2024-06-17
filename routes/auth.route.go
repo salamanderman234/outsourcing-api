@@ -7,7 +7,7 @@ import (
 
 type authRoute struct{}
 
-func (authRoute) RegisterRoutes(router *echo.Echo) {
+func (authRoute) RegisterRoutes(router *echo.Group) {
 	login := router.POST("/login/", providers.ViewProvider.AuthView.Login)
 	login.Name = "auth.login"
 	register := router.POST("/:role/register/", providers.ViewProvider.AuthView.Register)
@@ -21,5 +21,5 @@ func (authRoute) RegisterRoutes(router *echo.Echo) {
 }
 
 func init() {
-	addRoute(authRoute{})
+	addAPIRoute(authRoute{})
 }

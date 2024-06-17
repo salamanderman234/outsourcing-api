@@ -14,7 +14,7 @@ type Province struct {
 
 type Category struct {
 	Model
-	CategoryName string `json:"category_name" visible:"true"`
-	Icon         string `json:"icon" visible:"true"`
-	Description  string `json:"description" visible:"true"`
+	CategoryName string  `json:"category_name" visible:"true"`
+	Icon         *string `json:"icon" visible:"true"`
+	Description  string  `json:"description" visible:"true"`
 }
