@@ -169,6 +169,7 @@ func (placementService) Find(ctx context.Context, id uint) (models.Placement, er
 	)
 	return placement, err
 }
+
 func (placementService) Read(ctx context.Context, q string, page uint) ([]models.Placement, *types.Pagination, error) {
 	var results []models.Placement
 	params := types.DBSearchParams{
@@ -215,6 +216,7 @@ func (placementService) Read(ctx context.Context, q string, page uint) ([]models
 	)
 	return results, pagination, err
 }
+
 func (placementService) PlaceNewEmployee(ctx context.Context, data forms.PlacementDetailEmployeeCreateForm) (models.PlacementDetailEmployee, error) {
 	var placementDetailEmployee models.PlacementDetailEmployee
 	before := func() error {

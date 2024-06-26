@@ -40,7 +40,7 @@ func (j jwtHelper) CreateToken(user models.User, subject enums.TokenType, exp ..
 	} else if role == string(enums.EmployeeUserRole) && user.EmployeeProfile != nil {
 		idRole = user.EmployeeProfile.ID
 	} else if role == string(enums.SupervisorUserRole) && user.SupervisorProfile != nil {
-		idRole = user.SuperAdminProfile.ID
+		idRole = user.SupervisorProfile.ID
 	}
 	idStr := strconv.Itoa(int(user.ID))
 	claims := types.JWTCLaims{

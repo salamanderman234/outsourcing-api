@@ -10,6 +10,7 @@ import (
 	"github.com/salamanderman234/outsourcing-api/app/policies"
 	"github.com/salamanderman234/outsourcing-api/app/providers"
 	"github.com/salamanderman234/outsourcing-api/app/types"
+	"github.com/salamanderman234/outsourcing-api/app/types/enums"
 	"github.com/salamanderman234/outsourcing-api/configs"
 )
 
@@ -48,6 +49,7 @@ func (complaintService) Create(ctx context.Context, data forms.ComplaintCreateFo
 	err := baseCreateFunc(ctx, policies.ComplaintPolicy{}, &complaint, data, before)
 	return complaint, err
 }
+
 func (complaintService) Find(ctx context.Context, id uint) (models.Complaint, error) {
 	var complaint models.Complaint
 	err := baseFindFunc(ctx, policies.ComplaintPolicy{}, id, &complaint,
@@ -72,6 +74,24 @@ func (complaintService) Read(ctx context.Context, q string, page uint) ([]models
 			"Employee",
 			"Replies",
 		},
+	}
+	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
+	if claims.Role == string(enums.SupervisorUserRole) {
+		supervisorID := strconv.Itoa(int(claims.ProfileID))
+		params.Params = append(params.Params, types.WhereQuery{
+			Field: "placements.supervisor_id", Operator: "=", Str: supervisorID,
+		})
+		params.Joins = append(params.Joins, []string{
+			"JOIN placement_detail_employees ON placement_detail_employees.id = complaints.placement_detail_employee_id",
+			"JOIN placement_details ON placement_details.id = placement_detail_employees.placement_detail_id",
+			"JOIN placements ON placements.id = placement_details.placement_id",
+		}...)
+	}
+	if claims.Role == string(enums.ServiceUserRole) {
+		employeeID := strconv.Itoa(int(claims.ProfileID))
+		params.Params = append(params.Params, []types.WhereQuery{
+			{Field: "service_user_id", Operator: "=", Str: employeeID},
+		}...)
 	}
 
 	pagination, err := baseReadFunc(
