@@ -49,7 +49,23 @@ func (midtransService) CreatePaymentFromTransaction(ctx context.Context, orderID
 		)
 		return "", "", types.ErrForbiden
 	}
+
+	if order.Status == nil || order.PaymentMethod == nil {
+		return "", "", types.ErrUnprocessableEntity.SetCustomMsg(
+			"the transaction does not meet the criteria for using this service",
+		)
+	}
+	paymentMethod := *order.PaymentMethod
 	status := *order.Status
+
+	if (paymentMethod == string(enums.DpPayment) && order.DPStatus == nil) ||
+		(paymentMethod == string(enums.ThreeTermin) && order.TerminStatus == nil) {
+
+		return "", "", types.ErrUnprocessableEntity.SetCustomMsg(
+			"the transaction does not meet the criteria for using this service",
+		)
+	}
+
 	if !slices.Contains([]string{
 		string(enums.WaitingForInitialPayment), string(enums.WaitingForFurtherPayments),
 	}, status) {
@@ -68,28 +84,62 @@ func (midtransService) CreatePaymentFromTransaction(ctx context.Context, orderID
 	}
 	totalAmount := int64(*order.TotalPrice)
 	paid := *order.TotalPaid
-	paymentMethod := *order.PaymentMethod
 	userClient := order.ServiceUser
-
+	// buat sesuai dengan status dp dan termin yang baru
 	if paymentMethod == string(enums.DpPayment) {
-		if paid == 0 && status == string(enums.WaitingForInitialPayment) {
+		if order.DPStatus == nil {
+			return "", "", types.ErrUnprocessableEntity.SetCustomMsg(
+				"the transaction does not meet the criteria for using this service",
+			)
+		}
+		dpStatus := *order.DPStatus
+		if dpStatus == string(enums.WaitingForDP) && status == string(enums.WaitingForInitialPayment) {
 			percentageAmount := float64(20)
+			paymentConfig := models.PaymentConfig{}
+			providers.RepoProvider.BaseRepo.FindWhere(ctx, map[string]any{
+				"type":     enums.DpPayment,
+				"sub_type": string(enums.DPSubType),
+			}, &paymentConfig)
+			if paymentConfig.Amount != nil {
+				percentageAmount = float64(*paymentConfig.Amount)
+			}
 			percentage := int64(percentageAmount / float64(100))
 			totalAmount *= percentage
 		} else {
 			totalAmount -= int64(paid)
 		}
 	} else if paymentMethod == string(enums.ThreeTermin) {
-		float20 := float64(20)
-		float50 := float64(50)
-		float70 := float64(70)
-		if paid == 0 && status == string(enums.WaitingForInitialPayment) {
-			percentage := int64(float20 / float64(100))
+		if order.TerminStatus == nil {
+			return "", "", types.ErrUnprocessableEntity.SetCustomMsg(
+				"the transaction does not meet the criteria for using this service",
+			)
+		}
+		terminStatus := *order.TerminStatus
+		float20 := float32(20)
+		float50 := float32(50)
+		paymentConfig := models.PaymentConfig{}
+		providers.RepoProvider.BaseRepo.FindWhere(ctx, map[string]any{
+			"type":     enums.ThreeTermin,
+			"sub_type": string(enums.ThreeTerminFirstSubType),
+		}, &paymentConfig)
+		if paymentConfig.Amount != nil {
+			float20 = *paymentConfig.Amount
+		}
+		paymentConfigSecond := models.PaymentConfig{}
+		providers.RepoProvider.BaseRepo.FindWhere(ctx, map[string]any{
+			"type":     enums.ThreeTermin,
+			"sub_type": string(enums.ThreeTerminSecondSubType),
+		}, &paymentConfigSecond)
+		if paymentConfigSecond.Amount != nil {
+			float50 = *paymentConfigSecond.Amount
+		}
+		if terminStatus == string(enums.WaitingForFirstTermin) && status == string(enums.WaitingForInitialPayment) {
+			percentage := int64(float20 / float32(100))
 			totalAmount *= percentage
-		} else if int64(paid) == (totalAmount*(int64(float20)/100)) && status == string(enums.WaitingForFurtherPayments) {
-			percentage := int64(float50 / float64(100))
+		} else if terminStatus == string(enums.WaitingForSecondTermin) && status == string(enums.WaitingForFurtherPayments) {
+			percentage := int64(float50 / float32(100))
 			totalAmount *= percentage
-		} else if int64(paid) == (totalAmount*(int64(float70)/100)) && status == string(enums.WaitingForFurtherPayments) {
+		} else if terminStatus == string(enums.WaitingForThirdTermin) && status == string(enums.WaitingForFurtherPayments) {
 			totalAmount -= int64(paid)
 		}
 	}
@@ -142,7 +192,12 @@ func (midtransService) AfterPaymentAction(ctx context.Context, form forms.Paymen
 	}
 
 	status := form.TransactionStatus
-	transaction := &models.Transaction{}
+	if payment.Transaction == nil {
+		return types.ErrUnprocessableEntity.SetCustomMsg(
+			"invalid payment",
+		)
+	}
+	transaction := payment.Transaction
 
 	if slices.Contains([]enums.MidtransStatusEnum{
 		enums.AuthorizeMidtransStatus,
@@ -150,21 +205,44 @@ func (midtransService) AfterPaymentAction(ctx context.Context, form forms.Paymen
 		enums.CaptureMidtranstatus,
 	}, enums.MidtransStatusEnum(status)) {
 
-		totalPaid := *payment.Transaction.TotalPaid
+		totalPaid := *transaction.TotalPaid
 		totalPaid += uint64(*payment.TotalAmount)
-		payment.Transaction.TotalPaid = &totalPaid
+		transaction.TotalPaid = &totalPaid
 
 		paymentStatus := string(enums.SuccessPayment)
 		transactionStatus := string(enums.WaitingForPlacement)
-		tranStatus := payment.Transaction.Status
+		tranStatus := transaction.Status
 		if tranStatus != nil {
 			if *tranStatus == string(enums.WaitingForFurtherPayments) {
 				transactionStatus = string(enums.Ongoing)
 			}
 		}
+		if *tranStatus == string(enums.DpPayment) {
+			dpStatus := transaction.DPStatus
+			if *dpStatus == string(enums.WaitingForDP) {
+				stat := string(enums.DPCompleted)
+				transaction.DPStatus = &stat
+			} else if *dpStatus == string(enums.WaitingForRemainingDP) {
+				stat := string(enums.DPRemainingCompleted)
+				transaction.DPStatus = &stat
+			}
+		}
+		if *tranStatus == string(enums.ThreeTermin) {
+			terminStatus := transaction.TerminStatus
+			if *terminStatus == string(enums.WaitingForFirstTermin) {
+				stat := string(enums.FirstTerminCompleted)
+				transaction.TerminStatus = &stat
+			} else if *terminStatus == string(enums.WaitingForSecondTermin) {
+				stat := string(enums.SecondTerminCompleted)
+				transaction.TerminStatus = &stat
+			} else if *terminStatus == string(enums.WaitingForThirdTermin) {
+				stat := string(enums.ThirdTerminCompleted)
+				transaction.TerminStatus = &stat
+			}
+		}
 
 		payment.Status = &paymentStatus
-		payment.Transaction.Status = &transactionStatus
+		transaction.Status = &transactionStatus
 
 		transaction = payment.Transaction
 	} else if enums.MidtransStatusEnum(status) == enums.PendingMidtransStatus {
@@ -181,9 +259,11 @@ func (midtransService) AfterPaymentAction(ctx context.Context, form forms.Paymen
 	}
 
 	err = providers.RepoProvider.BaseRepo.Update(ctx, []uint{uint(paymentID)}, &payment)
+
 	if err != nil {
 		return err
 	}
+
 	if transaction != nil {
 		transactionID := *payment.TransactionID
 		err = providers.RepoProvider.BaseRepo.Update(ctx, []uint{transactionID}, transaction)

@@ -21,6 +21,8 @@ type Transaction struct {
 	TotalPrice          *uint64             `json:"total_price,omitempty" visible:"true"`
 	TotalPaid           *uint64             `json:"total_paid,omitempty" visible:"true"`
 	Status              *string             `json:"status,omitempty" visible:"true"`
+	DPStatus            *string             `json:"dp_status"`
+	TerminStatus        *string             `json:"termin_status"`
 	NextPaymentDeadline *time.Time          `json:"next_payment_deadline" visible:"true"`
 	Details             []TransactionDetail `json:"details,omitempty" visible:"true"`
 	MOU                 *string             `json:"mou,omitempty"`

@@ -27,3 +27,25 @@ type MasterCategoryUpdateForm struct {
 	Icon         *string `json:"icon"`
 	Description  *string `json:"description" valid:"optional,stringlength(1|3000)"`
 }
+
+type MasterQuestionCreateForm struct {
+	Question string  `json:"question" valid:"required,stringlength(1|5000)"`
+	Hint     *string `json:"hint" valid:"optional,stringlength(1|5000)"`
+}
+type MasterQuestionUpdateForm struct {
+	Question *string `json:"question" valid:"optional,stringlength(1|5000)"`
+	Hint     *string `json:"hint" valid:"optional,stringlength(1|5000)"`
+}
+
+type MasterQuestionAssignForm struct {
+	QuestionID uint `json:"question_id" valid:"required"`
+	CategoryID uint `json:"category_id" valid:"required"`
+}
+type MasterQuestionUnassignForm struct {
+	QuestionID uint `json:"question_id" valid:"required"`
+	CategoryID uint `json:"category_id" valid:"required"`
+}
+
+type MaterPaymentConfigUpdateForm struct {
+	Amount uint `json:"amount" valid:"required"`
+}

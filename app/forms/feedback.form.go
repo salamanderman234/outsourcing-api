@@ -11,14 +11,13 @@ type FeedbackUpdateForm struct {
 	Comment *string  `json:"comment" valid:"optional,stringlength(1|5000)"`
 }
 
-type PerformanceCreateForm struct{}
+type PerformanceSubmitAnswerForm struct {
+	PlacementDetailEmployeeID uint   `json:"placement_detail_employee_id" valid:"required"`
+	Question                  string `json:"question" valid:"required"`
+	Answer                    string `json:"answer" valid:"required,in(A|B|C|D|E)"`
+}
 
-type PerformanceUpdateForm struct{}
-
-type UserPerformanceUploadForm struct{}
-
-type UserPerformanceUpdateForm struct{}
-
-type PerformanceUploadInputForm struct{}
-
-type PerformanceUpdateInputForm struct{}
+type PerformanceSubmitForm struct {
+	PerformanceFormID uint                          `json:"performance_form_id" valid:"required"`
+	Details           []PerformanceSubmitAnswerForm `json:"details" valid:"required"`
+}

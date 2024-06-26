@@ -9,6 +9,8 @@ func RegisterAllServices() {
 	providers.ServiceProvider.MasterProvinceService = NewMasterProvinceService()
 	providers.ServiceProvider.MasterRegencyService = NewRegencyMasterService()
 	providers.ServiceProvider.MasterCategoryService = NewCategoryMasterService()
+	providers.ServiceProvider.MasterQuestionService = NewQuestionMasterService()
+	providers.ServiceProvider.MasterPaymentConfigService = NewPaymentConfigMasterService()
 	providers.ServiceProvider.AppServiceService = NewApplicationServiceService()
 	providers.ServiceProvider.AppPackageServiceService = NewApplicationPackageService()
 	providers.ServiceProvider.TransactionService = NewTransactionService()

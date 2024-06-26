@@ -35,6 +35,20 @@ func (masterRoute) RegisterRoutes(router *echo.Group) {
 	userRoute.GET("/:role/", providers.ViewProvider.UserView.Read)
 	userRoute.GET("/:id/", providers.ViewProvider.UserView.Find)
 	userRoute.PATCH("/:id/", providers.ViewProvider.UserView.Update, custom_middlewares.MustVerifyUser)
+	// question
+	questionRoute := router.Group("/questions")
+	questionRoute.GET("/", providers.ViewProvider.MasterQuestionView.Read)
+	questionRoute.POST("/", providers.ViewProvider.MasterQuestionView.Create)
+	questionRoute.GET("/:id/", providers.ViewProvider.MasterQuestionView.Find)
+	questionRoute.PATCH("/:id/", providers.ViewProvider.MasterQuestionView.Update)
+	questionRoute.DELETE("/:id/", providers.ViewProvider.MasterQuestionView.Delete)
+	questionRoute.POST("/assign/", providers.ViewProvider.MasterQuestionView.AssignQuestion)
+	questionRoute.PATCH("/unassign/", providers.ViewProvider.MasterQuestionView.UnassignQuestion)
+	// payment config
+	paymentConfigRoute := router.Group("/payment_config")
+	paymentConfigRoute.PATCH("/set_dp_percentage/", providers.ViewProvider.MasterPaymentConfigView.SetDPPercentage)
+	paymentConfigRoute.PATCH("/set_3_termin_first_percentage/", providers.ViewProvider.MasterPaymentConfigView.Set3TerminFirst)
+	paymentConfigRoute.PATCH("/set_3_termin_second_percentage/", providers.ViewProvider.MasterPaymentConfigView.Set3TerminSecond)
 }
 
 func init() {

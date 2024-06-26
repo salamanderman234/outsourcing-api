@@ -32,7 +32,23 @@ type MasterCategoryServiceInterface interface {
 	Delete(ctx context.Context, id uint) (uint, error)
 }
 
-type MasterAccessServiceInterfacfe interface {
+type MasterAccessServiceInterface interface {
 	// Create(ctx context.Context, data forms.MasterAccessCreateForm) (models.Access)
 
+}
+
+type MasterQuestionServiceInterface interface {
+	Create(ctx context.Context, data forms.MasterQuestionCreateForm) (models.Question, error)
+	AssignQuestion(ctx context.Context, data forms.MasterQuestionAssignForm) error
+	UnassignQuestion(ctx context.Context, data forms.MasterQuestionUnassignForm) error
+	Read(ctx context.Context, categoryID uint, q string, page uint) ([]models.Question, *types.Pagination, error)
+	Find(ctx context.Context, id uint) (models.Question, error)
+	Update(ctx context.Context, id uint, data forms.MasterQuestionUpdateForm) (uint, models.Question, error)
+	Delete(ctx context.Context, id uint) (uint, error)
+}
+
+type MasterPaymentConfigServiceInterface interface {
+	SetDPPercentage(ctx context.Context, amount uint) error
+	Set3TerminFirst(ctx context.Context, amount uint) error
+	Set3TerminSecond(ctx context.Context, amount uint) error
 }

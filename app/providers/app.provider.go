@@ -12,20 +12,22 @@ type repoProvider struct {
 }
 
 type serviceProvider struct {
-	AuthService              service_domains.AuthServiceInterface
-	UserService              service_domains.UserServiceInterface
-	MasterProvinceService    service_domains.MasterProvinceServiceInterface
-	MasterRegencyService     service_domains.MasterRegencyServiceInterface
-	MasterCategoryService    service_domains.MasterCategoryServiceInterface
-	AppServiceService        service_domains.ApplicationServiceServiceInterface
-	AppPackageServiceService service_domains.ApplicationPackageInterface
-	TransactionService       service_domains.TransactionServiceInterface
-	FileService              service_domains.FileServiceInterface
-	MidtransService          service_domains.MidtransServiceInterface
-	PlacementService         service_domains.PlacementServiceInterface
-	FeedbackService          service_domains.FeedbackServiceInterface
-	ComplaintService         service_domains.ComplaintServiceInterface
-	PerformanceService       service_domains.PerformanceServiceInterface
+	AuthService                service_domains.AuthServiceInterface
+	UserService                service_domains.UserServiceInterface
+	MasterProvinceService      service_domains.MasterProvinceServiceInterface
+	MasterRegencyService       service_domains.MasterRegencyServiceInterface
+	MasterCategoryService      service_domains.MasterCategoryServiceInterface
+	MasterQuestionService      service_domains.MasterQuestionServiceInterface
+	MasterPaymentConfigService service_domains.MasterPaymentConfigServiceInterface
+	AppServiceService          service_domains.ApplicationServiceServiceInterface
+	AppPackageServiceService   service_domains.ApplicationPackageInterface
+	TransactionService         service_domains.TransactionServiceInterface
+	FileService                service_domains.FileServiceInterface
+	MidtransService            service_domains.MidtransServiceInterface
+	PlacementService           service_domains.PlacementServiceInterface
+	FeedbackService            service_domains.FeedbackServiceInterface
+	ComplaintService           service_domains.ComplaintServiceInterface
+	PerformanceService         service_domains.PerformanceServiceInterface
 }
 
 type viewProvider struct {
@@ -34,6 +36,8 @@ type viewProvider struct {
 	MasterProvinceView            view_domains.MasterProvinceViewInterface
 	MasterRegencyView             view_domains.MasterRegencyViewInterface
 	MasterCategoryView            view_domains.MasterCategoryViewInterface
+	MasterQuestionView            view_domains.MasterQuestionViewInterface
+	MasterPaymentConfigView       view_domains.MasterPaymentConfigViewInterface
 	ApplicationServiceView        view_domains.ApplicationServiceViewInterface
 	ApplicationPackageServiceView view_domains.ApplicationPackageServiceViewInterface
 	TransactionView               view_domains.TransactionViewInterface

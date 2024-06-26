@@ -9,6 +9,8 @@ func RegisterAllViews() {
 	providers.ViewProvider.MasterProvinceView = NewMasterProvinceView()
 	providers.ViewProvider.MasterRegencyView = NewRegencyMasterView()
 	providers.ViewProvider.MasterCategoryView = NewCategoryMasterView()
+	providers.ViewProvider.MasterQuestionView = NewQuestionMasterView()
+	providers.ViewProvider.MasterPaymentConfigView = NewPaymentConfigMasterView()
 	providers.ViewProvider.ApplicationServiceView = NewApplicationServiceView()
 	providers.ViewProvider.ApplicationPackageServiceView = NewApplicationPackageServiceView()
 	providers.ViewProvider.TransactionView = NewTransactionView()

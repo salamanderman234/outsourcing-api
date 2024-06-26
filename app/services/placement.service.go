@@ -132,10 +132,12 @@ func (placementService) GetPlacementOrder(ctx context.Context, id uint) (models.
 		Preloads: []string{
 			"Regency",
 			"Supervisor",
+			"Supervisor.User",
 			"Details",
 			"Details.Service",
 			"Details.Employees",
 			"Details.Employees.Employee",
+			"Details.Employees.Employee.User",
 		},
 	}
 
@@ -158,10 +160,13 @@ func (placementService) Find(ctx context.Context, id uint) (models.Placement, er
 	err := baseFindFunc(ctx, policies.PlacementPolicy{}, id, &placement,
 		"Regency",
 		"Supervisor",
+		"Supervisor.User",
 		"Details",
 		"Details.Service",
 		"Details.Employees",
-		"Details.Employees.Employee")
+		"Details.Employees.Employee",
+		"Details.Employees.Employee.User",
+	)
 	return placement, err
 }
 func (placementService) Read(ctx context.Context, q string, page uint) ([]models.Placement, *types.Pagination, error) {
@@ -176,11 +181,12 @@ func (placementService) Read(ctx context.Context, q string, page uint) ([]models
 		Model: &models.Placement{},
 		Preloads: []string{
 			"Regency",
-			"Supervisor",
+			"Supervisor.User",
 			"Details",
 			"Details.Service",
 			"Details.Employees",
 			"Details.Employees.Employee",
+			"Details.Employees.Employee.User",
 		},
 	}
 	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
@@ -412,6 +418,7 @@ func (placementService) EmployeePlacementDetail(ctx context.Context, id uint) (m
 	var placementEmployee models.PlacementDetailEmployee
 	err := baseFindFunc(ctx, policies.PlacementPolicy{}, id, &placementEmployee,
 		"Employee",
+		"Employee.User",
 		"PlacementDetail",
 		"Complaints",
 		"Complaints.Replies",

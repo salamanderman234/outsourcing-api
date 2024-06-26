@@ -28,6 +28,7 @@ func main() {
 	server.Static("/public", "./views/public")
 	server.Renderer = &templates.DefaultTemplate
 	// set up middleware
+	server.Use(middleware.CORS())
 	server.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogStatus:    true,
 		LogURI:       true,

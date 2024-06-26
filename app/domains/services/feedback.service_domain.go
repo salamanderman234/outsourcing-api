@@ -2,7 +2,6 @@ package service_domains
 
 import (
 	"context"
-	"time"
 
 	"github.com/salamanderman234/outsourcing-api/app/forms"
 	"github.com/salamanderman234/outsourcing-api/app/models"
@@ -29,16 +28,8 @@ type ComplaintServiceInterface interface {
 }
 
 type PerformanceServiceInterface interface {
-	CreatePerformanceForm(ctx context.Context, data forms.PerformanceCreateForm) (models.EmployeePerformance, error)
-	UpdatePerformanceForm(ctx context.Context, id uint, data forms.PerformanceUpdateForm) (models.EmployeePerformance, error)
-	UserUploadPerformanceForm(ctx context.Context, feedbackID uint, data forms.UserPerformanceUploadForm) (models.Feedback, error)
-	UserUpdatePerformanceForm(ctx context.Context, feedbackID uint, data forms.UserPerformanceUpdateForm) (uint, models.Feedback, error)
-	InputEmployeePerformance(ctx context.Context, data forms.PerformanceUploadInputForm) (models.EmployeePerformance, error)
-	UpdateEmployeePerformance(ctx context.Context, id uint, data forms.PerformanceUpdateInputForm) (uint, models.EmployeePerformance, error)
-	FindEmployeePerformance(ctx context.Context, id uint) (models.EmployeePerformance, error)
-	// Read(ctx context.Context, month time.Month, employeeID uint) error
-	ReadFromFeedback(ctx context.Context, feedbackID uint) (models.Feedback, []models.EmployeePerformance, error)
-	ReadFromPlacement(ctx context.Context, placementID uint, month time.Month) (models.Placement, []models.EmployeePerformance, error)
-	ReadFromEmployee(ctx context.Context, employeeID uint, month time.Month) (models.Employee, []models.EmployeePerformance, error)
-	DeleteEmployeePerformance(ctx context.Context, id uint) (uint, error)
+	CreateForm(ctx context.Context, placementID uint) (models.PerformanceForm, error)
+	DeleteForm(ctx context.Context, formID uint) error
+	SubmitAnswer(ctx context.Context, data forms.PerformanceSubmitForm) error
+	GetEmployeePerformances(ctx context.Context, employeeID uint, month uint, year uint) ([]models.Performance, error)
 }

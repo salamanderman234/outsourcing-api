@@ -12,41 +12,41 @@
 <body>
     <div class="modal fade" id="edit-modal" tabindex="-1" aria-labelledby="flipInXAnimationModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLabel">Edit Kategori</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-              </button>
-            </div>
-            <div class="modal-body">
-                <input type="text" hidden name="id_edit" id="id_edit">
-                <div class="row">
-                    <div class="mb-3 col">
-                        <label for="category_name_edit" class="form-label">Kategori</label>
-                        <input type="text" name="category_name" id="category_name_edit" class="form-control" placeholder="Masukan nama kategori">
+            <form class="modal-content" id="edit-form">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Kategori</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" hidden name="id_edit" id="id_edit">
+                    <div class="row">
+                        <div class="mb-3 col">
+                            <label for="category_name_edit" class="form-label">Kategori</label>
+                            <input type="text" name="category_name" id="category_name_edit" class="form-control" placeholder="Masukan nama kategori">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="mb-3 col">
+                            <label for="icon_edit" class="form-label d-flex justify-content-between">
+                                <span>Icon</span>
+                                <a class="text-primary" id="icon_edit_url" target="_blank" href="">Lihat File</a>
+                            </label>
+                            <input type="file" name="icon" id="icon_edit" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="mb-3 col">
+                            <label for="description_edit" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" name="description" id="description_edit" cols="30" rows="10"></textarea>
+                        </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="mb-3 col">
-                        <label for="icon_edit" class="form-label d-flex justify-content-between">
-                            <span>Icon</span>
-                            <a class="text-primary" id="icon_edit_url" target="_blank" href="">Lihat File</a>
-                        </label>
-                        <input type="file" name="icon" id="icon_edit" class="form-control" />
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
                 </div>
-                <div class="row">
-                    <div class="mb-3 col">
-                        <label for="description_edit" class="form-label">Deskripsi</label>
-                        <textarea class="form-control" name="description" id="description_edit" cols="30" rows="10"></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-              <button type="button" class="btn btn-primary">Simpan</button>
-            </div>
-          </div>
+            </form>
         </div>
       </div>
     <div class="layout-wrapper layout-content-navbar">
@@ -185,6 +185,7 @@
             const iconEditHref = $("#icon_edit_url");
 
             const apiBase = "{{.api_base_url}}";
+            // modal edit
             const editHandle = (button) => {
                 const id = button.data("id");
                 const name = button.data("category-name");
@@ -202,6 +203,19 @@
                 $(e).on('click', () => {
                     editHandle($(e));
                 });
+            });
+
+            $('#edit-form').on('submit', (e) => {
+                e.preventDefault();
+                const id = idEdit.val();
+                const url = `${apiBase}/categories/${id}/`;
+
+                const arr = $("#edit-form").serializeArray();
+                
+                const data = JSON.stringify(arr);
+                $.post(url, data, (data, status) => {
+                    console.log(status);
+                })
             });
         });
     </script>

@@ -9,13 +9,3 @@ type Feedback struct {
 	Review        *float64     `json:"review"`
 	Comment       *string      `json:"comment"`
 }
-
-type EmployeePerformance struct {
-	Model
-	ServiceUserID             *uint                    `json:"service_user_id"`
-	ServiceUser               *ServiceUser             `json:"service_user,omitempty"`
-	PlacementDetailEmployeeID *uint                    `json:"placement_employee_id"`
-	PlacementDetailEmployee   *PlacementDetailEmployee `json:"placement_employee,omitempty"`
-	EmployeeID                *uint                    `json:"employee_id"`
-	Employee                  *Employee                `json:"employee,omitempty"`
-}
