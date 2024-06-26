@@ -10,6 +10,7 @@ import (
 	"github.com/salamanderman234/outsourcing-api/app/policies"
 	"github.com/salamanderman234/outsourcing-api/app/providers"
 	"github.com/salamanderman234/outsourcing-api/app/types"
+	"github.com/salamanderman234/outsourcing-api/app/types/enums"
 	"github.com/salamanderman234/outsourcing-api/configs"
 )
 
@@ -71,6 +72,13 @@ func (feedbackService) Read(ctx context.Context, q string, page uint) ([]models.
 			"Transaction",
 			"ServiceUser",
 		},
+	}
+	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
+	if claims.Role == string(enums.ServiceUserRole) {
+		supervisorID := strconv.Itoa(int(claims.ProfileID))
+		params.Params = append(params.Params, types.WhereQuery{
+			Field: "service_user_id", Operator: "=", Str: supervisorID,
+		})
 	}
 
 	pagination, err := baseReadFunc(

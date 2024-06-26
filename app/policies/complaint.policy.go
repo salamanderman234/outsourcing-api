@@ -26,7 +26,9 @@ func (ComplaintPolicy) ReadAll(claims jwt.Claims) bool {
 		return false
 	}
 	return c.Role == string(enums.AdminUserRole) ||
-		c.Role == string(enums.SuperAdminUserRole)
+		c.Role == string(enums.SuperAdminUserRole) ||
+		c.Role == string(enums.SupervisorUserRole) ||
+		c.Role == string(enums.ServiceUserRole)
 }
 
 func (ComplaintPolicy) Find(data any, claims jwt.Claims) bool {
