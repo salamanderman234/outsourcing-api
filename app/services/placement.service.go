@@ -65,6 +65,11 @@ func (placementService) CreatePlacement(ctx context.Context, data forms.Placemen
 				"supervisor does not meet the criteria to be placed on this placement (regency)",
 			)
 		}
+		if *supervisor.Status != string(enums.ActiveUserStatus) {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"supervisor is not available",
+			)
+		}
 
 		details := transaction.Details
 		totalEmployee := uint(0)
@@ -176,7 +181,7 @@ func (placementService) Read(ctx context.Context, q string, page uint) ([]models
 		Page:           page,
 		WithPagination: page > 0,
 		Params: []types.WhereQuery{
-			{Field: "status", Operator: "LIKE", Str: q},
+			{Field: "placements.status", Operator: "LIKE", Str: q},
 		},
 		Query: q,
 		Model: &models.Placement{},
@@ -203,8 +208,8 @@ func (placementService) Read(ctx context.Context, q string, page uint) ([]models
 			{Field: "placement_detail_employees.employee_id", Operator: "=", Str: employeeID},
 		}...)
 		params.Joins = append(params.Joins, []string{
-			"JOIN placement_details ON placement_details.placement_id = placements.id",
-			"JOIN placement_detail_employees ON placement_detail_employees.placement_detail_id = placement_details.id",
+			"JOIN placement_details ON placements.id = placement_details.placement_id",
+			"JOIN placement_detail_employees ON placement_details.id = placement_detail_employees.placement_detail_id",
 		}...)
 	}
 
@@ -263,6 +268,11 @@ func (placementService) PlaceNewEmployee(ctx context.Context, data forms.Placeme
 		if employeeRegency != placementRegency {
 			return types.ErrUnprocessableEntity.SetCustomMsg(
 				"employees cannot be placed on this placement (regency)",
+			)
+		}
+		if *employee.Status != string(enums.ActiveUserStatus) {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"employee is not available",
 			)
 		}
 		ongoing := string(enums.PlacementEmployeeOngoingStatus)

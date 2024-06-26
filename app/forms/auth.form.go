@@ -107,6 +107,7 @@ type EmployeeUpdateProfileForm struct {
 	Gender         *string    `json:"gender,omitempty" valid:"optional,in(l|p)"`
 	MarriageStatus *bool      `json:"marriage_status,omitempty"`
 	LastEducation  *string    `json:"last_education,omitempty" valid:"optional,in(sd,smp,sma,s1)"`
+	Status         *string    `json:"status,omitempty" valid:"optional,in(ACTIVE|NONACTIVE)"`
 }
 type SupervisorUpdateProfileForm struct {
 	Fullname       *string    `json:"fullname" valid:"optional,stringlength(1|255)"`
@@ -119,6 +120,7 @@ type SupervisorUpdateProfileForm struct {
 	NPWP           *string    `json:"npwp,omitempty" valid:"optional"`
 	Gender         *string    `json:"gender,omitempty" valid:"optional,in(l|p)"`
 	MarriageStatus *bool      `json:"marriage_status,omitempty"`
+	Status         *string    `json:"status,omitempty" valid:"optional,in(ACTIVE|NONACTIVE)"`
 }
 type ServiceUserUpdateProfileForm struct {
 	Fullname    *string    `json:"fullname" valid:"optional,stringlength(1|255)"`

@@ -61,6 +61,7 @@ type Supervisor struct {
 	Gender         *string    `json:"gender" visible:"true"`
 	MarriageStatus *bool      `json:"marriage_status" visible:"true"`
 	Phone          *string    `json:"phone" visible:"true"`
+	Status         *string    `json:"status"`
 }
 
 type Employee struct {
@@ -83,6 +84,7 @@ type Employee struct {
 	LastEducation      *string    `json:"last_education" visible:"true"`
 	Ijazah             *string    `json:"ijazah" visible:"true"`
 	FieldCertification *string    `json:"field_certification" visible:"true"`
+	Status             *string    `json:"status"`
 }
 
 type ServiceUser struct {
