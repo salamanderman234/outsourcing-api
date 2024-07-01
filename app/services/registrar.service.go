@@ -20,4 +20,5 @@ func RegisterAllServices() {
 	providers.ServiceProvider.UserService = NewUserService()
 	providers.ServiceProvider.FeedbackService = NewFeedbackService()
 	providers.ServiceProvider.ComplaintService = NewComplaintService()
+	providers.ServiceProvider.PerformanceService = NewPerformanceService()
 }

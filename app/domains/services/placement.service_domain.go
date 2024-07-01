@@ -19,5 +19,7 @@ type PlacementServiceInterface interface {
 	PlaceNewEmployee(ctx context.Context, data forms.PlacementDetailEmployeeCreateForm) (models.PlacementDetailEmployee, error)
 	EmployeePlacementDetail(ctx context.Context, id uint) (models.PlacementDetailEmployee, error)
 	CutoffEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint, data forms.PlacementDetailEmployeeUpdateForm) (uint, error)
+	SuspendEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint) (uint, error)
+	OngoingEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint) (uint, error)
 	RemoveEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint) (uint, error)
 }

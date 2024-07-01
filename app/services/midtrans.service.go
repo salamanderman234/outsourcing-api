@@ -5,8 +5,10 @@ import (
 	"crypto"
 	"encoding/hex"
 	"fmt"
+	"math"
 	"slices"
 	"strconv"
+	"time"
 
 	service_domains "github.com/salamanderman234/outsourcing-api/app/domains/services"
 	"github.com/salamanderman234/outsourcing-api/app/forms"
@@ -55,6 +57,7 @@ func (midtransService) CreatePaymentFromTransaction(ctx context.Context, orderID
 			"the transaction does not meet the criteria for using this service",
 		)
 	}
+
 	paymentMethod := *order.PaymentMethod
 	status := *order.Status
 
@@ -67,7 +70,8 @@ func (midtransService) CreatePaymentFromTransaction(ctx context.Context, orderID
 	}
 
 	if !slices.Contains([]string{
-		string(enums.WaitingForInitialPayment), string(enums.WaitingForFurtherPayments),
+		string(enums.WaitingForInitialPayment),
+		string(enums.WaitingForFurtherPayments),
 	}, status) {
 		return "", "", types.ErrUnprocessableEntity.SetCustomMsg(
 			"the transaction does not meet the criteria for using this service",
@@ -105,7 +109,7 @@ func (midtransService) CreatePaymentFromTransaction(ctx context.Context, orderID
 			}
 			percentage := int64(percentageAmount / float64(100))
 			totalAmount *= percentage
-		} else {
+		} else if dpStatus == string(enums.WaitingForRemainingDP) && status == string(enums.WaitingForFurtherPayments) {
 			totalAmount -= int64(paid)
 		}
 	} else if paymentMethod == string(enums.ThreeTermin) {
@@ -212,29 +216,37 @@ func (midtransService) AfterPaymentAction(ctx context.Context, form forms.Paymen
 		paymentStatus := string(enums.SuccessPayment)
 		transactionStatus := string(enums.WaitingForPlacement)
 		tranStatus := transaction.Status
+		method := transaction.PaymentMethod
 		if tranStatus != nil {
 			if *tranStatus == string(enums.WaitingForFurtherPayments) {
 				transactionStatus = string(enums.Ongoing)
 			}
 		}
-		if *tranStatus == string(enums.DpPayment) {
+		if *method == string(enums.DpPayment) {
 			dpStatus := transaction.DPStatus
 			if *dpStatus == string(enums.WaitingForDP) {
 				stat := string(enums.DPCompleted)
 				transaction.DPStatus = &stat
+				next := transaction.StartDate.Add((time.Duration(*transaction.ContractDuration) * 24) * time.Hour)
+				transaction.NextPaymentDeadline = &next
 			} else if *dpStatus == string(enums.WaitingForRemainingDP) {
 				stat := string(enums.DPRemainingCompleted)
 				transaction.DPStatus = &stat
 			}
-		}
-		if *tranStatus == string(enums.ThreeTermin) {
+		} else if *method == string(enums.ThreeTermin) {
 			terminStatus := transaction.TerminStatus
 			if *terminStatus == string(enums.WaitingForFirstTermin) {
 				stat := string(enums.FirstTerminCompleted)
 				transaction.TerminStatus = &stat
+				next := transaction.StartDate.Add((time.Duration(
+					math.Ceil(float64(*transaction.ContractDuration)*0.5),
+				) * 24) * time.Hour)
+				transaction.NextPaymentDeadline = &next
 			} else if *terminStatus == string(enums.WaitingForSecondTermin) {
 				stat := string(enums.SecondTerminCompleted)
 				transaction.TerminStatus = &stat
+				next := transaction.StartDate.Add((time.Duration(*transaction.ContractDuration) * 24) * time.Hour)
+				transaction.NextPaymentDeadline = &next
 			} else if *terminStatus == string(enums.WaitingForThirdTermin) {
 				stat := string(enums.ThirdTerminCompleted)
 				transaction.TerminStatus = &stat

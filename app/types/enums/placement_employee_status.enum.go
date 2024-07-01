@@ -6,4 +6,5 @@ var (
 	PlacementEmployeeSuspendStatus   = "suspend"
 	PlacementEmployeeDismissedStatus = "dismiss"
 	PlacementEmployeeOngoingStatus   = "ongoing"
+	PlacementEmployeeDoneStatus      = "done"
 )

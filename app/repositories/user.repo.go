@@ -25,6 +25,7 @@ func (userRepo) UpdateUser(ctx context.Context, id uint, data models.User) (mode
 			"SupervisorProfile",
 			"EmployeeProfile",
 			"ServiceUserProfile",
+			"SuperAdminProfile",
 		)
 		if err != nil {
 			return err

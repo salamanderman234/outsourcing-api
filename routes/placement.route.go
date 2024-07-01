@@ -19,7 +19,9 @@ func (placementRoute) RegisterRoutes(router *echo.Group) {
 	placementR.DELETE("/:id/", providers.ViewProvider.PlacementView.Delete)
 	placementR.POST("/employees/", providers.ViewProvider.PlacementView.PlaceEmployee)
 	placementR.GET("/employees/:id/", providers.ViewProvider.PlacementView.PlacementEmployeeDetail)
-	placementR.PATCH("/employees/:id/cutoff", providers.ViewProvider.PlacementView.CutoffEmployee)
+	placementR.PATCH("/employees/:id/cutoff/", providers.ViewProvider.PlacementView.CutoffEmployee)
+	placementR.PATCH("/employees/:id/suspend/", providers.ViewProvider.PlacementView.SuspendEmployee)
+	placementR.PATCH("/employees/:id/ongoing/", providers.ViewProvider.PlacementView.OngoingEmployee)
 	placementR.DELETE("/employees/:id/", providers.ViewProvider.PlacementView.RemoveEmployee)
 }
 

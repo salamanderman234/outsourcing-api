@@ -16,4 +16,6 @@ type PlacementViewInterface interface {
 	PlacementEmployeeDetail(c echo.Context) error
 	CutoffEmployee(c echo.Context) error
 	RemoveEmployee(c echo.Context) error
+	SuspendEmployee(c echo.Context) error
+	OngoingEmployee(c echo.Context) error
 }

@@ -44,6 +44,10 @@ func main() {
 		models.Feedback{},
 		models.Complaint{},
 		models.ComplaintReply{},
+		// performance
+		models.PerformanceForm{},
+		models.PerformanceFormFeedback{},
+		models.Performance{},
 	}
 	connection, err := configs.DatabaseConfig.ConnectDatabase()
 	if err != nil {

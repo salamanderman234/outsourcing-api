@@ -34,4 +34,10 @@ func (c *cron) AddDurationJob(every time.Duration, executed func()) {
 	c.scheduler.NewJob(interval, job)
 }
 
+func (c *cron) AddScheduleJob(hour uint, minute uint, second uint, executed func()) {
+	tim := gocron.DailyJob(1, gocron.NewAtTimes(gocron.NewAtTime(hour, minute, second)))
+	job := gocron.NewTask(executed)
+	c.scheduler.NewJob(tim, job)
+}
+
 var Cron = cron{}

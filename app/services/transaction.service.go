@@ -77,6 +77,12 @@ func (transactionService) Create(ctx context.Context, data forms.TransactionCrea
 			}
 		}
 
+		if data.ContractDuration >= 30 && (data.PaymentMethod == string(enums.DpPayment) || data.PaymentMethod == string(enums.ThreeTermin)) {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"only transactions with a minimum contract of 1 month or more can use term payments or down payment",
+			)
+		}
+
 		if transaction.Details != nil {
 			for index, detail := range transaction.Details {
 				var service models.Service
@@ -270,6 +276,19 @@ func (transactionService) ConfirmTransaction(ctx context.Context, id uint) error
 				)
 			}
 		}
+		paymentMethod := temp.PaymentMethod
+		if paymentMethod == nil {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"transaction status does not meet the criteria for using this service",
+			)
+		}
+		if *paymentMethod == string(enums.DpPayment) {
+			dpStatus := string(enums.WaitingForDP)
+			transaction.DPStatus = &dpStatus
+		} else if *paymentMethod == string(enums.ThreeTermin) {
+			terminStatus := string(enums.WaitingForFirstTermin)
+			transaction.TerminStatus = &terminStatus
+		}
 		return nil
 	}
 	err := baseUpdateFunc(ctx, policies.TransactionPolicy{}, id, &transaction, data, before)
@@ -278,6 +297,35 @@ func (transactionService) ConfirmTransaction(ctx context.Context, id uint) error
 
 func (transactionService) SetStatus(ctx context.Context, id uint, data forms.TransactionStatusUpdateForm) error {
 	var transaction models.Transaction
-	err := baseUpdateFunc(ctx, policies.MasterPolicy{}, id, &transaction, data)
+	before := func() error {
+		status := data.Status
+		transaction := models.Transaction{}
+
+		err := providers.RepoProvider.BaseRepo.Find(ctx, id, &transaction, "Placement")
+		if err != nil {
+			return err
+		}
+		if placement := transaction.Placements; len(placement) == 1 {
+			placementStat := string(enums.PlacementOngoingStatus)
+			if status == string(enums.Suspended) {
+				placementStat = string(enums.PlacementSuspendStatus)
+			} else if status == string(enums.Done) {
+				placementStat = string(enums.PlacementEndStatus)
+			}
+
+			placement[0].Status = &placementStat
+			placementID := placement[0].ID
+			err := providers.RepoProvider.BaseRepo.Update(
+				ctx,
+				[]uint{placementID},
+				&placement[0],
+			)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	err := baseUpdateFunc(ctx, policies.MasterPolicy{}, id, &transaction, data, before)
 	return err
 }

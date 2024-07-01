@@ -7,8 +7,9 @@ import (
 )
 
 type repoProvider struct {
-	BaseRepo repository_domains.BaseRepositoryInterface
-	UserRepo repository_domains.UserRepositoryInterface
+	BaseRepo        repository_domains.BaseRepositoryInterface
+	UserRepo        repository_domains.UserRepositoryInterface
+	PerformanceRepo repository_domains.PerformanceRepositoryInterface
 }
 
 type serviceProvider struct {
@@ -46,7 +47,7 @@ type viewProvider struct {
 	PlacementView                 view_domains.PlacementViewInterface
 	FeedbackView                  view_domains.FeedbackViewInterface
 	ComplaintView                 view_domains.ComplaintViewInterface
-	PerformanceView               view_domains.EmployeePerformanceInterface
+	PerformanceView               view_domains.PerformanceViewInterface
 	UIView                        view_domains.UIViewInterface
 }
 

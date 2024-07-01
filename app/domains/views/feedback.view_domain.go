@@ -19,4 +19,10 @@ type ComplaintViewInterface interface {
 	Delete(c echo.Context) error
 }
 
-type EmployeePerformanceInterface interface{}
+type PerformanceViewInterface interface {
+	CreateForm(c echo.Context) error
+	GetForm(c echo.Context) error
+	DeleteForm(c echo.Context) error
+	SubmitAnswer(c echo.Context) error
+	GetEmployeePerformances(c echo.Context) error
+}

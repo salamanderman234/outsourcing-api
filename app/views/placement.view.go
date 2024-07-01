@@ -66,6 +66,22 @@ func (placementView) CutoffEmployee(c echo.Context) error {
 	}
 	return baseUpdateFunc(c, &form, callback)
 }
+func (placementView) SuspendEmployee(c echo.Context) error {
+	data := struct{}{}
+	callback := func(ctx context.Context, id uint) (uint, any, error) {
+		retId, err := providers.ServiceProvider.PlacementService.SuspendEmployeePlacement(ctx, id)
+		return retId, nil, err
+	}
+	return baseUpdateFunc(c, &data, callback)
+}
+func (placementView) OngoingEmployee(c echo.Context) error {
+	data := struct{}{}
+	callback := func(ctx context.Context, id uint) (uint, any, error) {
+		retId, err := providers.ServiceProvider.PlacementService.OngoingEmployeePlacement(ctx, id)
+		return retId, nil, err
+	}
+	return baseUpdateFunc(c, &data, callback)
+}
 func (placementView) RemoveEmployee(c echo.Context) error {
 	callback := func(ctx context.Context, id uint) (uint, error) {
 		return providers.ServiceProvider.PlacementService.RemoveEmployeePlacement(ctx, id)

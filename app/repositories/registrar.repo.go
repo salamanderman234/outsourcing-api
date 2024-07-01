@@ -7,4 +7,5 @@ import (
 func RegisterAllRepos() {
 	providers.RepoProvider.BaseRepo = NewBaseRepo()
 	providers.RepoProvider.UserRepo = NewUserRepo()
+	providers.RepoProvider.PerformanceRepo = NewPerformanceRepo()
 }

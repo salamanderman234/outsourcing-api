@@ -102,6 +102,14 @@ func (placementService) CreatePlacement(ctx context.Context, data forms.Placemen
 		status := string(enums.PlacementOngoingStatus)
 		placement.Status = &status
 
+		schedule := string(enums.EndFormSchedule)
+		if duration > 90 {
+			schedule = string(enums.MonthlyFormSchedule)
+		} else if duration <= 90 && duration >= 30 {
+			schedule = string(enums.WeeklyFormSchedule)
+		}
+		placement.FormGenerateSchedule = &schedule
+
 		stat := string(enums.Ongoing)
 		transaction.Status = &stat
 		err = providers.RepoProvider.BaseRepo.Update(ctx, []uint{transaction.ID}, &transaction)
@@ -328,7 +336,7 @@ func (placementService) CutoffEmployeePlacement(ctx context.Context, placementDe
 		if err != nil {
 			return err
 		}
-		if *pl.Status != string(enums.PlacementEmployeeSuspendStatus) && *pl.Status != string(enums.PlacementEmployeeOngoingStatus) {
+		if *pl.Status == string(enums.PlacementEmployeeDismissedStatus) {
 			return types.ErrUnprocessableEntity.SetCustomMsg(
 				"employee placement status does not meet the requirements to use this service",
 			)
@@ -462,4 +470,27 @@ func (placementService) PlacementDetails(ctx context.Context, id uint) ([]models
 		&results,
 	)
 	return results, err
+}
+
+func (placementService) SuspendEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint) (uint, error) {
+	stat := string(enums.PlacementEmployeeSuspendStatus)
+	data := models.PlacementDetailEmployee{
+		Status: &stat,
+	}
+	result := models.PlacementDetailEmployee{}
+	err := baseUpdateFunc(ctx, policies.PlacementPolicy{}, placementDetailEmployeeID,
+		&result, data,
+	)
+	return placementDetailEmployeeID, err
+}
+func (placementService) OngoingEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint) (uint, error) {
+	stat := string(enums.PlacementEmployeeOngoingStatus)
+	data := models.PlacementDetailEmployee{
+		Status: &stat,
+	}
+	result := models.PlacementDetailEmployee{}
+	err := baseUpdateFunc(ctx, policies.PlacementPolicy{}, placementDetailEmployeeID,
+		&result, data,
+	)
+	return placementDetailEmployeeID, err
 }

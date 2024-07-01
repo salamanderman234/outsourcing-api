@@ -13,7 +13,7 @@ func (PerformancePolicy) Create(claims jwt.Claims) bool {
 	if !ok {
 		return false
 	}
-	return c.Role == string(enums.AdminUserRole) || true
+	return c.Role == string(enums.AdminUserRole) || c.Role == string(enums.SuperAdminRole) || c.Role == string(enums.SupervisorUserRole)
 }
 
 func (PerformancePolicy) ReadAll(claims jwt.Claims) bool {

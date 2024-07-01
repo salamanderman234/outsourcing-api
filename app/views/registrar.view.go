@@ -21,4 +21,5 @@ func RegisterAllViews() {
 	providers.ViewProvider.FeedbackView = NewFeedbackView()
 	providers.ViewProvider.ComplaintView = NewComplaintView()
 	providers.ViewProvider.UIView = NewUIView()
+	providers.ViewProvider.PerformanceView = NewPerformanceView()
 }

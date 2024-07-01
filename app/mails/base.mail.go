@@ -2,6 +2,7 @@ package mails
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"path"
 
@@ -30,7 +31,7 @@ func (m baseMail) GetTemplate() (string, error) {
 	}
 	var tpl bytes.Buffer
 	data := m.Data
-	data["app_base_url"] = configs.AppConfig.Url
+	data["app_base_url"] = fmt.Sprintf("%s/api/v%s", configs.AppConfig.Url, configs.AppConfig.ApiVersion)
 	data["app_name"] = configs.AppConfig.Name
 	if err := tmpl.Execute(&tpl, data); err != nil {
 		return "", err

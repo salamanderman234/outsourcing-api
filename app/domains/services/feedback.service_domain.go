@@ -2,6 +2,7 @@ package service_domains
 
 import (
 	"context"
+	"time"
 
 	"github.com/salamanderman234/outsourcing-api/app/forms"
 	"github.com/salamanderman234/outsourcing-api/app/models"
@@ -29,7 +30,8 @@ type ComplaintServiceInterface interface {
 
 type PerformanceServiceInterface interface {
 	CreateForm(ctx context.Context, placementID uint) (models.PerformanceForm, error)
+	GetForm(ctx context.Context, formId uint) (models.PerformanceForm, error)
 	DeleteForm(ctx context.Context, formID uint) error
 	SubmitAnswer(ctx context.Context, data forms.PerformanceSubmitForm) error
-	GetEmployeePerformances(ctx context.Context, employeeID uint, month uint, year uint) ([]models.Performance, error)
+	GetEmployeePerformances(ctx context.Context, employeeID uint, from *time.Time, to *time.Time) ([]models.Performance, error)
 }

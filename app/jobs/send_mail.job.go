@@ -1,6 +1,7 @@
 package jobs
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/salamanderman234/outsourcing-api/app/domains"
@@ -38,6 +39,7 @@ func (s sendMailJob) Handle(err chan<- error) {
 	errs = helpers.Mailer.SendEmail(s.To, mail.GetSubject(), tmpl)
 	if errs != nil {
 		err <- errs
+		helpers.Logger.Error(fmt.Sprintf("(Job) Failed to execute job <Send Mail Job>: %s", errs.Error()))
 	}
 }
 

@@ -26,17 +26,18 @@ func (UserPolicy) ReadAll(claims jwt.Claims) bool {
 }
 
 func (UserPolicy) Find(data any, claims jwt.Claims) bool {
-	c, ok := claims.(types.JWTCLaims)
-	if !ok {
-		return false
-	}
-	user, ok := data.(*models.User)
-	if !ok {
-		return false
-	}
-	role := c.Role
-	id, _ := strconv.Atoi(c.ID)
-	return (role == string(enums.AdminUserRole) || role == string(enums.SuperAdminRole)) || user.ID == uint(id)
+	// c, ok := claims.(types.JWTCLaims)
+	// if !ok {
+	// 	return false
+	// }
+	// user, ok := data.(*models.User)
+	// if !ok {
+	// 	return false
+	// }
+	// role := c.Role
+	// id, _ := strconv.Atoi(c.ID)
+	// return (role == string(enums.AdminUserRole) || role == string(enums.SuperAdminRole)) || user.ID == uint(id)
+	return true
 }
 
 func (UserPolicy) Update(data any, claims jwt.Claims) bool {
