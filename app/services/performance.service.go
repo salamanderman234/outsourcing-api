@@ -75,6 +75,9 @@ func (performanceService) SubmitAnswer(ctx context.Context, data forms.Performan
 	if *form.Placement.Transaction.ServiceUserID != claims.ProfileID {
 		return types.ErrForbiden
 	}
+	if form.FilledDate != nil {
+		return types.ErrUnprocessableEntity.SetCustomMsg("you already filled this form")
+	}
 	answers := data.Details
 	performances := []models.Performance{}
 	for _, answer := range answers {
@@ -114,6 +117,14 @@ func (performanceService) SubmitAnswer(ctx context.Context, data forms.Performan
 		return err
 	}
 	err = providers.RepoProvider.BaseRepo.Create(ctx, performances)
+	if err != nil {
+		return err
+	}
+	now := time.Now()
+	form.FilledDate = &now
+	err = providers.RepoProvider.BaseRepo.Update(ctx, []uint{
+		form.ID,
+	}, &form)
 	if err != nil {
 		return err
 	}

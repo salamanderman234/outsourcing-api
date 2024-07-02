@@ -51,6 +51,9 @@ func (authService) Login(ctx context.Context, creds forms.LoginForm) (models.Use
 	if err != nil {
 		return models.User{}, "", err
 	}
+	if user.VerifiedAt == nil {
+		return models.User{}, "", types.ErrNotVerifiedUser
+	}
 	// create auth token
 	tkn, err := helpers.JWT.CreateToken(user, enums.AuthenticationTokenType)
 	if err != nil {

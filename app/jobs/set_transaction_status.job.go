@@ -30,24 +30,53 @@ func (setTransactionStatusJob) Handle(err chan<- error) {
 		helpers.Logger.Error(fmt.Sprintf("(Job) Failed to execute job <Set Transaction Status Job> : %s", errs.Error()))
 		err <- errs
 	}
-
 	for _, transaction := range transactions {
 		method := transaction.PaymentMethod
+		nextDeadline := transaction.NextPaymentDeadline
 
 		if method == nil {
 			continue
 		}
 
-		if *method == string(enums.DpPayment) {
-			nextDeadline := transaction.NextPaymentDeadline
-			if time.Now().Day() == nextDeadline.Day() &&
-				time.Now().Month() == nextDeadline.Month() &&
-				time.Now().Year() == nextDeadline.Year() {
+		if nextDeadline == nil {
+			continue
+		}
+		if time.Now().Day() == nextDeadline.Day() &&
+			time.Now().Month() == nextDeadline.Month() &&
+			time.Now().Year() == nextDeadline.Year() {
 
+			status := string(enums.WaitingForFurtherPayments)
+			if *method == string(enums.DpPayment) {
+				dpStatus := string(enums.WaitingForRemainingDP)
+				transaction.Status = &status
+				transaction.DPStatus = &dpStatus
+
+				providers.RepoProvider.BaseRepo.Update(context.Background(), []uint{
+					transaction.ID,
+				}, &transaction)
+			} else if *method == string(enums.ThreeTermin) {
+				terminStatus := transaction.TerminStatus
+				if *terminStatus == string(enums.FirstTerminCompleted) {
+					changeTerminStatus := string(enums.WaitingForSecondTermin)
+					transaction.TerminStatus = &changeTerminStatus
+					transaction.Status = &status
+
+					providers.RepoProvider.BaseRepo.Update(context.Background(), []uint{
+						transaction.ID,
+					}, &transaction)
+				} else if *terminStatus == string(enums.SecondTerminCompleted) {
+					changeTerminStatus := string(enums.WaitingForThirdTermin)
+					transaction.TerminStatus = &changeTerminStatus
+					transaction.Status = &status
+
+					providers.RepoProvider.BaseRepo.Update(context.Background(), []uint{
+						transaction.ID,
+					}, &transaction)
+				}
 			}
-		} else if *method == string(enums.ThreeTermin) {
 
 		}
+
 	}
 }
 

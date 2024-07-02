@@ -24,4 +24,5 @@ type MasterPaymentConfigViewInterface interface {
 	SetDPPercentage(c echo.Context) error
 	Set3TerminFirst(c echo.Context) error
 	Set3TerminSecond(c echo.Context) error
+	GetConfigs(c echo.Context) error
 }

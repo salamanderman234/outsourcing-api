@@ -222,5 +222,12 @@ func (paymentConfigMasterView) Set3TerminSecond(c echo.Context) error {
 	}
 	return baseUpdateFunc(c, &form, callback)
 }
+func (paymentConfigMasterView) GetConfigs(c echo.Context) error {
+	callback := func(ctx context.Context, q string, page uint) (any, *types.Pagination, error) {
+		result, err := providers.ServiceProvider.MasterPaymentConfigService.GetConfigs(ctx)
+		return result, nil, err
+	}
+	return baseReadFunc(c, callback)
+}
 
 // end of payment config

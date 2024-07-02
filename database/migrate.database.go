@@ -15,6 +15,9 @@ func main() {
 		models.Province{},
 		models.Regency{},
 		models.Category{},
+		models.Question{},
+		models.CategoryQuestion{},
+		models.PaymentConfig{},
 		// user
 		models.User{},
 		models.Admin{},

@@ -51,4 +51,5 @@ type MasterPaymentConfigServiceInterface interface {
 	SetDPPercentage(ctx context.Context, amount uint) error
 	Set3TerminFirst(ctx context.Context, amount uint) error
 	Set3TerminSecond(ctx context.Context, amount uint) error
+	GetConfigs(ctx context.Context) ([]models.PaymentConfig, error)
 }

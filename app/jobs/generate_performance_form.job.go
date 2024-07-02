@@ -48,7 +48,7 @@ func (s generatePerformanceForm) Handle(err chan<- error) {
 		success := true
 		placementID := placement.ID
 		generateFunc := func() {
-			errs := providers.RepoProvider.BaseRepo.Create(context.Background(), models.PerformanceForm{
+			errs := providers.RepoProvider.BaseRepo.Create(context.Background(), &models.PerformanceForm{
 				PlacementID: &placementID,
 				Date:        &date,
 			})

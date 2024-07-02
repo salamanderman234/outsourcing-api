@@ -23,6 +23,7 @@ type Placement struct {
 	FormGenerateSchedule *string           `json:"form_generate_schedule"`
 	LastFormDate         *time.Time        `json:"last_form_date"`
 	NextFormDate         *time.Time        `json:"next_form_date"`
+	Forms                []PerformanceForm `json:"forms"`
 }
 
 type PlacementDetail struct {

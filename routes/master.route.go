@@ -37,8 +37,8 @@ func (masterRoute) RegisterRoutes(router *echo.Group) {
 	userRoute.PATCH("/:id/", providers.ViewProvider.UserView.Update, custom_middlewares.MustVerifyUser)
 	// question
 	questionRoute := router.Group("/questions")
-	questionRoute.GET("/", providers.ViewProvider.MasterQuestionView.Read)
 	questionRoute.POST("/", providers.ViewProvider.MasterQuestionView.Create)
+	questionRoute.GET("/", providers.ViewProvider.MasterQuestionView.Read)
 	questionRoute.GET("/:id/", providers.ViewProvider.MasterQuestionView.Find)
 	questionRoute.PATCH("/:id/", providers.ViewProvider.MasterQuestionView.Update)
 	questionRoute.DELETE("/:id/", providers.ViewProvider.MasterQuestionView.Delete)
@@ -49,6 +49,7 @@ func (masterRoute) RegisterRoutes(router *echo.Group) {
 	paymentConfigRoute.PATCH("/set_dp_percentage/", providers.ViewProvider.MasterPaymentConfigView.SetDPPercentage)
 	paymentConfigRoute.PATCH("/set_3_termin_first_percentage/", providers.ViewProvider.MasterPaymentConfigView.Set3TerminFirst)
 	paymentConfigRoute.PATCH("/set_3_termin_second_percentage/", providers.ViewProvider.MasterPaymentConfigView.Set3TerminSecond)
+	paymentConfigRoute.GET("/", providers.ViewProvider.MasterPaymentConfigView.GetConfigs)
 }
 
 func init() {

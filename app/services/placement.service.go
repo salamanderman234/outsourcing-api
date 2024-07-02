@@ -151,6 +151,7 @@ func (placementService) GetPlacementOrder(ctx context.Context, id uint) (models.
 			"Details.Employees",
 			"Details.Employees.Employee",
 			"Details.Employees.Employee.User",
+			"Forms",
 		},
 	}
 
@@ -179,6 +180,7 @@ func (placementService) Find(ctx context.Context, id uint) (models.Placement, er
 		"Details.Employees",
 		"Details.Employees.Employee",
 		"Details.Employees.Employee.User",
+		"Forms",
 	)
 	return placement, err
 }
@@ -201,6 +203,7 @@ func (placementService) Read(ctx context.Context, q string, page uint) ([]models
 			"Details.Employees",
 			"Details.Employees.Employee",
 			"Details.Employees.Employee.User",
+			"Forms",
 		},
 	}
 	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)

@@ -224,15 +224,17 @@ func (questionMasterService) AssignQuestion(ctx context.Context, data forms.Mast
 }
 func (questionMasterService) UnassignQuestion(ctx context.Context, data forms.MasterQuestionUnassignForm) error {
 	id := uint(0)
-	before := func() error {
-		var exists models.CategoryQuestion
-		err := providers.RepoProvider.BaseRepo.FindWhere(ctx, map[string]any{
-			"category_id": data.CategoryID,
-			"question_id": data.QuestionID,
-		}, &exists)
+	var exists models.CategoryQuestion
+	err := providers.RepoProvider.BaseRepo.FindWhere(ctx, map[string]any{
+		"category_id": data.CategoryID,
+		"question_id": data.QuestionID,
+	}, &exists)
+	if err != nil {
 		return err
 	}
-	err := baseDeleteFunc(ctx, policies.MasterPolicy{}, id, &models.CategoryQuestion{}, before)
+	id = exists.ID
+
+	err = baseDeleteFunc(ctx, policies.MasterPolicy{}, id, &models.CategoryQuestion{})
 	return err
 }
 
@@ -324,6 +326,9 @@ func (paymentConfigMasterService) SetDPPercentage(ctx context.Context, amount ui
 		)
 		return types.ErrForbiden
 	}
+	if amount > 100 {
+		return types.ErrValidate.SetCustomMsg("amount cannot exceed 100")
+	}
 	params := types.DBSearchParams{
 		Params: []types.WhereQuery{
 			{Field: "type", Operator: "=", Str: string(enums.DpPayment)},
@@ -337,6 +342,8 @@ func (paymentConfigMasterService) SetDPPercentage(ctx context.Context, amount ui
 		data.Type = &typ
 		subtyp := string(enums.DPSubType)
 		data.SubType = &subtyp
+		floatAmount := float32(amount)
+		data.Amount = &floatAmount
 		return providers.RepoProvider.BaseRepo.Create(ctx, &data)
 	} else {
 		err := providers.RepoProvider.BaseRepo.FindWhere(ctx, map[string]any{
@@ -360,6 +367,9 @@ func (paymentConfigMasterService) Set3TerminFirst(ctx context.Context, amount ui
 			fmt.Sprintf("(Forbidden) User: %s", claims.Email),
 		)
 		return types.ErrForbiden
+	}
+	if amount > 100 {
+		return types.ErrValidate.SetCustomMsg("amount cannot exceed 100")
 	}
 	params := types.DBSearchParams{
 		Params: []types.WhereQuery{
@@ -398,6 +408,18 @@ func (paymentConfigMasterService) Set3TerminSecond(ctx context.Context, amount u
 		)
 		return types.ErrForbiden
 	}
+	firstTermin := models.PaymentConfig{}
+	firstTerminAmount := float32(20)
+	providers.RepoProvider.BaseRepo.FindWhere(ctx, map[string]any{
+		"type":     string(enums.ThreeTermin),
+		"sub_type": string(enums.ThreeTerminFirstSubType),
+	}, &firstTermin)
+	if firstTermin.Amount != nil {
+		firstTerminAmount = *firstTermin.Amount
+	}
+	if float32(amount)+firstTerminAmount > 100 {
+		return types.ErrValidate.SetCustomMsg("sum of first termin and second termin amount cannot exceed 100")
+	}
 	params := types.DBSearchParams{
 		Params: []types.WhereQuery{
 			{Field: "type", Operator: "=", Str: string(enums.ThreeTermin)},
@@ -424,6 +446,20 @@ func (paymentConfigMasterService) Set3TerminSecond(ctx context.Context, amount u
 		data.Amount = &floatAmount
 		return providers.RepoProvider.BaseRepo.Update(ctx, []uint{data.ID}, &data)
 	}
+}
+func (paymentConfigMasterService) GetConfigs(ctx context.Context) ([]models.PaymentConfig, error) {
+	var results []models.PaymentConfig
+	params := types.DBSearchParams{
+		Model: &models.PaymentConfig{},
+	}
+
+	_, err := baseReadFunc(
+		ctx,
+		policies.MasterPolicy{},
+		params,
+		&results,
+	)
+	return results, err
 }
 
 // end of payment config
