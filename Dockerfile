@@ -2,15 +2,12 @@ FROM golang:1.21.12
 
 COPY . /app/
 
-# RUN mv /app/build/.env .env
-RUN cp /app/.env .env
+WORKDIR /app
 
-RUN cd /app && go build /app/
+RUN go build
 
-RUN chmod +x /app/outsourcing-api
-
-RUN /app/migrate
+RUN chmod +x ./outsourcing-api
 
 EXPOSE 8080
 
-CMD ["/app/outsourcing-api"]
+CMD ["./outsourcing-api"]
