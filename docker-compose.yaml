@@ -1,0 +1,24 @@
+services:
+ database:
+  container_name: mysql-server
+  image: mysql
+  ports:
+   - 2232:3306
+  networks:
+   - default
+  environment:
+   MYSQL_ROOT_PASSWORD: test
+ api: 
+  container_name: outsourcing-api
+  build: .
+  ports:
+   - 8080:8080
+  networks:
+   - default
+  depends_on:
+   - database
+networks:
+ default:
+  name: default-network
+
+

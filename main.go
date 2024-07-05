@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -15,6 +16,7 @@ import (
 	"github.com/salamanderman234/outsourcing-api/configs"
 	"github.com/salamanderman234/outsourcing-api/routes"
 	templates "github.com/salamanderman234/outsourcing-api/views"
+	"gorm.io/gorm"
 )
 
 func init() {
@@ -54,13 +56,18 @@ func main() {
 	// }))
 
 	// set up database connection
-	connection, err := configs.DatabaseConfig.ConnectDatabase()
-	helpers.Logger.Info("(Database) Attempt to connect database...")
-	providers.SetConnection(connection)
-	if err != nil {
-		helpers.Logger.Fatal(fmt.Sprintf("(Database) Failed to connect database, msg: %s", err.Error()))
-		panic(err)
+	connectDB := func() (*gorm.DB, error) {
+		return configs.DatabaseConfig.ConnectDatabase()
 	}
+	helpers.Logger.Info("(Database) Attempt to connect database...")
+	connection, err := connectDB()
+	for err != nil {
+		helpers.Logger.Fatal(fmt.Sprintf("(Database) Failed to connect database, msg: %s", err.Error()))
+		helpers.Logger.Info("(Database) Retrying to connect in 3s...")
+		time.Sleep(3 * time.Second)
+		connection, err = connectDB()
+	}
+	providers.SetConnection(connection)
 	helpers.Logger.Info("(Database) Successfully connect into the database !")
 
 	// set up app
