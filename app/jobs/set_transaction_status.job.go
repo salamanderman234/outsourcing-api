@@ -2,11 +2,9 @@ package jobs
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/salamanderman234/outsourcing-api/app/domains"
-	"github.com/salamanderman234/outsourcing-api/app/helpers"
 	"github.com/salamanderman234/outsourcing-api/app/models"
 	"github.com/salamanderman234/outsourcing-api/app/providers"
 	"github.com/salamanderman234/outsourcing-api/app/types"
@@ -21,15 +19,15 @@ func NewSetTransactionStatusJob() domains.JobInterface {
 
 func (setTransactionStatusJob) Handle(err chan<- error) {
 	var transactions []models.Transaction
-	_, errs := providers.RepoProvider.BaseRepo.ReadAll(context.Background(), &transactions, types.DBSearchParams{
+	providers.RepoProvider.BaseRepo.ReadAll(context.Background(), &transactions, types.DBSearchParams{
 		Params: []types.WhereQuery{
 			{Field: "status", Operator: "=", Str: string(enums.Ongoing)},
 		},
 	})
-	if errs != nil {
-		helpers.Logger.Error(fmt.Sprintf("(Job) Failed to execute job <Set Transaction Status Job> : %s", errs.Error()))
-		err <- errs
-	}
+	// if errs != nil {
+	// 	helpers.Logger.Error(fmt.Sprintf("(Job) Failed to execute job <Set Transaction Status Job> : %s", errs.Error()))
+	// 	err <- errs
+	// }
 	for _, transaction := range transactions {
 		method := transaction.PaymentMethod
 		nextDeadline := transaction.NextPaymentDeadline

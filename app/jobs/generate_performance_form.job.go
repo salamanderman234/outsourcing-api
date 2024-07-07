@@ -23,16 +23,16 @@ func NewGeneratePerformanceFormJob() domains.JobInterface {
 func (s generatePerformanceForm) Handle(err chan<- error) {
 	date := time.Now()
 	var placements []models.Placement
-	_, errs := providers.RepoProvider.BaseRepo.ReadAll(context.Background(), &placements, types.DBSearchParams{
+	providers.RepoProvider.BaseRepo.ReadAll(context.Background(), &placements, types.DBSearchParams{
 		Params: []types.WhereQuery{
 			{Field: "status", Operator: "=", Str: string(enums.PlacementOngoingStatus)},
 			{Field: "status", Operator: "=", Str: string(enums.PlacementSuspendStatus), IsOr: true},
 		},
 	})
-	if errs != nil {
-		helpers.Logger.Error(fmt.Sprintf("(Job) Failed to execute job <Performance Form Job> : %s", errs.Error()))
-		err <- errs
-	}
+	// if errs != nil {
+	// 	helpers.Logger.Error(fmt.Sprintf("(Job) Failed to execute job <Performance Form Job> : %s", errs.Error()))
+	// 	err <- errs
+	// }
 	for _, placement := range placements {
 		schedule := placement.FormGenerateSchedule
 		last := placement.LastFormDate
