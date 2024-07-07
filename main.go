@@ -81,6 +81,9 @@ func main() {
 	// scheduler
 	jobs.RunCron()
 
+	// init first user
+	services.Init()
+
 	// start
 	helpers.Logger.Info("(Server) Starting the server...")
 	server.Logger.Fatal(server.Start(":8080"))
