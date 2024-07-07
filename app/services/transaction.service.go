@@ -77,9 +77,9 @@ func (transactionService) Create(ctx context.Context, data forms.TransactionCrea
 			}
 		}
 
-		if data.ContractDuration >= 30 && (data.PaymentMethod == string(enums.DpPayment) || data.PaymentMethod == string(enums.ThreeTermin)) {
+		if data.ContractDuration < 30 && (data.PaymentMethod == string(enums.DpPayment) || data.PaymentMethod == string(enums.ThreeTermin)) {
 			return types.ErrUnprocessableEntity.SetCustomMsg(
-				"only transactions with a minimum contract of 1 month or more can use term payments or down payment",
+				"only transactions with a minimum contract of 1 month or more can use termin payment or down payment",
 			)
 		}
 

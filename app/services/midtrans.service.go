@@ -107,8 +107,9 @@ func (midtransService) CreatePaymentFromTransaction(ctx context.Context, orderID
 			if paymentConfig.Amount != nil {
 				percentageAmount = float64(*paymentConfig.Amount)
 			}
-			percentage := int64(percentageAmount / float64(100))
-			totalAmount *= percentage
+			percentage := percentageAmount / float64(100)
+			totalAmountFloat := float64(totalAmount) * percentage
+			totalAmount = int64(math.Ceil(totalAmountFloat))
 		} else if dpStatus == string(enums.WaitingForRemainingDP) && status == string(enums.WaitingForFurtherPayments) {
 			totalAmount -= int64(paid)
 		}
@@ -138,11 +139,13 @@ func (midtransService) CreatePaymentFromTransaction(ctx context.Context, orderID
 			float50 = *paymentConfigSecond.Amount
 		}
 		if terminStatus == string(enums.WaitingForFirstTermin) && status == string(enums.WaitingForInitialPayment) {
-			percentage := int64(float20 / float32(100))
-			totalAmount *= percentage
+			percentage := float20 / float32(100)
+			totalAmountFloat := float32(totalAmount) * percentage
+			totalAmount = int64(math.Ceil(float64(totalAmountFloat)))
 		} else if terminStatus == string(enums.WaitingForSecondTermin) && status == string(enums.WaitingForFurtherPayments) {
-			percentage := int64(float50 / float32(100))
-			totalAmount *= percentage
+			percentage := float50 / float32(100)
+			totalAmountFloat := float32(totalAmount) * percentage
+			totalAmount = int64(math.Ceil(float64(totalAmountFloat)))
 		} else if terminStatus == string(enums.WaitingForThirdTermin) && status == string(enums.WaitingForFurtherPayments) {
 			totalAmount -= int64(paid)
 		}
@@ -167,6 +170,7 @@ func (midtransService) CreatePaymentFromTransaction(ctx context.Context, orderID
 	idStr := strconv.Itoa(int(payment.ID))
 	resp, errMid := helpers.Midtrans.CreatePayment(idStr, totalAmount, items, *userClient)
 	if errMid != nil {
+		providers.RepoProvider.BaseRepo.Delete(ctx, []uint{payment.ID}, &models.Payment{})
 		return "", "", errMid
 	}
 	token := resp.Token

@@ -10,7 +10,7 @@ services:
    MYSQL_ROOT_PASSWORD: test
    MYSQL_DATABASE: db_ta_outsourcing
   volumes:
-   - app:/var/lib/mysql
+   - db:/var/lib/mysql
  api: 
   container_name: outsourcing-api
   build: .
@@ -20,11 +20,14 @@ services:
    - default
   depends_on:
    - database
+  volumes:
+   - app:/app/storage/
 networks:
  default:
   name: default-network
 
 volumes:
+ db:
  app:
 
 

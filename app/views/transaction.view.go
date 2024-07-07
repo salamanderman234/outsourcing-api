@@ -107,6 +107,7 @@ func (transactionView) AskForMOU(c echo.Context) error {
 
 	status, resp := helpers.Response.CreateResponse(types.ResponseParams{
 		Action: enums.UpdateAction,
+		Data:   map[string]any{"detail": "updated"},
 		Error:  err,
 	})
 	return c.JSON(status, resp)
