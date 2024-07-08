@@ -301,7 +301,7 @@ func (transactionService) SetStatus(ctx context.Context, id uint, data forms.Tra
 		status := data.Status
 		transaction := models.Transaction{}
 
-		err := providers.RepoProvider.BaseRepo.Find(ctx, id, &transaction, "Placement")
+		err := providers.RepoProvider.BaseRepo.Find(ctx, id, &transaction, "Placements")
 		if err != nil {
 			return err
 		}

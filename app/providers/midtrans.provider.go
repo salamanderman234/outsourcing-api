@@ -10,10 +10,10 @@ var MidtransClient snap.Client
 
 func SetMidtransClient() {
 	serverKey := configs.MidtransConfig.ServerKey
-	environment := configs.AppConfig.Env
+	// environment := configs.AppConfig.Env
 	midtransEnv := midtrans.Sandbox
-	if environment == "production" {
-		midtransEnv = midtrans.Production
-	}
+	// if environment == "production" {
+	// 	midtransEnv = midtrans.Production
+	// }
 	MidtransClient.New(serverKey, midtransEnv)
 }
