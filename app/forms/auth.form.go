@@ -16,7 +16,7 @@ type ResetPasswordForm struct {
 	ResetToken  string `json:"reset_token" form:"reset_token" valid:"required"`
 }
 type VerifyUserForm struct {
-	UserID uint `json:"user_id" form:"user_id" valid:"required"`
+	UserID uint `json:"user_id" form:"user_id" query:"user_id" valid:"required"`
 }
 
 type UserRegisterForm struct {

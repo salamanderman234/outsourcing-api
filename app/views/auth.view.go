@@ -1,7 +1,9 @@
 package views
 
 import (
+	"context"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	view_domains "github.com/salamanderman234/outsourcing-api/app/domains/views"
@@ -130,13 +132,16 @@ func (authView) ResetPassword(c echo.Context) error {
 }
 func (authView) VerifyUser(c echo.Context) error {
 	var form forms.VerifyUserForm
+	// if err := c.Bind(&form); err != nil {
+	// 	status, resp := helpers.Response.CreateResponse(types.ResponseParams{
+	// 		Error: err,
+	// 	})
+	// 	return c.JSON(status, resp)
+	// }
+	userID := c.Param("user_id")
+	userIDint, _ := strconv.Atoi(userID)
+	form.UserID = uint(userIDint)
 	ctx := c.Request().Context()
-	if err := c.Bind(&form); err != nil {
-		status, resp := helpers.Response.CreateResponse(types.ResponseParams{
-			Error: err,
-		})
-		return c.JSON(status, resp)
-	}
 	err := providers.ServiceProvider.AuthService.VerifyEmail(ctx, form)
 	status, resp := helpers.Response.CreateResponse(types.ResponseParams{
 		Action: enums.ReadAction,
@@ -161,4 +166,12 @@ func (authView) RouteList(c echo.Context) error {
 	})
 	return c.JSON(status, resp)
 
+}
+
+func (authView) SendVerify(c echo.Context) error {
+	callback := func(ctx context.Context, id uint) (any, error) {
+		err := providers.ServiceProvider.AuthService.SendVerifyEmail(ctx, id)
+		return nil, err
+	}
+	return baseFindFunc(c, callback)
 }

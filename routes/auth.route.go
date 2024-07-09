@@ -16,8 +16,9 @@ func (authRoute) RegisterRoutes(router *echo.Group) {
 	changePass.Name = "auth.change-password"
 	resetPass := router.POST("/reset/", providers.ViewProvider.AuthView.ResetPassword)
 	resetPass.Name = "auth.reset-password"
-	verifyUser := router.POST("/verify/", providers.ViewProvider.AuthView.VerifyUser)
+	verifyUser := router.GET("/:user_id/verify/", providers.ViewProvider.AuthView.VerifyUser)
 	verifyUser.Name = "auth.verify"
+	router.POST("/:id/send_verify/", providers.ViewProvider.AuthView.SendVerify)
 }
 
 func init() {

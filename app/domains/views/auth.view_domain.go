@@ -8,4 +8,5 @@ type AuthViewInterface interface {
 	ChangePassword(c echo.Context) error
 	ResetPassword(c echo.Context) error
 	VerifyUser(c echo.Context) error
+	SendVerify(c echo.Context) error
 }

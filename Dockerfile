@@ -4,6 +4,10 @@ COPY . /app/
 
 WORKDIR /app
 
+RUN mv .env .env.dev
+
+RUN mv .env.production .env
+
 RUN go build
 
 RUN chmod +x ./outsourcing-api

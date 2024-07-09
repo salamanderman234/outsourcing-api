@@ -114,6 +114,8 @@ func (authService) RegisterUser(
 				"missing employee_profile field",
 			)
 		}
+		active := string(enums.ActiveUserStatus)
+		User.EmployeeProfile.Status = &active
 		User.AdminProfile = nil
 		User.SuperAdminProfile = nil
 		User.ServiceUserProfile = nil
@@ -124,6 +126,8 @@ func (authService) RegisterUser(
 				"missing supervisor_profile field",
 			)
 		}
+		active := string(enums.ActiveUserStatus)
+		User.SupervisorProfile.Status = &active
 		User.AdminProfile = nil
 		User.SuperAdminProfile = nil
 		User.EmployeeProfile = nil
@@ -246,6 +250,9 @@ func (authService) SendVerifyEmail(ctx context.Context, id uint) error {
 	var user models.User
 	err := providers.RepoProvider.BaseRepo.Find(ctx, id, &user)
 	if err != nil {
+		return nil
+	}
+	if user.VerifiedAt != nil {
 		return nil
 	}
 	email := *user.Email
