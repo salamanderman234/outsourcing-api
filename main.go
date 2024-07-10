@@ -30,7 +30,10 @@ func main() {
 	server.Static("/public", "./views/public")
 	server.Renderer = &templates.DefaultTemplate
 	// set up middleware
-	server.Use(middleware.CORS())
+	server.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowCredentials: true,
+		AllowOrigins:     []string{"http://localhost:3000", "http://web.salamanderman.my.id"},
+	}))
 	server.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogStatus:    true,
 		LogURI:       true,
