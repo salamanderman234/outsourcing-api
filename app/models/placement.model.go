@@ -4,22 +4,22 @@ import "time"
 
 type Placement struct {
 	Model
-	TransactionID        *uint             `json:"transaction_id,omitempty"`
-	Transaction          *Transaction      `json:"transaction,omitempty"`
-	SupervisorID         *uint             `json:"supervisor_id,omitempty"`
-	Supervisor           *Supervisor       `json:"supervisor,omitempty"`
-	RegencyID            *uint             `json:"regency_id,omitempty"`
-	Regency              *Regency          `json:"regency,omitempty"`
-	StartDate            *time.Time        `json:"start_date,omitempty"`
-	EndDate              *time.Time        `json:"end_date,omitempty"`
-	Status               *string           `json:"status,omitempty"`
-	Note                 *string           `json:"note,omitempty"`
-	Duration             *uint             `json:"duration,omitempty"`
-	TotalEmployee        *uint             `json:"total_employee,omitempty"`
-	Name                 *string           `json:"name,omitempty"`
-	CompanyName          *string           `json:"company_name,omitempty"`
-	Address              *string           `json:"address,omitempty"`
-	Details              []PlacementDetail `json:"details,omitempty"`
+	TransactionID        *uint             `json:"transaction_id"`
+	Transaction          *Transaction      `json:"transaction"`
+	SupervisorID         *uint             `json:"supervisor_id"`
+	Supervisor           *Supervisor       `json:"supervisor"`
+	RegencyID            *uint             `json:"regency_id"`
+	Regency              *Regency          `json:"regency"`
+	StartDate            *time.Time        `json:"start_date"`
+	EndDate              *time.Time        `json:"end_date"`
+	Status               *string           `json:"status"`
+	Note                 *string           `json:"note"`
+	Duration             *uint             `json:"duration"`
+	TotalEmployee        *uint             `json:"total_employee"`
+	Name                 *string           `json:"name"`
+	CompanyName          *string           `json:"company_name"`
+	Address              *string           `json:"address"`
+	Details              []PlacementDetail `json:"details"`
 	FormGenerateSchedule *string           `json:"form_generate_schedule"`
 	LastFormDate         *time.Time        `json:"last_form_date"`
 	NextFormDate         *time.Time        `json:"next_form_date"`
@@ -28,31 +28,31 @@ type Placement struct {
 
 type PlacementDetail struct {
 	Model
-	PlacementID   *uint                     `json:"placement_id,omitempty"`
-	Placement     *Placement                `json:"placement,omitempty"`
-	ServiceID     *uint                     `json:"service_id,omitempty"`
-	Service       *Service                  `json:"service,omitempty"`
-	TotalEmployee *uint                     `json:"total_employee,omitempty"`
-	Filled        *uint                     `json:"filled,omitempty"`
-	Employees     []PlacementDetailEmployee `json:"employees,omitempty"`
-	Salary        *uint                     `json:"salary,omitempty"`
+	PlacementID   *uint                     `json:"placement_id"`
+	Placement     *Placement                `json:"placement"`
+	ServiceID     *uint                     `json:"service_id"`
+	Service       *Service                  `json:"service"`
+	TotalEmployee *uint                     `json:"total_employee"`
+	Filled        *uint                     `json:"filled"`
+	Employees     []PlacementDetailEmployee `json:"employees"`
+	Salary        *uint                     `json:"salary"`
 }
 
 type PlacementDetailEmployee struct {
 	Model
-	PlacementDetailID        *uint                     `json:"placement_detail_id,omitempty"`
-	PlacementDetail          *PlacementDetail          `json:"placement,omitempty"`
-	EmployeeID               *uint                     `json:"employee_id,omitempty"`
-	Employee                 *Employee                 `json:"employee,omitempty"`
-	Status                   *string                   `json:"status,omitempty"`
-	PlacementDate            *time.Time                `json:"placement_date,omitempty"`
-	StartDate                *time.Time                `json:"start_date,omitempty"`
-	EndDate                  *time.Time                `json:"end_date,omitempty"`
-	ExitDate                 *time.Time                `json:"exit_date,omitempty"`
-	Duration                 *uint                     `json:"duration,omitempty"`
-	ExpectedSalary           *uint                     `json:"expected_salary,omitempty"`
-	ExpectedSalaryTotal      *uint                     `json:"expected_salary_total,omitempty"`
-	ActualSalary             *uint                     `json:"actual_salary,omitempty"`
+	PlacementDetailID        *uint                     `json:"placement_detail_id"`
+	PlacementDetail          *PlacementDetail          `json:"placement"`
+	EmployeeID               *uint                     `json:"employee_id"`
+	Employee                 *Employee                 `json:"employee"`
+	Status                   *string                   `json:"status"`
+	PlacementDate            *time.Time                `json:"placement_date"`
+	StartDate                *time.Time                `json:"start_date"`
+	EndDate                  *time.Time                `json:"end_date"`
+	ExitDate                 *time.Time                `json:"exit_date"`
+	Duration                 *uint                     `json:"duration"`
+	ExpectedSalary           *uint                     `json:"expected_salary"`
+	ExpectedSalaryTotal      *uint                     `json:"expected_salary_total"`
+	ActualSalary             *uint                     `json:"actual_salary"`
 	Complaints               []Complaint               `json:"complaints"`
 	PerformanceFormFeedbacks []PerformanceFormFeedback `json:"performance_form_feedbacks"`
 }

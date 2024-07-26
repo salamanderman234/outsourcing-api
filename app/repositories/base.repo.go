@@ -64,7 +64,7 @@ func (baseRepo) ReadAll(
 	} else if config.Limit > 0 {
 		db = db.Limit(config.Limit)
 	}
-	finalResult := db.Find(result)
+	finalResult := db.Order("created_at DESC").Find(result)
 	if finalResult.RowsAffected == 0 {
 		return pagination, gorm.ErrRecordNotFound
 	}

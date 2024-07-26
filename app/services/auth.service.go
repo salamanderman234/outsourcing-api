@@ -114,8 +114,10 @@ func (authService) RegisterUser(
 				"missing employee_profile field",
 			)
 		}
+		available := string(enums.AvailableStatus)
 		active := string(enums.ActiveUserStatus)
 		User.EmployeeProfile.Status = &active
+		User.EmployeeProfile.PlacementStatus = &available
 		User.AdminProfile = nil
 		User.SuperAdminProfile = nil
 		User.ServiceUserProfile = nil

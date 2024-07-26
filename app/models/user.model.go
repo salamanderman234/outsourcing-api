@@ -48,43 +48,47 @@ type SuperAdmin struct {
 
 type Supervisor struct {
 	Model
-	UserID         *uint      `json:"user_id" visible:"true"`
-	User           *User      `json:"user,omitempty" gorm:"foreignKey:UserID" visible:"true"`
-	Fullname       *string    `json:"fullname" visible:"true"`
-	RegencyID      *uint      `json:"regency_id" visible:"true"`
-	Regency        *Regency   `json:"regency" gorm:"foreignKey:RegencyID" visible:"true"`
-	FullAddress    *string    `json:"full_address" visible:"true"`
-	BirthPlace     *string    `json:"birth_place" visible:"true"`
-	BirthDate      *time.Time `json:"birth_date" visible:"true"`
-	NIK            *string    `json:"nik" visible:"true"`
-	NPWP           *string    `json:"npwp" visible:"true"`
-	Gender         *string    `json:"gender" visible:"true"`
-	MarriageStatus *bool      `json:"marriage_status" visible:"true"`
-	Phone          *string    `json:"phone" visible:"true"`
-	Status         *string    `json:"status"`
+	UserID         *uint       `json:"user_id" visible:"true"`
+	User           *User       `json:"user,omitempty" gorm:"foreignKey:UserID" visible:"true"`
+	Fullname       *string     `json:"fullname" visible:"true"`
+	RegencyID      *uint       `json:"regency_id" visible:"true"`
+	Regency        *Regency    `json:"regency" gorm:"foreignKey:RegencyID" visible:"true"`
+	FullAddress    *string     `json:"full_address" visible:"true"`
+	BirthPlace     *string     `json:"birth_place" visible:"true"`
+	BirthDate      *time.Time  `json:"birth_date" visible:"true"`
+	NIK            *string     `json:"nik" visible:"true"`
+	NPWP           *string     `json:"npwp" visible:"true"`
+	Gender         *string     `json:"gender" visible:"true"`
+	MarriageStatus *bool       `json:"marriage_status" visible:"true"`
+	Phone          *string     `json:"phone" visible:"true"`
+	Status         *string     `json:"status"`
+	Placements     []Placement `json:"placements"`
 }
 
 type Employee struct {
 	Model
-	UserID             *uint      `json:"user_id" visible:"true"`
-	User               *User      `json:"user,omitempty" gorm:"foreignKey:UserID" visible:"true"`
-	Fullname           *string    `json:"fullname" visible:"true"`
-	CategoryID         *uint      `json:"category_id"`
-	Category           *Category  `json:"category" gorm:"foreignKey:CategoryID" visible:"true"`
-	RegencyID          *uint      `json:"regency_id" visible:"true"`
-	Regency            *Regency   `json:"regency" gorm:"foreignKey:RegencyID" visible:"true"`
-	FullAddress        *string    `json:"full_address" visible:"true"`
-	BirthPlace         *string    `json:"birth_place" visible:"true"`
-	BirthDate          *time.Time `json:"birth_date" visible:"true"`
-	NIK                *string    `json:"nik" visible:"true"`
-	NPWP               *string    `json:"npwp" visible:"true"`
-	Gender             *string    `json:"gender" visible:"true"`
-	MarriageStatus     *bool      `json:"marriage_status" visible:"true"`
-	Phone              *string    `json:"phone" visible:"true"`
-	LastEducation      *string    `json:"last_education" visible:"true"`
-	Ijazah             *string    `json:"ijazah" visible:"true"`
-	FieldCertification *string    `json:"field_certification" visible:"true"`
-	Status             *string    `json:"status"`
+	UserID             *uint                     `json:"user_id" visible:"true"`
+	User               *User                     `json:"user,omitempty" gorm:"foreignKey:UserID" visible:"true"`
+	Fullname           *string                   `json:"fullname" visible:"true"`
+	CategoryID         *uint                     `json:"category_id"`
+	Category           *Category                 `json:"category" gorm:"foreignKey:CategoryID" visible:"true"`
+	RegencyID          *uint                     `json:"regency_id" visible:"true"`
+	Regency            *Regency                  `json:"regency" gorm:"foreignKey:RegencyID" visible:"true"`
+	FullAddress        *string                   `json:"full_address" visible:"true"`
+	BirthPlace         *string                   `json:"birth_place" visible:"true"`
+	BirthDate          *time.Time                `json:"birth_date" visible:"true"`
+	NIK                *string                   `json:"nik" visible:"true"`
+	NPWP               *string                   `json:"npwp" visible:"true"`
+	Gender             *string                   `json:"gender" visible:"true"`
+	MarriageStatus     *bool                     `json:"marriage_status" visible:"true"`
+	Phone              *string                   `json:"phone" visible:"true"`
+	LastEducation      *string                   `json:"last_education" visible:"true"`
+	Ijazah             *string                   `json:"ijazah" visible:"true"`
+	FieldCertification *string                   `json:"field_certification" visible:"true"`
+	Status             *string                   `json:"status"`
+	PlacementStatus    *string                   `json:"placement_status" gorm:"default:available"`
+	Performances       []Performance             `json:"performances"`
+	Placements         []PlacementDetailEmployee `json:"placements"`
 }
 
 type ServiceUser struct {

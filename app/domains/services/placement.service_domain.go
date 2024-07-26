@@ -22,4 +22,5 @@ type PlacementServiceInterface interface {
 	SuspendEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint) (uint, error)
 	OngoingEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint) (uint, error)
 	RemoveEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint) (uint, error)
+	SetDoneEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint) error
 }

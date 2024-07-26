@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"math"
 
 	service_domains "github.com/salamanderman234/outsourcing-api/app/domains/services"
 	"github.com/salamanderman234/outsourcing-api/app/forms"
@@ -21,12 +22,80 @@ func NewApplicationServiceService() service_domains.ApplicationServiceServiceInt
 	return &applicationServiceService{}
 }
 
+func (applicationServiceService) RemoveAdditionalItems(ctx context.Context, id uint) error {
+	err := baseDeleteFunc(ctx, policies.MasterPolicy{}, id, &models.AdditionalItemService{})
+	return err
+}
+
+func (applicationServiceService) RemoveRequiredItems(ctx context.Context, id uint) error {
+	item := models.RequiredItemService{}
+	sub := uint(0)
+	serviceId := uint(0)
+	before := func() error {
+		err := providers.RepoProvider.BaseRepo.Find(ctx, id, &item)
+		if err != nil {
+			return err
+		}
+		sub = *item.Subtotal
+		serviceId = *item.ServiceID
+		return nil
+	}
+	err := baseDeleteFunc(ctx, policies.MasterPolicy{}, id, &item, before)
+	if err == nil {
+		service := models.Service{}
+		err := providers.RepoProvider.BaseRepo.Find(ctx, serviceId, &service)
+		if err != nil {
+			return err
+		}
+
+		curAddtionalPrice := *service.EtcPrice
+		curTotal := *service.TotalPrice
+		curAddtionalPrice = uint(math.Max(float64(curAddtionalPrice)-float64(sub), 0))
+		curTotal = uint(math.Max(float64(curTotal)-float64(sub), 0))
+
+		errX := providers.RepoProvider.BaseRepo.Update(ctx, []uint{service.ID}, &models.Service{
+			TotalPrice: &curTotal,
+			EtcPrice:   &curAddtionalPrice,
+		})
+		if errX != nil {
+			return errX
+		}
+	}
+	return err
+}
+
 func (applicationServiceService) AddRequiredItems(
 	ctx context.Context,
 	form forms.RequiredItemAddForm,
 ) (models.RequiredItemService, error) {
 	var requiredItem models.RequiredItemService
-	err := baseCreateFunc(ctx, policies.MasterPolicy{}, &requiredItem, form)
+	serv := models.Service{}
+	total := form.PricePerItem * form.Quantity
+
+	before := func() error {
+		id := form.ServiceID
+		err := providers.RepoProvider.BaseRepo.Find(ctx, id, &serv)
+		if err != nil {
+			return err
+		}
+		requiredItem.Subtotal = &total
+		return nil
+	}
+	err := baseCreateFunc(ctx, policies.MasterPolicy{}, &requiredItem, form, before)
+	if err == nil {
+		curAddtionalPrice := *serv.EtcPrice
+		curTotal := *serv.TotalPrice
+		curAddtionalPrice += total
+		curTotal += total
+
+		errX := providers.RepoProvider.BaseRepo.Update(ctx, []uint{serv.ID}, &models.Service{
+			TotalPrice: &curTotal,
+			EtcPrice:   &curAddtionalPrice,
+		})
+		if errX != nil {
+			return requiredItem, errX
+		}
+	}
 	return requiredItem, err
 }
 
@@ -162,11 +231,11 @@ func (applicationServiceService) Update(
 	data forms.ServiceUpdateForm,
 ) (uint, models.Service, error) {
 
+	var temp models.Service
 	var service models.Service
 	before := func() error {
 		mainImage := data.MainImage
 		icon := data.Icon
-		var temp models.Service
 		if mainImage != nil || icon != nil {
 			err := providers.RepoProvider.BaseRepo.Find(ctx, id, &temp)
 			if err != nil {
@@ -205,9 +274,34 @@ func (applicationServiceService) Update(
 			}
 			service.Icon = &result
 		}
+
 		return nil
 	}
 	err := baseUpdateFunc(ctx, policies.ServicePolicy{}, id, &service, data, before)
+	if err == nil {
+		employeePrice := uint(0)
+		servicePrice := uint(0)
+		etcPrice := uint(0)
+
+		if temp.EtcPrice != nil {
+			etcPrice = *temp.EtcPrice
+		}
+		if data.EmployeePrice != nil {
+			employeePrice = *data.EmployeePrice
+		}
+		if data.ServicePrice != nil {
+			servicePrice = *data.ServicePrice
+		}
+		total := etcPrice + employeePrice + servicePrice
+
+		errUpdate := providers.RepoProvider.BaseRepo.Update(ctx, []uint{id}, &models.Service{
+			TotalPrice: &total,
+		})
+
+		if errUpdate != nil {
+			return id, service, errUpdate
+		}
+	}
 	return id, service, err
 }
 func (applicationServiceService) Delete(ctx context.Context, id uint) (uint, error) {
@@ -333,8 +427,8 @@ func (applicationPackageService) Read(ctx context.Context,
 		Preloads: []string{
 			"Services",
 			"Services.AdditionalPackageServiceItems",
-			"Services.Service",
 			"Services.AdditionalPackageServiceItems.AdditionalItemService",
+			"Services.Service",
 		},
 	}
 
@@ -361,15 +455,15 @@ func (applicationPackageService) Update(
 	id uint,
 	data forms.PackageUpdateForm,
 ) (uint, models.Package, error) {
+	var temp models.Package
 	var pack models.Package
 	before := func() error {
+		err := providers.RepoProvider.BaseRepo.Find(ctx, id, &temp)
+		if err != nil {
+			return err
+		}
 		mainImage := data.MainImage
 		if mainImage != nil {
-			var temp models.Package
-			err := providers.RepoProvider.BaseRepo.Find(ctx, id, &temp)
-			if err != nil {
-				return err
-			}
 			res, err := providers.ResourceProvider.CreateResource("packages.main_image")
 			if err != nil {
 				return err
@@ -387,6 +481,31 @@ func (applicationPackageService) Update(
 		return nil
 	}
 	err := baseUpdateFunc(ctx, &policies.ServicePolicy{}, id, &pack, data, before)
+	if err == nil {
+		discount := uint(0)
+		servicePrice := uint(0)
+		etcPrice := uint(0)
+		employeePrice := uint(0)
+		if data.Discount != nil {
+			discount = *data.Discount
+		}
+		if temp.ServicePrice != nil {
+			servicePrice = *temp.ServicePrice
+		}
+		if temp.EtcPrice != nil {
+			etcPrice = *temp.EtcPrice
+		}
+		if temp.EmployeePrice != nil {
+			employeePrice = *temp.EmployeePrice
+		}
+		total := (servicePrice + etcPrice + employeePrice) - discount
+		errUpdate := providers.RepoProvider.BaseRepo.Update(ctx, []uint{id}, &models.Package{
+			TotalPrice: &total,
+		})
+		if errUpdate != nil {
+			return id, pack, errUpdate
+		}
+	}
 	return id, pack, err
 }
 func (applicationPackageService) Delete(ctx context.Context, id uint) (uint, error) {

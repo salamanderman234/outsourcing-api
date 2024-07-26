@@ -17,6 +17,21 @@ func NewApplicationServiceView() view_domains.ApplicationServiceViewInterface {
 	return &applicationServiceView{}
 }
 
+func (applicationServiceView) RemoveRequiredItem(c echo.Context) error {
+	callback := func(ctx context.Context, id uint) (uint, error) {
+		err := providers.ServiceProvider.AppServiceService.RemoveRequiredItems(ctx, id)
+		return id, err
+	}
+	return baseDeleteFunc(c, callback)
+}
+func (applicationServiceView) RemoveAdditionalItem(c echo.Context) error {
+	callback := func(ctx context.Context, id uint) (uint, error) {
+		err := providers.ServiceProvider.AppServiceService.RemoveAdditionalItems(ctx, id)
+		return id, err
+	}
+	return baseDeleteFunc(c, callback)
+}
+
 func (applicationServiceView) AddRequiredItem(c echo.Context) error {
 	var form forms.RequiredItemAddForm
 	callback := func(ctx context.Context) (any, error) {

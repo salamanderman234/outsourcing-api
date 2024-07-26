@@ -23,9 +23,13 @@ func NewUserService() service_domains.UserServiceInterface {
 	return &userService{}
 }
 
-func (userService) Read(ctx context.Context,
+func (userService) Read(
+	ctx context.Context,
 	q string,
 	regencyID uint,
+	status string,
+	categoryID uint,
+	placementStatus string,
 	role enums.UserRolesEnum,
 	page uint,
 ) ([]models.User, *types.Pagination, error) {
@@ -34,7 +38,6 @@ func (userService) Read(ctx context.Context,
 		Page:           page,
 		WithPagination: page > 0,
 		Params: []types.WhereQuery{
-			{Field: "users.role", Operator: "=", Str: string(role)},
 			{Field: "users.email", Operator: "LIKE", Str: q},
 		},
 		Query:    q,
@@ -54,7 +57,7 @@ func (userService) Read(ctx context.Context,
 				Field: "admins.regency_id", Operator: "=", Str: regencyIDStr,
 			})
 		}
-		queries = append(queries, types.WhereQuery{Field: "admins.fullname", Operator: "LIKE", Str: q})
+		queries = append(queries, types.WhereQuery{Field: "admins.fullname", Operator: "LIKE", Str: q, IsOr: true})
 		preloads = append(preloads, "AdminProfile")
 
 	} else if role == enums.EmployeeUserRole {
@@ -63,24 +66,51 @@ func (userService) Read(ctx context.Context,
 				Field: "employees.regency_id", Operator: "=", Str: regencyIDStr,
 			})
 		}
-		queries = append(queries, types.WhereQuery{Field: "employees.fullname", Operator: "LIKE", Str: q})
+		if placementStatus != "" {
+			queries = append(queries, types.WhereQuery{
+				Field: "employees.placement_status", Operator: "=", Str: placementStatus,
+			})
+		}
+		if status != "" {
+			queries = append(queries, types.WhereQuery{
+				Field: "employees.status", Operator: "=", Str: status,
+			})
+		}
+		if categoryID != 0 {
+			categoryIDStr := strconv.Itoa(int(categoryID))
+			queries = append(queries, types.WhereQuery{
+				Field: "employees.category_id", Operator: "=", Str: categoryIDStr,
+			})
+		}
 		joins = append(joins, "JOIN employees ON employees.user_id = users.id")
 		preloads = append(preloads, "EmployeeProfile")
+		preloads = append(preloads, "EmployeeProfile.Regency")
+		preloads = append(preloads, "EmployeeProfile.Category")
+		preloads = append(preloads, "EmployeeProfile.Performances")
+		preloads = append(preloads, "EmployeeProfile.Placements")
+		preloads = append(preloads, "EmployeeProfile.Placements.PlacementDetail")
+		preloads = append(preloads, "EmployeeProfile.Placements.PlacementDetail.Placement")
 	} else if role == enums.SupervisorUserRole {
 		if regencyID != 0 {
 			queries = append(queries, types.WhereQuery{
 				Field: "supervisors.regency_id", Operator: "=", Str: regencyIDStr,
 			})
 		}
-		queries = append(queries, types.WhereQuery{Field: "supervisors.fullname", Operator: "LIKE", Str: q})
+		if status != "" {
+			queries = append(queries, types.WhereQuery{
+				Field: "supervisors.status", Operator: "=", Str: status,
+			})
+		}
 		joins = append(joins, "JOIN supervisors ON supervisors.user_id = users.id")
 		preloads = append(preloads, "SupervisorProfile")
+		preloads = append(preloads, "SupervisorProfile.Regency")
+		preloads = append(preloads, "SupervisorProfile.Placements")
 	} else if role == enums.ServiceUserRole {
-		queries = append(queries, types.WhereQuery{Field: "service_users.fullname", Operator: "LIKE", Str: q})
+		queries = append(queries, types.WhereQuery{Field: "service_users.fullname", Operator: "LIKE", Str: q, IsOr: true})
 		joins = append(joins, "JOIN service_users ON service_users.user_id = users.id")
 		preloads = append(preloads, "ServiceUserProfile")
 	} else if role == enums.SuperAdminUserRole {
-		queries = append(queries, types.WhereQuery{Field: "super_admins.fullname", Operator: "LIKE", Str: q})
+		queries = append(queries, types.WhereQuery{Field: "super_admins.fullname", Operator: "LIKE", Str: q, IsOr: true})
 		joins = append(joins, "JOIN super_admins ON super_admins.user_id = users.id")
 		preloads = append(preloads, "SuperAdminProfile")
 	}

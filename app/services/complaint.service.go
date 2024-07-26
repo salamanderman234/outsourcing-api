@@ -55,6 +55,8 @@ func (complaintService) Find(ctx context.Context, id uint) (models.Complaint, er
 	err := baseFindFunc(ctx, policies.ComplaintPolicy{}, id, &complaint,
 		"ServiceUser",
 		"PlacementDetailEmployee",
+		"PlacementDetailEmployee.PlacementDetail",
+		"PlacementDetailEmployee.PlacementDetail.Placement",
 		"Employee",
 		"Replies",
 	)
@@ -70,8 +72,10 @@ func (complaintService) Read(ctx context.Context, q string, page uint) ([]models
 		Model:          &models.Complaint{},
 		Preloads: []string{
 			"ServiceUser",
+			"ServiceUser.User",
 			"PlacementDetailEmployee",
 			"Employee",
+			"Employee.User",
 			"Replies",
 		},
 	}

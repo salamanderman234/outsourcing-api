@@ -156,9 +156,14 @@ func (transactionService) Read(ctx context.Context, q string, page uint) ([]mode
 		Preloads: []string{
 			"Details",
 			"ServiceUser",
+			"ServiceUser.User",
 			"Details.Etcs",
 			"Details.Service",
 			"Details.Etcs.AdditionalItemService",
+			"Regency",
+			"Package",
+			"Payments",
+			"Placements",
 		},
 	}
 	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
@@ -245,7 +250,7 @@ func (transactionService) AskForMOU(ctx context.Context, id uint) error {
 		}
 		status := temp.Status
 		if status != nil {
-			if *status != string(enums.WaitingForConfirmationStatus) {
+			if *status != string(enums.WaitingForConfirmationStatus) && *status != string(enums.WaitingForMOUConfirmation) {
 				return types.ErrUnprocessableEntity.SetCustomMsg(
 					"transaction status does not meet the criteria for using this service",
 				)
@@ -301,7 +306,11 @@ func (transactionService) SetStatus(ctx context.Context, id uint, data forms.Tra
 		status := data.Status
 		transaction := models.Transaction{}
 
-		err := providers.RepoProvider.BaseRepo.Find(ctx, id, &transaction, "Placements")
+		err := providers.RepoProvider.BaseRepo.Find(ctx, id, &transaction,
+			"Placements",
+			"Placements.Details",
+			"Placements.Details.Employees",
+		)
 		if err != nil {
 			return err
 		}
@@ -322,6 +331,20 @@ func (transactionService) SetStatus(ctx context.Context, id uint, data forms.Tra
 			)
 			if err != nil {
 				return err
+			}
+			if placementStat == string(enums.PlacementEndStatus) {
+				details := placement[0].Details
+				for _, detail := range details {
+					employees := detail.Employees
+					for _, employee := range employees {
+						if *employee.Status == string(enums.PlacementEmployeeSuspendStatus) || *employee.Status == string(enums.PlacementEmployeeOngoingStatus) {
+							err := providers.ServiceProvider.PlacementService.SetDoneEmployeePlacement(ctx, employee.ID)
+							if err != nil {
+								return err
+							}
+						}
+					}
+				}
 			}
 		}
 		return nil

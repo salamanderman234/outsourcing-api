@@ -17,6 +17,8 @@ func (serviceRoute) RegisterRoutes(router *echo.Group) {
 	serviceRoute.DELETE("/:id/", providers.ViewProvider.ApplicationServiceView.Delete)
 	serviceRoute.POST("/add-required-item/", providers.ViewProvider.ApplicationServiceView.AddRequiredItem)
 	serviceRoute.POST("/add-additional-item/", providers.ViewProvider.ApplicationServiceView.AddAdditionalItem)
+	serviceRoute.DELETE("/remove-required-item/:id/", providers.ViewProvider.ApplicationServiceView.RemoveRequiredItem)
+	serviceRoute.DELETE("/remove-additional-item/:id/", providers.ViewProvider.ApplicationServiceView.RemoveAdditionalItem)
 	// package
 	packageRoute := router.Group("/packages")
 	packageRoute.POST("/", providers.ViewProvider.ApplicationPackageServiceView.Create)

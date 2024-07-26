@@ -71,6 +71,7 @@ func (feedbackService) Read(ctx context.Context, q string, page uint) ([]models.
 		Preloads: []string{
 			"Transaction",
 			"ServiceUser",
+			"ServiceUser.User",
 		},
 	}
 	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)

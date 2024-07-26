@@ -60,7 +60,7 @@ type SupervisorProfileRegisterForm struct {
 	BirthDate      time.Time `json:"birth_date" valid:"required"`
 	Phone          string    `json:"phone" valid:"required,stringlength(12|13)"`
 	NIK            string    `json:"nik,omitempty" valid:"required,stringlength(1|255)"`
-	NPWP           string    `json:"npwp,omitempty" valid:"required,stringlength(1|255)"`
+	NPWP           string    `json:"npwp,omitempty" valid:"optional,stringlength(1|255)"`
 	Gender         string    `json:"gender,omitempty" valid:"required,in(l|p)"`
 	MarriageStatus bool      `json:"marriage_status,omitempty"`
 }
@@ -95,19 +95,20 @@ type AdminUpdateProfileForm struct {
 }
 
 type EmployeeUpdateProfileForm struct {
-	Fullname       *string    `json:"fullname" valid:"optional,stringlength(1|255)"`
-	RegencyID      *uint      `json:"regency_id" valid:"optional,int"`
-	CategoryID     *uint      `json:"category_id,omitempty" valid:"optional,int"`
-	FullAddress    *string    `json:"full_address" valid:"optional,stringlength(1|255)"`
-	BirthPlace     *string    `json:"birth_place" valid:"optional,stringlength(1|255)"`
-	BirthDate      *time.Time `json:"birth_date" valid:"optional"`
-	Phone          *string    `json:"phone" valid:"optional,stringlength(12|13)"`
-	NIK            *string    `json:"nik,omitempty" valid:"optional"`
-	NPWP           *string    `json:"npwp,omitempty" valid:"optional"`
-	Gender         *string    `json:"gender,omitempty" valid:"optional,in(l|p)"`
-	MarriageStatus *bool      `json:"marriage_status,omitempty"`
-	LastEducation  *string    `json:"last_education,omitempty" valid:"optional,in(sd,smp,sma,s1)"`
-	Status         *string    `json:"status,omitempty" valid:"optional,in(ACTIVE|NONACTIVE)"`
+	Fullname        *string    `json:"fullname" valid:"optional,stringlength(1|255)"`
+	RegencyID       *uint      `json:"regency_id" valid:"optional,int"`
+	CategoryID      *uint      `json:"category_id,omitempty" valid:"optional,int"`
+	FullAddress     *string    `json:"full_address" valid:"optional,stringlength(1|255)"`
+	BirthPlace      *string    `json:"birth_place" valid:"optional,stringlength(1|255)"`
+	BirthDate       *time.Time `json:"birth_date" valid:"optional"`
+	Phone           *string    `json:"phone" valid:"optional,stringlength(12|13)"`
+	NIK             *string    `json:"nik,omitempty" valid:"optional"`
+	NPWP            *string    `json:"npwp,omitempty" valid:"optional"`
+	Gender          *string    `json:"gender,omitempty" valid:"optional,in(l|p)"`
+	MarriageStatus  *bool      `json:"marriage_status,omitempty"`
+	LastEducation   *string    `json:"last_education,omitempty" valid:"optional,in(sd|smp|sma|s1)"`
+	Status          *string    `json:"status,omitempty" valid:"optional,in(ACTIVE|NONACTIVE)"`
+	PlacementStatus *string    `json:"placement_status,omitempty" valid:"optional,in(available|not_available)"`
 }
 type SupervisorUpdateProfileForm struct {
 	Fullname       *string    `json:"fullname" valid:"optional,stringlength(1|255)"`

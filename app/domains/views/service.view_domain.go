@@ -6,6 +6,8 @@ type ApplicationServiceViewInterface interface {
 	BaseCRUDViewInterface
 	AddRequiredItem(c echo.Context) error
 	AddAdditionalItem(c echo.Context) error
+	RemoveRequiredItem(c echo.Context) error
+	RemoveAdditionalItem(c echo.Context) error
 }
 
 type ApplicationPackageServiceViewInterface interface {

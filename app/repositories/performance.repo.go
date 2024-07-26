@@ -27,9 +27,10 @@ func (performanceRepo) GetEmployeePerformances(ctx context.Context,
 		Model(&models.Performance{}).
 		Where("employee_id = ?", employeeID)
 	if from != nil && to != nil {
-		db.Where("date BETWEEN ? AND ?", *from, *to)
+		db.Where("performance_forms.date BETWEEN ? AND ?", from, to).
+			Joins("JOIN performance_forms ON performance_forms.id=performances.performance_form_id")
 	}
-	finalResult := db.Find(results)
+	finalResult := db.Find(&results)
 	if finalResult.RowsAffected == 0 {
 		return results, gorm.ErrRecordNotFound
 	}

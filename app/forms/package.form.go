@@ -33,11 +33,11 @@ type PackageServiceUpdateForm struct {
 	AdditionalPackageServiceItems *[]PackageServiceItemUpdateForm `json:"additional_package_service_items" valid:"optional"`
 }
 type PackageUpdateForm struct {
-	PackageName *string                     `json:"package_name" valid:"optional,stringlength(1|255)"`
-	MainImage   *string                     `json:"main_image"`
-	Description *string                     `json:"description" valid:"optional,stringlength(1|50000)"`
-	Includes    *string                     `json:"includes" valid:"optional,stringlength(1|50000)"`
-	MinContract *uint                       `json:"min_contract" valid:"optional"`
-	Discount    *uint                       `json:"discount" valid:"optional"`
-	Services    *[]PackageServiceUpdateForm `json:"services" valid:"optional"`
+	PackageName *string `json:"package_name" valid:"optional,stringlength(1|255)"`
+	MainImage   *string `json:"main_image"`
+	Description *string `json:"description" valid:"optional,stringlength(1|50000)"`
+	Includes    *string `json:"includes" valid:"optional,stringlength(1|50000)"`
+	MinContract *uint   `json:"min_contract" valid:"optional"`
+	Discount    *uint   `json:"discount" valid:"optional"`
+	// Services    *[]PackageServiceUpdateForm `json:"services" valid:"optional"`
 }

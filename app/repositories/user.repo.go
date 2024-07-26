@@ -53,7 +53,7 @@ func (userRepo) UpdateUser(ctx context.Context, id uint, data models.User) (mode
 		case string(enums.SupervisorUserRole):
 			profile := data.SupervisorProfile
 			if profile != nil {
-				err = providers.RepoProvider.BaseRepo.Update(ctx, []uint{user.SuperAdminProfile.ID}, profile, tx)
+				err = providers.RepoProvider.BaseRepo.Update(ctx, []uint{user.SupervisorProfile.ID}, profile, tx)
 				if err != nil {
 					tx.Rollback()
 					return err

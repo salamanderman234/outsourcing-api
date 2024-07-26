@@ -7,7 +7,7 @@ type PerformanceForm struct {
 	PlacementID *uint                     `json:"placement_id"`
 	Placement   *Placement                `json:"placement"`
 	Date        *time.Time                `json:"date"`
-	FilledDate  *time.Time                `json:"fiiled_date"`
+	FilledDate  *time.Time                `json:"filled_date"`
 	Feedbacks   []PerformanceFormFeedback `json:"feedbacks"`
 }
 

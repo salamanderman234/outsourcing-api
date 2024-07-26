@@ -29,7 +29,11 @@ func (userView) Create(c echo.Context) error {
 }
 func (userView) Read(c echo.Context) error {
 	regencyParam := c.QueryParam("regency_id")
+	categoryParam := c.QueryParam("category_id")
+	placementStatusParam := c.QueryParam("placement_status")
+	statusParam := c.QueryParam("status")
 	regency, _ := strconv.Atoi(regencyParam)
+	categoryID, _ := strconv.Atoi(categoryParam)
 	role := enums.UserRolesEnum(c.Param("role"))
 	switch string(role) {
 	case string(enums.AdminUserRole):
@@ -47,7 +51,7 @@ func (userView) Read(c echo.Context) error {
 		return c.JSON(status, resp)
 	}
 	callback := func(ctx context.Context, q string, page uint) (any, *types.Pagination, error) {
-		return providers.ServiceProvider.UserService.Read(ctx, q, uint(regency), role, page)
+		return providers.ServiceProvider.UserService.Read(ctx, q, uint(regency), statusParam, uint(categoryID), placementStatusParam, role, page)
 	}
 	return baseReadFunc(c, callback)
 }

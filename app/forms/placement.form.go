@@ -11,7 +11,7 @@ type PlacementCreateForm struct {
 type PlacementUpdateForm struct {
 	Note         *string `json:"note" valid:"optional,stringlength(1|30000)"`
 	SupervisorID *uint   `json:"supervisor_id" valid:"optional,int"`
-	Status       *string `json:"status" valid:"optional,in(ongoing|suspend|cancel|end)"`
+	// Status       *string `json:"status" valid:"optional,in(ongoing|suspend|cancel|end)"`
 }
 
 type PlacementDetailEmployeeCreateForm struct {

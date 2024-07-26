@@ -16,6 +16,8 @@ type ApplicationServiceServiceInterface interface {
 	Delete(ctx context.Context, id uint) (uint, error)
 	AddRequiredItems(ctx context.Context, form forms.RequiredItemAddForm) (models.RequiredItemService, error)
 	AddAdditionalItems(ctx context.Context, form forms.AdditionalItemServiceAddForm) (models.AdditionalItemService, error)
+	RemoveAdditionalItems(ctx context.Context, id uint) error
+	RemoveRequiredItems(ctx context.Context, id uint) error
 }
 
 type ApplicationPackageInterface interface {
