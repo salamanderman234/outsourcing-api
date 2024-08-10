@@ -74,6 +74,7 @@ func (complaintService) Read(ctx context.Context, q string, page uint) ([]models
 			"ServiceUser",
 			"ServiceUser.User",
 			"PlacementDetailEmployee",
+			"PlacementDetailEmployee.PlacementDetail",
 			"Employee",
 			"Employee.User",
 			"Replies",
