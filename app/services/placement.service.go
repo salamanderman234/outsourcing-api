@@ -1,0 +1,628 @@
+package services
+
+import (
+	"context"
+	"fmt"
+	"math"
+	"strconv"
+	"time"
+
+	service_domains "github.com/salamanderman234/outsourcing-api/app/domains/services"
+	"github.com/salamanderman234/outsourcing-api/app/forms"
+	"github.com/salamanderman234/outsourcing-api/app/models"
+	"github.com/salamanderman234/outsourcing-api/app/policies"
+	"github.com/salamanderman234/outsourcing-api/app/providers"
+	"github.com/salamanderman234/outsourcing-api/app/types"
+	"github.com/salamanderman234/outsourcing-api/app/types/enums"
+	"github.com/salamanderman234/outsourcing-api/configs"
+)
+
+type placementService struct{}
+
+func NewPlacementService() service_domains.PlacementServiceInterface {
+	return &placementService{}
+}
+
+func (placementService) CreatePlacement(ctx context.Context, data forms.PlacementCreateForm) (models.Placement, error) {
+	var placement models.Placement
+	before := func() error {
+		var transaction models.Transaction
+		err := providers.RepoProvider.BaseRepo.Find(ctx, *placement.TransactionID, &transaction,
+			"Details", "ServiceUser", "Details.Service",
+		)
+		if err != nil {
+			return err
+		}
+		tranStatus := transaction.Status
+		if *tranStatus != string(enums.WaitingForPlacement) {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"transaction status does not meet the criteria for using this service or transaction ",
+			)
+		}
+		ongoingPlacements := []models.Placement{}
+		transID := strconv.Itoa(int(transaction.ID))
+		providers.RepoProvider.BaseRepo.ReadAll(ctx, &ongoingPlacements, types.DBSearchParams{
+			Model: &models.Placement{},
+			Params: []types.WhereQuery{
+				{Field: "transaction_id", Operator: "=", Str: transID},
+				{Field: "status", Operator: "=", Str: string(enums.PlacementOngoingStatus)},
+			},
+		})
+
+		if len(ongoingPlacements) > 0 {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"this transaction already has an active placement",
+			)
+		}
+
+		var supervisor models.Supervisor
+		err = providers.RepoProvider.BaseRepo.Find(ctx, *placement.SupervisorID, &supervisor)
+		if err != nil {
+			return err
+		}
+
+		if *supervisor.RegencyID != *transaction.RegencyID {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"supervisor does not meet the criteria to be placed on this placement (regency)",
+			)
+		}
+		if *supervisor.Status != string(enums.ActiveUserStatus) {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"supervisor is not available",
+			)
+		}
+
+		details := transaction.Details
+		totalEmployee := uint(0)
+		for _, detail := range details {
+			zero := uint(0)
+			salary := uint(*detail.EmployeePrice)
+			placementDetail := models.PlacementDetail{
+				ServiceID:     detail.ServiceID,
+				TotalEmployee: detail.TotalEmployee,
+				Filled:        &zero,
+				Salary:        &salary,
+			}
+			placement.Details = append(placement.Details, placementDetail)
+			totalEmployee += *detail.TotalEmployee
+		}
+
+		if transaction.ServiceUser != nil {
+			placement.Name = transaction.ServiceUser.Fullname
+		}
+
+		placement.Address = transaction.Address
+		placement.RegencyID = transaction.RegencyID
+		transactionStartDate := *transaction.StartDate
+		duration := *transaction.ContractDuration
+		endDate := transactionStartDate.Add(time.Duration(duration) * (time.Hour * 24))
+		placement.StartDate = &transactionStartDate
+		placement.EndDate = &endDate
+		placement.Duration = &duration
+		placement.TotalEmployee = &totalEmployee
+		status := string(enums.PlacementOngoingStatus)
+		placement.Status = &status
+
+		schedule := string(enums.EndFormSchedule)
+		if duration > 90 {
+			schedule = string(enums.MonthlyFormSchedule)
+		} else if duration <= 90 && duration >= 30 {
+			schedule = string(enums.WeeklyFormSchedule)
+		}
+		placement.FormGenerateSchedule = &schedule
+
+		stat := string(enums.Ongoing)
+		transaction.Status = &stat
+		err = providers.RepoProvider.BaseRepo.Update(ctx, []uint{transaction.ID}, &transaction)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+	err := baseCreateFunc(ctx, policies.PlacementPolicy{}, &placement, data, before)
+	return placement, err
+}
+func (placementService) GetPlacementOrder(ctx context.Context, id uint) (models.Placement, error) {
+	var results []models.Placement
+	var trans models.Transaction
+	transactionID := strconv.Itoa(int(id))
+	err := providers.RepoProvider.BaseRepo.Find(ctx, id, &trans, "ServiceUser")
+	if err != nil {
+		return models.Placement{}, err
+	}
+	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
+	if trans.ServiceUserID == nil {
+		return models.Placement{}, types.ErrForbiden
+	}
+	if *trans.ServiceUserID != claims.ProfileID {
+		return models.Placement{}, types.ErrForbiden
+	}
+	params := types.DBSearchParams{
+		Params: []types.WhereQuery{
+			{Field: "transaction_id", Operator: "=", Str: transactionID},
+		},
+		Model: &models.Placement{},
+		Preloads: []string{
+			"Regency",
+			"Supervisor",
+			"Supervisor.User",
+			"Details",
+			"Details.Service",
+			"Details.Employees",
+			"Details.Employees.Employee",
+			"Details.Employees.Employee.User",
+			"Forms",
+		},
+	}
+
+	_, err = baseReadFunc(
+		ctx,
+		policies.PlacementPolicy{},
+		params,
+		&results,
+	)
+	if err != nil {
+		return models.Placement{}, err
+	}
+	if len(results) != 1 {
+		return models.Placement{}, types.ErrRecordNotFound
+	}
+	return results[0], err
+}
+func (placementService) Find(ctx context.Context, id uint) (models.Placement, error) {
+	var placement models.Placement
+	err := baseFindFunc(ctx, policies.PlacementPolicy{}, id, &placement,
+		"Regency",
+		"Supervisor",
+		"Supervisor.User",
+		"Details",
+		"Details.Service",
+		"Details.Employees",
+		"Details.Employees.Employee",
+		"Details.Employees.Employee.User",
+		"Forms",
+	)
+	return placement, err
+}
+
+func (placementService) Read(ctx context.Context, q string, page uint) ([]models.Placement, *types.Pagination, error) {
+	var results []models.Placement
+	params := types.DBSearchParams{
+		Page:           page,
+		WithPagination: page > 0,
+		Params: []types.WhereQuery{
+			{Field: "placements.status", Operator: "LIKE", Str: q},
+		},
+		Query: q,
+		Model: &models.Placement{},
+		Preloads: []string{
+			"Regency",
+			"Supervisor.User",
+			"Details",
+			"Details.Service",
+			"Details.Employees",
+			"Details.Employees.Employee",
+			"Details.Employees.Employee.User",
+			"Forms",
+			"Forms.Feedbacks",
+			"Forms.Feedbacks.PlacementDetailEmployee",
+			"Forms.Feedbacks.PlacementDetailEmployee.Employee",
+			"Forms.Feedbacks.PlacementDetailEmployee.Employee.User",
+			"Transaction",
+		},
+	}
+	claims, _ := ctx.Value(configs.VarConfig.UserContextName).(types.JWTCLaims)
+	if claims.Role == string(enums.SupervisorUserRole) {
+		supervisorID := strconv.Itoa(int(claims.ProfileID))
+		params.Params = append(params.Params, types.WhereQuery{
+			Field: "supervisor_id", Operator: "=", Str: supervisorID,
+		})
+	}
+	if claims.Role == string(enums.EmployeeUserRole) {
+		employeeID := strconv.Itoa(int(claims.ProfileID))
+		params.Params = append(params.Params, []types.WhereQuery{
+			{Field: "placement_detail_employees.employee_id", Operator: "=", Str: employeeID},
+		}...)
+		params.Joins = append(params.Joins, []string{
+			"JOIN placement_details ON placements.id = placement_details.placement_id",
+			"JOIN placement_detail_employees ON placement_details.id = placement_detail_employees.placement_detail_id",
+		}...)
+	}
+
+	pagination, err := baseReadFunc(
+		ctx,
+		policies.PlacementPolicy{},
+		params,
+		&results,
+	)
+	return results, pagination, err
+}
+
+func (placementService) PlaceNewEmployee(ctx context.Context, data forms.PlacementDetailEmployeeCreateForm) (models.PlacementDetailEmployee, error) {
+	var placementDetailEmployee models.PlacementDetailEmployee
+	before := func() error {
+		var detail models.PlacementDetail
+		var employee models.Employee
+		placementDetailID := data.PlacementDetailID
+
+		var exists []models.PlacementDetailEmployee
+		employeeIDStr := strconv.Itoa(int(data.EmployeeID))
+		placementDetailIDStr := strconv.Itoa(int(data.PlacementDetailID))
+		err := providers.RepoProvider.BaseRepo.Find(ctx, placementDetailID, &detail, "Placement")
+		if err != nil {
+			return err
+		}
+		if detail.Placement == nil {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"invalid placement",
+			)
+		}
+		placement := *detail.Placement
+		if *placement.Status == string(enums.PlacementEndStatus) {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"placement already ended",
+			)
+		}
+		providers.RepoProvider.BaseRepo.ReadAll(ctx, &exists, types.DBSearchParams{
+			Params: []types.WhereQuery{
+				{Field: "employee_id", Operator: "=", Str: employeeIDStr},
+				{Field: "placement_detail_id", Operator: "=", Str: placementDetailIDStr},
+				{Field: "status", Operator: "=", Str: enums.PlacementEmployeeOngoingStatus},
+			},
+		})
+
+		if len(exists) > 0 {
+			return types.ErrDuplicateEntries.SetCustomMsg(
+				"this employee has already been assigned to this placement",
+			)
+		}
+
+		err = providers.RepoProvider.BaseRepo.Find(ctx, data.EmployeeID, &employee)
+		if err != nil {
+			return err
+		}
+
+		fill := *detail.Filled
+		max := *detail.TotalEmployee
+
+		if fill == max {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"this placement has been fulfilled",
+			)
+		}
+
+		employeeRegency := *employee.RegencyID
+		placementRegency := *detail.Placement.RegencyID
+		if employeeRegency != placementRegency {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"employees cannot be placed on this placement (regency)",
+			)
+		}
+		if *employee.Status != string(enums.ActiveUserStatus) {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"employee is not available",
+			)
+		}
+		if *employee.PlacementStatus != string(enums.AvailableStatus) {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"this employee is not available",
+			)
+		}
+		ongoing := string(enums.PlacementEmployeeOngoingStatus)
+		placementDetailEmployee.Status = &ongoing
+		now := time.Now()
+		if data.StartDate == nil {
+			placementDetailEmployee.StartDate = &now
+		}
+		placementDetailEmployee.PlacementDate = &now
+		tranEndDate := detail.Placement.EndDate
+		tranStartDate := detail.Placement.StartDate
+
+		if tranStartDate.Compare(*placementDetailEmployee.StartDate) < 0 {
+			placementDetailEmployee.StartDate = tranStartDate
+		}
+		if tranEndDate.Compare(*placementDetailEmployee.PlacementDate) < 0 {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"placement is over",
+			)
+		}
+		placementDetailEmployee.ExpectedSalary = detail.Salary
+		if detail.Placement != nil {
+			placementDetailEmployee.Duration = detail.Placement.Duration
+			placementDetailEmployee.EndDate = detail.Placement.EndDate
+			diff := detail.Placement.EndDate.Sub(*placementDetailEmployee.StartDate).Hours()
+			realDuration := *detail.Placement.Duration
+			expectedWorkDay := uint(min(int(realDuration), int(diff/24)))
+			expectedTotalSalary := uint(expectedWorkDay * (*placementDetailEmployee.ExpectedSalary))
+			fmt.Println(expectedWorkDay, *placementDetailEmployee.ExpectedSalary, expectedTotalSalary)
+			placementDetailEmployee.ExpectedSalaryTotal = &expectedTotalSalary
+		} else {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"placement not found",
+			)
+		}
+		filled := *detail.Filled + 1
+		detail.Filled = &filled
+		err = providers.RepoProvider.BaseRepo.Update(ctx, []uint{detail.ID}, &detail)
+		if err != nil {
+			return err
+		}
+		placementStatus := string(enums.NotAvailableStatus)
+		err = providers.RepoProvider.BaseRepo.Update(ctx, []uint{data.EmployeeID}, &models.Employee{
+			PlacementStatus: &placementStatus,
+		})
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	err := baseCreateFunc(ctx, policies.PlacementPolicy{}, &placementDetailEmployee, data, before)
+	return placementDetailEmployee, err
+}
+
+func (placementService) SetDoneEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint) error {
+	var placement models.PlacementDetailEmployee
+	data := models.PlacementDetailEmployee{}
+	before := func() error {
+		var pl models.PlacementDetailEmployee
+		err := providers.RepoProvider.BaseRepo.Find(ctx, placementDetailEmployeeID, &pl, "PlacementDetail")
+		if err != nil {
+			return err
+		}
+		if *pl.Status == string(enums.PlacementEmployeeDismissedStatus) || *pl.Status == string(enums.PlacementEmployeeDoneStatus) {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"employee placement status does not meet the requirements to use this service",
+			)
+		}
+		employeeID := pl.EmployeeID
+		if employeeID == nil {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"employee placement status does not meet the requirements to use this service",
+			)
+		}
+
+		stopDate := time.Now()
+		salary := *pl.ExpectedSalary
+		diff := stopDate.Sub(*pl.StartDate).Hours()
+		limitWork := *pl.Duration
+		workDiff := uint(min(limitWork, uint(math.Ceil(diff/24))))
+		actualSalary := uint(min(workDiff*salary, *pl.ExpectedSalaryTotal))
+		placement.ActualSalary = &actualSalary
+		stat := enums.PlacementEmployeeDoneStatus
+		placement.Status = &stat
+
+		placementStatus := string(enums.AvailableStatus)
+		err = providers.RepoProvider.BaseRepo.Update(ctx, []uint{*employeeID}, &models.Employee{
+			PlacementStatus: &placementStatus,
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+	err := baseUpdateFunc(ctx, policies.PlacementPolicy{}, placementDetailEmployeeID, &placement, data, before)
+	return err
+}
+
+func (placementService) CutoffEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint, data forms.PlacementDetailEmployeeUpdateForm) (uint, error) {
+	var placement models.PlacementDetailEmployee
+	before := func() error {
+		var pl models.PlacementDetailEmployee
+		err := providers.RepoProvider.BaseRepo.Find(ctx, placementDetailEmployeeID, &pl, "PlacementDetail")
+		if err != nil {
+			return err
+		}
+		if *pl.Status == string(enums.PlacementEmployeeDismissedStatus) || *pl.Status == string(enums.PlacementEmployeeDoneStatus) {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"employee placement status does not meet the requirements to use this service",
+			)
+		}
+		employeeID := pl.EmployeeID
+		if employeeID == nil {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"employee placement status does not meet the requirements to use this service",
+			)
+		}
+
+		if placement.ExitDate == nil {
+			now := time.Now()
+			placement.ExitDate = &now
+		}
+		salary := *pl.ExpectedSalary
+		diff := placement.ExitDate.Sub(*placement.StartDate).Hours()
+		limitWork := *pl.Duration
+		workDiff := uint(min(limitWork, uint(math.Ceil(diff/24))))
+		actualSalary := uint(min(workDiff*salary, *pl.ExpectedSalaryTotal))
+		placement.ActualSalary = &actualSalary
+		stat := enums.PlacementEmployeeDismissedStatus
+		placement.Status = &stat
+
+		detail := pl.PlacementDetail
+		if detail != nil {
+			filled := *detail.Filled
+			updatefilled := filled - 1
+			detail.Filled = &updatefilled
+			err = providers.RepoProvider.BaseRepo.Update(ctx, []uint{
+				detail.ID,
+			}, detail)
+			if err != nil {
+				return err
+			}
+		}
+
+		placementStatus := string(enums.AvailableStatus)
+		err = providers.RepoProvider.BaseRepo.Update(ctx, []uint{*employeeID}, &models.Employee{
+			PlacementStatus: &placementStatus,
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+	err := baseUpdateFunc(ctx, policies.PlacementPolicy{}, placementDetailEmployeeID, &placement, data, before)
+	return placementDetailEmployeeID, err
+}
+
+func (placementService) Delete(ctx context.Context, id uint) (uint, error) {
+	err := baseDeleteFunc(ctx, policies.PlacementPolicy{}, id, &models.Placement{})
+	return id, err
+}
+
+func (placementService) RemoveEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint) (uint, error) {
+	before := func() error {
+		var emp models.PlacementDetailEmployee
+		err := providers.RepoProvider.BaseRepo.Find(ctx, placementDetailEmployeeID, &emp, "PlacementDetail")
+		if err != nil {
+			return err
+		}
+		status := emp.Status
+		detail := emp.PlacementDetail
+		if detail != nil && status != nil {
+			if *status != string(enums.PlacementEmployeeDismissedStatus) && *status != string(enums.PlacementEmployeeDoneStatus) {
+				fill := *detail.Filled
+				fill = max(0, fill-1)
+				detail.Filled = &fill
+
+				err := providers.RepoProvider.BaseRepo.Update(ctx, []uint{detail.ID}, detail)
+				if err != nil {
+					return err
+				}
+				employeeID := emp.EmployeeID
+				if employeeID == nil {
+					return types.ErrUnprocessableEntity.SetCustomMsg(
+						"employee placement status does not meet the requirements to use this service",
+					)
+				}
+				placementStatus := string(enums.AvailableStatus)
+				err = providers.RepoProvider.BaseRepo.Update(ctx, []uint{*employeeID}, &models.Employee{
+					PlacementStatus: &placementStatus,
+				})
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}
+	// using master to admin only
+	err := baseDeleteFunc(ctx, policies.PlacementPolicy{}, placementDetailEmployeeID, &models.PlacementDetailEmployee{}, before)
+	return placementDetailEmployeeID, err
+}
+
+func (placementService) Update(ctx context.Context, id uint, data forms.PlacementUpdateForm) (uint, models.Placement, error) {
+	var regency models.Placement
+	before := func() error {
+
+		var supervisor models.Supervisor
+		if data.SupervisorID != nil {
+			var placement models.Placement
+			err := providers.RepoProvider.BaseRepo.Find(ctx, id, &placement)
+			if err != nil {
+				return err
+			}
+			err = providers.RepoProvider.BaseRepo.Find(ctx, *data.SupervisorID, &supervisor)
+			if err != nil {
+				return err
+			}
+
+			if *supervisor.RegencyID != *placement.RegencyID {
+				return types.ErrUnprocessableEntity.SetCustomMsg(
+					"supervisor does not meet the criteria to be placed on this placement (regency)",
+				)
+			}
+		}
+		return nil
+	}
+	err := baseUpdateFunc(ctx, policies.PlacementPolicy{}, id, &regency, data, before)
+	return id, regency, err
+}
+
+func (placementService) EmployeePlacementDetail(ctx context.Context, id uint) (models.PlacementDetailEmployee, error) {
+	var placementEmployee models.PlacementDetailEmployee
+	err := baseFindFunc(ctx, policies.PlacementPolicy{}, id, &placementEmployee,
+		"Employee",
+		"Employee.User",
+		"PlacementDetail",
+		"Complaints",
+		"Complaints.Replies",
+	)
+	return placementEmployee, err
+}
+
+func (placementService) PlacementDetails(ctx context.Context, id uint) ([]models.PlacementDetail, error) {
+	var results []models.PlacementDetail
+	idStr := strconv.Itoa(int(id))
+	params := types.DBSearchParams{
+		Page:           0,
+		WithPagination: false,
+		Params: []types.WhereQuery{
+			{Field: "placement_id", Operator: "=", Str: idStr},
+		},
+		Query: idStr,
+		Model: &models.PlacementDetail{},
+		Preloads: []string{
+			"Service",
+			"Employees",
+		},
+	}
+
+	_, err := baseReadFunc(
+		ctx,
+		policies.PlacementPolicy{},
+		params,
+		&results,
+	)
+	return results, err
+}
+
+func (placementService) SuspendEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint) (uint, error) {
+	stat := string(enums.PlacementEmployeeSuspendStatus)
+	data := models.PlacementDetailEmployee{
+		Status: &stat,
+	}
+	result := models.PlacementDetailEmployee{}
+	before := func() error {
+		temp := models.PlacementDetailEmployee{}
+		err := providers.RepoProvider.BaseRepo.Find(ctx, placementDetailEmployeeID, &temp)
+		if err != nil {
+			return err
+		}
+		if *temp.Status == string(enums.PlacementEmployeeDismissedStatus) || *temp.Status == string(enums.PlacementEmployeeDoneStatus) {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"cannot change employee status",
+			)
+		}
+		return nil
+	}
+	err := baseUpdateFunc(ctx, policies.PlacementPolicy{}, placementDetailEmployeeID,
+		&result, data, before,
+	)
+	return placementDetailEmployeeID, err
+}
+func (placementService) OngoingEmployeePlacement(ctx context.Context, placementDetailEmployeeID uint) (uint, error) {
+	stat := string(enums.PlacementEmployeeOngoingStatus)
+	data := models.PlacementDetailEmployee{
+		Status: &stat,
+	}
+	result := models.PlacementDetailEmployee{}
+	before := func() error {
+		temp := models.PlacementDetailEmployee{}
+		err := providers.RepoProvider.BaseRepo.Find(ctx, placementDetailEmployeeID, &temp)
+		if err != nil {
+			return err
+		}
+		if *temp.Status == string(enums.PlacementEmployeeDismissedStatus) || *temp.Status == string(enums.PlacementEmployeeDoneStatus) {
+			return types.ErrUnprocessableEntity.SetCustomMsg(
+				"cannot change employee status",
+			)
+		}
+		return nil
+	}
+	err := baseUpdateFunc(ctx, policies.PlacementPolicy{}, placementDetailEmployeeID,
+		&result, data, before,
+	)
+	return placementDetailEmployeeID, err
+}
